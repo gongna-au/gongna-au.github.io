@@ -2,7 +2,7 @@
 layout: post
 title: 中介者模式
 subtitle: 调解人、控制器、Intermediary、Controller、Mediator
-thumbnail-img: /assets/img/backend.png
+thumbnail-img: /assets/img/backend.jpg
 tags: [books, test]
 ---
 
