@@ -43,9 +43,9 @@ round-avatar: true
 social-network-links:
   email: "mrtnsnrasmus@gmail.com"
   rss: true  # remove this line if you don't want to show an RSS link at the bottom
-  facebook: deanattali
+  facebook: 
   github: gongna-au
-  twitter: NaGong16
+  twitter: 
   patreon: 
   youtube: 
 #  medium: yourname
