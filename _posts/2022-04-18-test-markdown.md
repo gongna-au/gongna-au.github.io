@@ -2,7 +2,6 @@
 layout: post
 title: LRU 实现（层层剖析）
 subtitle: 采用 hashmap+ 双向链表
-cover-img: /assets/img/backend.jpg
 tags: [books, Backend development]
 ---
 
