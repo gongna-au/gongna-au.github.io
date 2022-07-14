@@ -15,10 +15,12 @@ author: GongNa
 
 navbar-links:
   About Me: "aboutme"
-  Resources:
-    - Beautiful Jekyll: "https://beautifuljekyll.com"
-    - Learn markdown: "https://www.markdowntutorial.com/"
-  Author's home: "https://deanattali.com"
+  Tags:
+    - Backend Development: ""
+    - Front-end Development: ""
+    - Exam related: ""
+
+  Author's home: "https://github.com/gongna-aus"
 
 # --- Logo --- #
 
