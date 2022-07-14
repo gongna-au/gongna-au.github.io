@@ -4,13 +4,17 @@ title: About me
 subtitle: Why you'd want to go on a date with me
 ---
 
-My name is Inigo Montoya. I have the following qualities:
+My name is GongNa. I have the following qualities:
 
-- I rock a great mustache
-- I'm extremely loyal to my family
+- I like fitness
+- I am currently learning backend development
+- I studying at a 211 in Wuhan
+- I like to make new friends
 
 What else do you need?
 
 ### My story
 
-To be honest, I'm having some trouble remembering right now, so why don't you just watch [my movie](https://en.wikipedia.org/wiki/The_Princess_Bride_%28film%29) and it will answer **all** your questions.
+In short, it is a story of a little rookie who keeps upgrading and fighting monsters .
+If you want to know my story or share technical knowledge, please add my WeChat to communicate.
+Wechat-Ustinian200110
