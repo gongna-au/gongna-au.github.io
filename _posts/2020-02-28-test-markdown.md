@@ -1,9 +1,7 @@
 ---
 layout: post
-title: Sample blog post
-subtitle: Each post also has a subtitle
-gh-repo: daattali/beautiful-jekyll
-gh-badge: [star, fork, follow]
+title: Go中单例模式的安全性
+subtitle: golang
 tags: [test]
 comments: true
 ---
