@@ -2,7 +2,6 @@
 layout: post
 title: 适配器模式
 subtitle: 亦称 封装器模式、Wrapper、Adapter
-cover-img: /assets/img/backend.jpg
 tags: [books, test]
 ---
 
