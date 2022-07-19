@@ -2,7 +2,7 @@
 layout: post
 title: 装饰器模式
 subtitle: 亦称： 装饰者模式、装饰器模式、Wrapper、Decorator
-tags: [design]
+tags: [Design Patterns]
 ---
 # 装饰器模式
 
