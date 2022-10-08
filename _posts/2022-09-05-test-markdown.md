@@ -2,7 +2,7 @@
 layout: post
 title: 重构代码
 subtitle: Composing Methods
-tags: [ ]
+tags: [Design Patterns]
 ---
 
 # 重构代码
