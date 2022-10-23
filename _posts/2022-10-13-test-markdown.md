@@ -523,7 +523,7 @@ func (s *randomS) AddOne(peer Balancer.Peer) {
 	s.rw.Lock()
 	defer s.rw.Unlock()
 	s.peers = append(s.peers, peer)
-	fmt.Printf("s.peers is be appended!\n")
+	fmt.Printf(peer.String() + "is be appended!\n")
 }
 
 func (s *randomS) find(peer Balancer.Peer) (found bool) {
@@ -637,6 +637,16 @@ func Random(str ...string) (string, error) {
    根据服务消费者请求客户端的 IP 地址，通过哈希函数计算得到一个哈希值，将此哈希值和服务器列表的大小进行取模运算，得到的结果便是要访问的服务器地址的序号。
    适合场景：根据请求的来源 IP 进行 hash 计算，同一 IP 地址的客户端，当后端服务器列表不变时，它每次都会映射到同一台后端服务器进行访问。
    ![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/4.png")
+
+```go
+// hashing
+
+```
+
+```go
+// consistent hasing
+
+```
 
 ## 5. 数据存储
 
