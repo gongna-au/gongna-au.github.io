@@ -112,3 +112,540 @@ tags: [分布式？]
   > 用户一个点击，需要几个系统间的一系列反应，同时每一个系统肯都存在一定的耗时，那么可以使用 mq 对不同的系统进行发送命令，进行异步操作
 - 削峰!!
   > （mysql 每秒 2000 个请求），超过就会卡死，峰取时在 MQ 中进行大量请求积压,处理器按照自己的最大处理能力取请求量，等请求期过后再把它消耗掉。
+
+## 4. 负载均衡
+
+![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/4.png")
+
+> 一台机器扛不住了，需要多台机器帮忙，既然使用多台机器，就希望不要把压力都给一台机器，所以需要一种或者多种策略分散高并发的计算压力，从而引入负载均衡，那么到底是如何分发到不同的服务器的呢？
+
+### 负载均衡策略(基于负载均衡服务器-一个由很多普通的服务器组成的一个系统)
+
+> 在需要处理大量用户请求的时候，通常都会引入负载均衡器，将多台普通服务器组成一个系统，来完成高并发的请求处理任务。
+
+#### HTTP 重定向负载均衡
+
+也属于比较直接，当 HTTP 请求到达负载均衡服务器后，使用一套负载均衡算法计算到后端服务器的地址，然后将新的地址给用户浏览器
+
+先计算到应用服务器的 IP 地址，所以 IP 地址可能暴露在公网，既然暴露在了公网还有什么安全可言
+
+#### DNS 负载均衡
+
+用户通过浏览器发起 HTTP 请求的时候，DNS 通过对域名进行即系得到 IP 地址，用户委托协议栈的 IP 地址简历 HTTP 连接访问真正的服务器。这样(不同的用户进行域名解析将会获取不同的 IP 地址)从而实现负载均衡
+
+- 通过 DNS 解析获取负载均衡集群某台服务器的地址
+- 负载均衡服务器再一次获取某台应用服务器，这样子就不会将应用服务器的 IP 地址暴露在官网了
+
+#### 反向代理负载均衡
+
+反向代理服务器，服务器先看本地是缓存过，有直接返回，没有则发送给后台的应用服务器处理。
+
+#### IP 负载均衡
+
+IP 很明显是从网络层进行负载均衡。TCP./IP 协议栈是需要上下层结合的方式达到目标，当请求到达网络层的时候。负载均衡服务器对数据包中的 IP 地址进行转换，从而发送给应用服务器
+这个方案属于内核级别，如果数据比较小还好，但是大部分情况是图片等资源文件，这样负载均衡服务器会出现响应或者请求过大所带来的瓶颈
+
+#### 数据链路负载均衡
+
+它可以解决因为数据量他打而导致负载均衡服务器带宽不足这个问题。怎么实现的呢。它不修改数据包的 IP 地址，而是更改 mac 地址。(应用服务器和负载均衡服务器使用相同的虚拟 IP)
+
+### 负载均衡算法
+
+> 轮询，加权轮循, 随机，最少连接, 源地址散列
+> 前置的介绍
+
+```go
+// Peer 是一个后端节点
+type Peer interface {
+	String() string
+}
+
+// 选取（Next(factor)）一个 Peer 时由调度者所提供的参考对象，Balancer 可能会将其作为选择算法工作的因素之一。
+type Factor interface {
+	Factor() string
+}
+
+// Factor的具体实现实现
+type FactorString string
+
+func (s FactorString) Factor() string {
+	return string(s)
+}
+
+// 负载均衡器 Balancer 持有一组 Peers 然后实现Next函数，得到一个后端节点和Constrainable（目前先当作没有看到它叭～） 当你身为调度者时，想要调用 Next，却没有什么合适的“因素”提供的话，就提供 DummyFactor 好了。
+type BalancerLite interface {
+	Next(factor Factor) (next Peer, c Constrainable)
+}
+// Balancer 在选取（Next(factor)）一个 Peer 时由调度者所提供的参考对象，Balancer 可能会将其作为选择算法工作的因素之一。
+type Balancer interface {
+  BalancerLite
+  //...more
+}
+
+```
+
+1. 轮询
+
+   轮询很容易实现，将请求按顺序轮流分配到后台服务器上，均衡的对待每一台服务器，而不关心服务器实际的连接数和当前的系统负载。
+   适合场景：适合于应用服务器硬件都相同的情况
+   ![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/1.png")
+   为了保证轮询，必须记录上次访问的位置，为了让在并发情况下不出现问题，还必须在使用位置记录时进行加锁，很明显这种互斥锁增加了性能开销。
+
+```go
+import (
+	"errors"
+	"fmt"
+	"math/rand"
+	"strconv"
+)
+
+// 随机访问中需要什么来保证随机?
+type serverList struct {
+	ipList []string
+}
+
+func NewserverList(str ...string) *serverList {
+	return &serverList{
+		ipList: append([]string{}, str...),
+	}
+}
+
+func (s *serverList) AddIP(str ...string) {
+	s.ipList = append(s.ipList, str...)
+}
+
+func (s *serverList) GetIPLIst() []string {
+	return s.ipList
+}
+
+func Polling(str ...string) (string, error) {
+	serverList := NewserverList(str...)
+	r := rand.Int()
+	l := len(serverList.GetIPLIst())
+	fmt.Printf("len %d", l)
+	end := strconv.Itoa(r % l)
+	fmt.Printf("end %s\n", end)
+	for _, v := range serverList.GetIPLIst() {
+		test := v[len(v)-1:]
+		fmt.Println(test)
+		if test == end {
+			return v, nil
+		}
+	}
+	return "", errors.New("get ip error")
+}
+```
+
+2. 加权轮循
+   在轮询的基础上根据硬件配置不同，按权重分发到不同的服务器。
+   适合场景：跟配置高、负载低的机器分配更高的权重，使其能处理更多的请求，而性能低、负载高的机器，配置较低的权重，让其处理较少的请求。
+   ![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/2.png")
+
+3. 随机
+   系统随机函数，根据后台服务器列表的大小值来随机选取其中一台进行访问。
+   随着调用量的增大，客户端的请求可以被均匀地分派到所有的后端服务器上，其实际效果越来越接近于平均分配流量到后台的每一台服务器，也就是轮询法的效果。
+
+```go
+// 简单版实现
+import (
+	"errors"
+	"fmt"
+	"math/rand"
+	"strconv"
+)
+
+// 随机访问中需要什么来保证随机?
+type serverList struct {
+	ipList []string
+}
+
+func NewserverList(str ...string) *serverList {
+	return &serverList{
+		ipList: append([]string{}, str...),
+	}
+}
+
+func (s *serverList) AddIP(str ...string) {
+	s.ipList = append(s.ipList, str...)
+}
+
+func (s *serverList) GetIPLIst() []string {
+	return s.ipList
+}
+
+func (s *serverList) GetIP(i int) string {
+	return s.ipList[i]
+}
+
+
+func Random(str ...string) (string, error) {
+	serverList := NewserverList(str...)
+	r := rand.Int()
+	l := len(serverList.GetIPLIst())
+	fmt.Printf("len %d", l)
+	end := strconv.Itoa(r % l)
+	fmt.Printf("end %s\n", end)
+	for _, v := range serverList.GetIPLIst() {
+		test := v[len(v)-1:]
+		fmt.Println(test)
+		if test == end {
+			return v, nil
+		}
+
+	}
+	/*
+	return serverList.GetIP(end)
+	*/
+	return "", errors.New("get ip error")
+}
+```
+
+```go
+// 测试函数
+import (
+	"fmt"
+	"testing"
+)
+
+func TestRadom(t *testing.T) {
+	re, err := Random(
+		"192.168.1.0",
+		"192.168.1.1",
+		"192.168.1.2",
+		"192.168.1.3",
+		"192.168.1.4",
+		"192.168.1.5",
+		"192.168.1.6",
+		"192.168.1.7",
+		"192.168.1.8",
+		"192.168.1.9",
+	)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(re)
+}
+
+```
+
+```go
+// 另外一种实现
+import (
+	"fmt"
+	"github.com/Design-Pattern-Go-Implementation/go-design-pattern/Balancer"
+	mrand "math/rand"
+	"sync"
+	"sync/atomic"
+	"time"
+)
+
+type randomS struct {
+	peers []Balancer.Peer
+	count int64
+}
+
+// 实现通用的BalancerLite 接口
+func (s *randomS) Next(factor Balancer.Factor) (next Balancer.Peer, c Balancer.Constrainable) {
+	// 传入的factor实参我们并没有使用
+	// 只是随机的产生一个数字
+	l := int64(len(s.peers))
+	// 取余数得到下标
+	// 为什么要给count +随机范围中间的数字？
+	ni := atomic.AddInt64(&s.count, inRange(0, l)) % l
+	next = s.peers[ni]
+	return
+}
+
+var seededRand = mrand.New(mrand.NewSource(time.Now().UnixNano()))
+var seedmu sync.Mutex
+
+func inRange(min, max int64) int64 {
+	seedmu.Lock()
+	defer seedmu.Unlock()
+	//在某个范围内部生成随机数字，rand.Int（最大值- 最小值）+min
+	return seededRand.Int63n(max-min) + min
+}
+
+// 实现Peer 接口
+type exP string
+
+func (s exP) String() string {
+	return string(s)
+}
+
+func Random() {
+
+	lb := &randomS{
+		peers: []Balancer.Peer{
+			exP("172.16.0.7:3500"), exP("172.16.0.8:3500"), exP("172.16.0.9:3500"),
+		},
+		count: 0,
+	}
+	// map 用来记录我们实际的后端接口到底被调用了多少次
+	sum := make(map[Balancer.Peer]int)
+	for i := 0; i < 300; i++ {
+		// 这里直接使用默认的实现类的实例
+		// DummyFactor 是默认实例
+		p, _ := lb.Next(Balancer.DummyFactor)
+		sum[p]++
+	}
+
+	for k, v := range sum {
+		fmt.Printf("%v: %v\n", k, v)
+	}
+
+}
+```
+
+```go
+// 测试函数
+import "testing"
+
+func TestRandom(t *testing.T) {
+	Random()
+}
+
+```
+
+```go
+// 线程安全实现
+//正式的 random LB 的代码要比上面的核心部分还复杂一点点。原因在于我们还需要达成另外两个设计目标：
+import (
+	"fmt"
+	mrand "math/rand"
+	"strconv"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/Design-Pattern-Go-Implementation/go-design-pattern/Balancer"
+)
+
+var seedRand = mrand.New(mrand.NewSource(time.Now().Unix()))
+var seedMutex sync.Mutex
+
+func InRange(min, max int64) int64 {
+	seedMutex.Lock()
+	defer seedMutex.Unlock()
+	return seedRand.Int63n(max-min) + min
+}
+
+// New 使用 Round-Robin 创建一个新的负载均衡器实例
+func New(opts ...Balancer.Opt) Balancer.Balancer {
+	return (&randomS{}).Init(opts...)
+}
+
+type randomS struct {
+	peers []Balancer.Peer
+	count int64
+	rw    sync.RWMutex
+}
+
+func (s *randomS) Init(opts ...Balancer.Opt) *randomS {
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+// 实现了Balancer.NexT()方法
+func (s *randomS) Next(factor Balancer.Factor) (next Balancer.Peer, c Balancer.Constrainable) {
+	next = s.miniNext()
+
+	if fc, ok := factor.(Balancer.FactorComparable); ok {
+		next, c, ok = fc.ConstrainedBy(next)
+	} else if nested, ok := next.(Balancer.BalancerLite); ok {
+		next, c = nested.Next(factor)
+	}
+
+	return
+}
+
+// 实现了Balancer.Count()方法
+func (s *randomS) Count() int {
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	return len(s.peers)
+}
+
+// 实现了Balancer.Add()方法
+func (s *randomS) Add(peers ...Balancer.Peer) {
+	for _, p := range peers {
+		// 判断要添加的元素是否存在，并且在添加元素的时候为s.peers 加锁
+		s.AddOne(p)
+	}
+}
+
+// 实现了Balancer.Remove()方法
+// 如果 s.peers 中间有和传入的peer相等的函数就那么就删除这个元素
+// 在删除这个元素的时候，
+func (s *randomS) Remove(peer Balancer.Peer) {
+	// 加写锁
+	s.rw.Lock()
+	defer s.rw.Unlock()
+	for i, p := range s.peers {
+		if Balancer.DeepEqual(p, peer) {
+			s.peers = append(s.peers[0:i], s.peers[i+1:]...)
+			return
+		}
+	}
+}
+
+// 实现了Balancer.Clear()方法
+func (s *randomS) Clear() {
+	// 加写锁
+	// 对于Set() ,Delete(),Update()这类操作就一般都是加写锁
+	// 对于Get() 这类操作我们往往是加读锁，阻塞对同一变量的更改操作，但是读操作将不会受到影响
+	s.rw.Lock()
+	defer s.rw.Unlock()
+	s.peers = nil
+}
+
+// 我们希望s在返回后端peers 节点的时候，在同一个时刻只能被一个线程拿到。
+// 所以需要对 s.peers进行加锁
+func (s *randomS) miniNext() (next Balancer.Peer) {
+	// 读锁定 写将被阻塞，读不会被锁定
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	l := int64(len(s.peers))
+	ni := atomic.AddInt64(&s.count, InRange(0, l)) % l
+	next = s.peers[ni]
+	fmt.Printf("s.peers[%d] is be returned\n", ni)
+	return
+}
+
+func (s *randomS) AddOne(peer Balancer.Peer) {
+	if s.find(peer) {
+		return
+	}
+	// 加了写锁
+	// 在更改s.peers的时候，其他的线程将不可以调用s.miniNext()读出和获得peer，其他的线程也不可以调用s.AddOne()对s.peers 进行添加操作
+	s.rw.Lock()
+	defer s.rw.Unlock()
+	s.peers = append(s.peers, peer)
+	fmt.Printf("s.peers is be appended!\n")
+}
+
+func (s *randomS) find(peer Balancer.Peer) (found bool) {
+	// 加读锁
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	for _, p := range s.peers {
+		if Balancer.DeepEqual(p, peer) {
+			return true
+		}
+	}
+	fmt.Printf("peer in s.peers is be found!\n")
+	return
+}
+
+func Client() {
+	// wg让主进程进行等待我所有的goroutinue 完成
+	wg := sync.WaitGroup{}
+	// 假设我们有20个不同的客户端（goroutinue）去调用我们的服务
+	wg.Add(20)
+	lb := &randomS{
+		peers: []Balancer.Peer{
+			Balancer.ExP("172.16.0.10:3500"), Balancer.ExP("172.16.0.11:3500"), Balancer.ExP("172.16.0.12:3500"),
+		},
+		count: 0,
+	}
+	for i := 0; i < 10; i++ {
+		go func(t int) {
+			lb.Next(Balancer.DummyFactor)
+			wg.Done()
+			time.Sleep(2 * time.Second)
+			// 这句代码第一次运行后，读解锁。
+			// 循环到第二个时，读锁定后，这个goroutine就没有阻塞，同时读成功。
+		}(i)
+
+		go func(t int) {
+			str := "172.16.0." + strconv.Itoa(t) + ":3500"
+			lb.Add(Balancer.ExP(str))
+			wg.Done()
+			// 这句代码让写锁的效果显示出来，写锁定下是需要解锁后才能写的。
+			time.Sleep(2 * time.Second)
+		}(i)
+	}
+
+	time.Sleep(5 * time.Second)
+	wg.Wait()
+}
+```
+
+```go
+// 测试函数
+import "testing"
+
+func TestFormal(t *testing.T) {
+	Client()
+}
+
+```
+
+4. 最少连接
+   最全负载均衡：算法、实现、亿级负载解决方案详解-mikechen 的互联网架构
+   记录每个服务器正在处理的请求数，把新的请求分发到最少连接的服务器上，因为要维护内部状态不推荐。
+   ![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/3.png")
+
+```go
+import (
+	"errors"
+	"fmt"
+	"math/rand"
+	"strconv"
+)
+
+// 随机访问中需要什么来保证随机?
+type serverList struct {
+	ipList []string
+}
+
+func NewserverList(str ...string) *serverList {
+	return &serverList{
+		ipList: append([]string{}, str...),
+	}
+}
+
+func (s *serverList) AddIP(str ...string) {
+	s.ipList = append(s.ipList, str...)
+}
+
+func (s *serverList) GetIPLIst() []string {
+	return s.ipList
+}
+
+func Random(str ...string) (string, error) {
+	serverList := NewserverList(str...)
+	r := rand.Int()
+	l := len(serverList.GetIPLIst())
+	fmt.Printf("len %d", l)
+	end := strconv.Itoa(r % l)
+	fmt.Printf("end %s\n", end)
+	for _, v := range serverList.GetIPLIst() {
+		test := v[len(v)-1:]
+		fmt.Println(test)
+		if test == end {
+			return v, nil
+		}
+	}
+	return "", errors.New("get ip error")
+}
+```
+
+5. "源地址"散列(为什么需要源地址？保证同一个客户端得到的后端列表)
+   根据服务消费者请求客户端的 IP 地址，通过哈希函数计算得到一个哈希值，将此哈希值和服务器列表的大小进行取模运算，得到的结果便是要访问的服务器地址的序号。
+   适合场景：根据请求的来源 IP 进行 hash 计算，同一 IP 地址的客户端，当后端服务器列表不变时，它每次都会映射到同一台后端服务器进行访问。
+   ![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/4.png")
+
+## 5. 数据存储
+
+> 公司存在的价值在于流量，流量需要数据，可想而知数据的存储，数据的高可用可说是公司的灵魂。那么改善数据的存储都有哪些手段或方法呢
+
+### 数据主从复制
+
+1.两个数据库存储一样的数据。其原理为当应用程序 A 发送更新命令到主服务器的时候，数据库会将这条命令同步记录到 Binlog 中,然后其他线程会从 Binlog 中读取并通过远程通讯的方式复制到另外服务器。服务器收到这更新日志后加入到自己 Relay Log 中，然后 SQL 执行线程从 Relay Log 中读取次日志并在本地数据库执行一遍，从而实现主从数据库同样的数据。详细步骤：1.master 将“改变/变化“记录到二进制日志(binary log)中（这些记录叫做二进制日志事件，binary log events）；2.slave 将 master 的 binary log events 拷贝到它的中继日志(relay log)；3.slave 重做中继日志中的事件，将改变反映它自己的数据。
+
+2.MySQL 的 Binlog 日志是一种二进制格式的日志，Binlog 记录所有的 DDL 和 DML 语句(除了数据查询语句 SELECT、SHOW 等)，以 Event 的形式记录，同时记录语句执行时间。Binlog 的用途：1.主从复制 想要做多机备份的业务，可以去监听当前写库的 Binlog 日志，同步写库的所有更改。2.数据恢复。因为 Binlog 详细记录了所有修改数据的 SQL，当某一时刻的数据误操作而导致出问题，或者数据库宕机数据丢失，那么可以根据 Binlog 来回放历史数据。 3.这种复制是: 某一台 Mysql 主机的数据复制到其它 Mysql 的主机（slaves）上，并重新执行一遍来实现的。复制过程中一个服务器充当主服务器，而一个或多个其它服务器充当从服务器。
+
+3..mysql 支持的复制类型：（１）：基于语句的复制：  在主服务器上执行的 SQL 语句，在从服务器上执行同样的语句。MySQL 默认采用基于语句的复制，效率比较高。一旦发现没法精确复制时，   会自动选着基于行的复制。（２）：基于行的复制：把改变的内容复制过去，而不是把命令在从服务器上执行一遍. 从 mysql5.0 开始支持 (3.)混合类型的复制: 默认采用基于语句的复制，一旦发现基于语句的无法精确的复制时，就会采用基于行的复制。
