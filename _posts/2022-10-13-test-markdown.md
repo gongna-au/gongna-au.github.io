@@ -192,48 +192,155 @@ type Balancer interface {
    为了保证轮询，必须记录上次访问的位置，为了让在并发情况下不出现问题，还必须在使用位置记录时进行加锁，很明显这种互斥锁增加了性能开销。
 
 ```go
+package RoundRobin
+
 import (
-	"errors"
 	"fmt"
-	"math/rand"
+	Balancer "github.com/VariousImplementations/LoadBalancingAlgorithm"
 	"strconv"
+	"sync"
+	"sync/atomic"
+	"time"
 )
 
-// 随机访问中需要什么来保证随机?
-type serverList struct {
-	ipList []string
+type RoundRobin struct {
+	peers []Balancer.Peer
+	count int64
+	rw    sync.RWMutex
 }
 
-func NewserverList(str ...string) *serverList {
-	return &serverList{
-		ipList: append([]string{}, str...),
+//  New 使用 Round-Robin 创建一个新的负载均衡器实例
+func New(opts ...Balancer.Opt) Balancer.Balancer {
+	return &RoundRobin{}
+}
+
+// RoundRobin  需要实现 Balancer接口下面的方法Balancer.Next()  Balancer.Count()  Balancer.Add() Balancer.Remove()  Balancer.Clear()
+func (s *RoundRobin) Next(factor Balancer.Factor) (next Balancer.Peer, c Balancer.Constrainable) {
+	next = s.miniNext()
+	if fc, ok := factor.(Balancer.FactorComparable); ok {
+		next, c, _ = fc.ConstrainedBy(next)
+	} else if nested, ok := next.(Balancer.BalancerLite); ok {
+		next, c = nested.Next(factor)
+	}
+
+	return
+}
+
+// s.count 会一直增量上去，并不会取模
+// s.count 增量加1就是轮询的核心
+// 这样做的用意在于如果 peers 数组发生了少量的增减变化时，最终发生选择时可能会更模棱两可。
+// 但是！！！注意对于 Golang 来说，s.count 来到 int64.MaxValue 时继续加一会自动回绕到 0。
+// 这一特性和多数主流编译型语言相同，都是 CPU 所提供的基本特性
+// 核心的算法 s.count 对后端节点的列表长度取余
+func (s *RoundRobin) miniNext() (next Balancer.Peer) {
+	ni := atomic.AddInt64(&s.count, 1)
+	ni--
+	// 加入读锁
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	if len(s.peers) > 0 {
+		ni %= int64(len(s.peers))
+		next = s.peers[ni]
+	}
+	fmt.Printf("s.peers[%d] is be returned\n", ni)
+	return
+}
+func (s *RoundRobin) Count() int {
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	return len(s.peers)
+}
+
+func (s *RoundRobin) Add(peers ...Balancer.Peer) {
+	for _, p := range peers {
+		s.AddOne(p)
 	}
 }
 
-func (s *serverList) AddIP(str ...string) {
-	s.ipList = append(s.ipList, str...)
+func (s *RoundRobin) AddOne(peer Balancer.Peer) {
+	if s.find(peer) {
+		return
+	}
+	s.rw.Lock()
+	defer s.rw.Unlock()
+	s.peers = append(s.peers, peer)
 }
 
-func (s *serverList) GetIPLIst() []string {
-	return s.ipList
-}
-
-func Polling(str ...string) (string, error) {
-	serverList := NewserverList(str...)
-	r := rand.Int()
-	l := len(serverList.GetIPLIst())
-	fmt.Printf("len %d", l)
-	end := strconv.Itoa(r % l)
-	fmt.Printf("end %s\n", end)
-	for _, v := range serverList.GetIPLIst() {
-		test := v[len(v)-1:]
-		fmt.Println(test)
-		if test == end {
-			return v, nil
+func (s *RoundRobin) find(peer Balancer.Peer) (found bool) {
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	for _, p := range s.peers {
+		if Balancer.DeepEqual(p, peer) {
+			return true
 		}
 	}
-	return "", errors.New("get ip error")
+	return
 }
+
+func (s *RoundRobin) Remove(peer Balancer.Peer) {
+	// 加写锁
+	s.rw.Lock()
+	defer s.rw.Unlock()
+	for i, p := range s.peers {
+		if Balancer.DeepEqual(p, peer) {
+			s.peers = append(s.peers[0:i], s.peers[i+1:]...)
+			return
+		}
+	}
+}
+
+func (s *RoundRobin) Clear() {
+	// 加写锁
+	s.rw.Lock()
+	defer s.rw.Unlock()
+	s.peers = nil
+}
+
+func Client() {
+	// wg让主进程进行等待我所有的goroutinue 完成
+	wg := sync.WaitGroup{}
+	// 假设我们有20个不同的客户端（goroutinue）去调用我们的服务
+	wg.Add(20)
+	lb := &RoundRobin{
+		peers: []Balancer.Peer{
+			Balancer.ExP("172.16.0.10:3500"), Balancer.ExP("172.16.0.11:3500"), Balancer.ExP("172.16.0.12:3500"),
+		},
+		count: 0,
+	}
+	for i := 0; i < 10; i++ {
+		go func(t int) {
+			lb.Next(Balancer.DummyFactor)
+			wg.Done()
+			time.Sleep(2 * time.Second)
+			// 这句代码第一次运行后，读解锁。
+			// 循环到第二个时，读锁定后，这个goroutine就没有阻塞，同时读成功。
+		}(i)
+
+		go func(t int) {
+			str := "172.16.0." + strconv.Itoa(t) + ":3500"
+			lb.Add(Balancer.ExP(str))
+			fmt.Println(str + " is be added. ")
+			wg.Done()
+			// 这句代码让写锁的效果显示出来，写锁定下是需要解锁后才能写的。
+			time.Sleep(2 * time.Second)
+		}(i)
+	}
+
+	time.Sleep(5 * time.Second)
+	wg.Wait()
+}
+
+```
+
+```go
+package RoundRobin
+
+import "testing"
+
+func TestFormal(t *testing.T) {
+	Client()
+}
+
 ```
 
 2. 加权轮循
@@ -589,48 +696,7 @@ func TestFormal(t *testing.T) {
    ![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/3.png")
 
 ```go
-import (
-	"errors"
-	"fmt"
-	"math/rand"
-	"strconv"
-)
 
-// 随机访问中需要什么来保证随机?
-type serverList struct {
-	ipList []string
-}
-
-func NewserverList(str ...string) *serverList {
-	return &serverList{
-		ipList: append([]string{}, str...),
-	}
-}
-
-func (s *serverList) AddIP(str ...string) {
-	s.ipList = append(s.ipList, str...)
-}
-
-func (s *serverList) GetIPLIst() []string {
-	return s.ipList
-}
-
-func Random(str ...string) (string, error) {
-	serverList := NewserverList(str...)
-	r := rand.Int()
-	l := len(serverList.GetIPLIst())
-	fmt.Printf("len %d", l)
-	end := strconv.Itoa(r % l)
-	fmt.Printf("end %s\n", end)
-	for _, v := range serverList.GetIPLIst() {
-		test := v[len(v)-1:]
-		fmt.Println(test)
-		if test == end {
-			return v, nil
-		}
-	}
-	return "", errors.New("get ip error")
-}
 ```
 
 5. "源地址"散列(为什么需要源地址？保证同一个客户端得到的后端列表)
@@ -639,14 +705,422 @@ func Random(str ...string) (string, error) {
    ![点击查看大图]("https://raw.githubusercontent.com/gongna-au/MarkDownImage/main/posts/2022-10-22-test-markdown/4.png")
 
 ```go
-// hashing
+
+// HashKetama 是一个带有 ketama 组合哈希算法的 impl
+type HashKetama struct {
+	// default is crc32.ChecksumIEEE
+	hasher Hasher
+	// 负载均衡领域中的一致性 Hash 算法加入了 Replica 因子，计算 Peer 的 hash 值时为 peer 的主机名增加一个索引号的后缀，索引号增量 replica 次
+	// 也就是说一个 peer 的 拥有replica 个副本，n 台 peers 的规模扩展为 n x Replica 的规模，有助于进一步提高选取时的平滑度。
+	replica int
+	// 通过每调用一次Next()函数 ，往hashRing中添加一个计算出的哈希数值
+	// 从哈希列表中得到一个哈希值，然后立即得到该哈希值对应的后端的节点
+	hashRing []uint32
+	// 每个节点都拥有一个属于自己的hash值
+	// 每往hashRing 添加一个元素就，就往map中添加一个元素
+	keys map[uint32]Balancer.Peer
+	// 得到的节点状态是否可用
+	peers map[Balancer.Peer]bool
+	rw    sync.RWMutex
+}
+
+// Hasher 代表可选策略
+type Hasher func(data []byte) uint32
+
+//  New 使用 HashKetama 创建一个新的负载均衡器实例
+func New(opts ...Balancer.Opt) Balancer.Balancer {
+
+	return (&HashKetama{
+		hasher:  crc32.ChecksumIEEE,
+		replica: 32,
+		keys:    make(map[uint32]Balancer.Peer),
+		peers:   make(map[Balancer.Peer]bool),
+	}).init(opts...)
+}
+
+// 典型的 “把不同参数类型的函数包装成为相同参数类型的函数”
+
+// WithHashFunc allows a custom hash function to be specified.
+// The default Hasher hash func is crc32.ChecksumIEEE.
+func WithHashFunc(hashFunc Hasher) Balancer.Opt {
+	return func(balancer Balancer.Balancer) {
+		if l, ok := balancer.(*HashKetama); ok {
+			l.hasher = hashFunc
+		}
+	}
+}
+
+// WithReplica allows a custom replica number to be specified.
+// The default replica number is 32.
+func WithReplica(replica int) Balancer.Opt {
+	return func(balancer Balancer.Balancer) {
+		if l, ok := balancer.(*HashKetama); ok {
+			l.replica = replica
+		}
+	}
+}
+
+// 让 HashKetama 指针穿过一系列的Opt函数
+func (s *HashKetama) init(opts ...Balancer.Opt) *HashKetama {
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+// Balancer.Factor本质是 string 类型
+// 调用Factor()转化为string 类型
+// 让 HashKetama实现了Balancer.Balancer接口是一个具体的负载均衡器
+// 所有的HashKetama都会接收类型为Balancer.Factor的实例，Balancer.Factor的实例
+func (s *HashKetama) Next(factor Balancer.Factor) (next Balancer.Peer, c Balancer.Constrainable) {
+	var hash uint32
+	// 生成哈希code
+	if h, ok := factor.(Balancer.FactorHashable); ok {
+		// 如果传入的是具体的实现了Balancer.FactorHashable接口的类
+		// 那么肯定实现了具体的HashCode()函数，调用就ok了
+		hash = h.HashCode()
+	} else {
+		// 如果只是传入了实现了父类接口的类的实例
+		// 调用hasher 处理父类实例
+		// factor.Factor() 把请求"https://abc.local/user/profile"
+		hash = s.hasher([]byte(factor.Factor()))
+		// s.hasher([]byte(factor.Factor()))本质是 crc32.ChecksumIEEE()函数处理得到的[]byte类型的string
+		// 所以重点是crc32.ChecksumIEEE()如何把[]byte转化wei hash code 的
+		// 哈希Hash，就是把任意长度的输入，通过散列算法，变换成固定长度的输出，该输出就是散列值。
+		// 不定长输入-->哈希函数-->定长的散列值
+		// 哈希算法的本质是对原数据的有损压缩
+		/* CRC检验原理实际上就是在一个p位二进制数据序列之后附加一个r位二进制检验码(序列)，
+		从而构成一个总长为n＝p＋r位的二进制序列；附加在数据序列之后的这个检验码与数据序列的内容之间存在着某种特定的关系。
+		如果因干扰等原因使数据序列中的某一位或某些位发生错误，这种特定关系就会被破坏。因此，通过检查这一关系，就可以实现对数据正确性的检验
+		注：仅用循环冗余检验 CRC 差错检测技术只能做到无差错接受（只是非常近似的认为是无差错的），并不能保证可靠传输
+		*/
+	}
+
+	// 根据具体的策略得到下标
+	next = s.miniNext(hash)
+	if next != nil {
+		if fc, ok := factor.(Balancer.FactorComparable); ok {
+			next, c, _ = fc.ConstrainedBy(next)
+		} else if nested, ok := next.(Balancer.BalancerLite); ok {
+			next, c = nested.Next(factor)
+		}
+	}
+
+	return
+}
+
+// 已经有存储着一些哈希数值的切片
+// 产生哈希数值
+// 在切片中找到大于等于得到的哈希数值的元素
+// 该元素作为map的key一定可以找到一个节点
+
+func (s *HashKetama) miniNext(hash uint32) (next Balancer.Peer) {
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	// 得到的hashcode 去和 hashRing[i]比较
+	// sort.Search()二分查找 本质: 找到满足条件的最小的索引
+	/*
+		//golang 官方的二分写法 (学习一波)
+
+		func Search(n int, f func(int) bool) int {
+			// Define f(-1) == false and f(n) == true.
+			// Invariant: f(i-1) == false, f(j) == true.
+			i, j := 0, n
+			for i < j {
+				// avoid overflow when computing h
+				// 右移一位 相当于除以2
+				h := int(uint(i+j) >> 1)
+				// i ≤ h < j
+				if !f(h) {
+					i = h + 1 // preserves f(i-1) == false
+				} else {
+					j = h // preserves f(j) == true
+				}
+			}
+			// i == j, f(i-1) == false, and f(j) (= f(i)) == true  =>  answer is i.
+			return i
+		}
+	*/
+
+	// 在s.hashRing找到大于等于hash的hashRing的下标
+	ix := sort.Search(len(s.hashRing), func(i int) bool {
+		return s.hashRing[i] >= hash
+	})
+
+	// 当这个下标是最后一个下标时，相当于没有找到
+	if ix == len(s.hashRing) {
+		ix = 0
+	}
+
+	// 如果没有找到就返回s.hashRing的第一个元素
+	hashValue := s.hashRing[ix]
+
+	// s.keys 存储 peers 每一个 peers 都有一个hashValue 对应
+	// hashcode 对应 hashValue （被Slice存储）
+	// hashValue 对应节点 peer  (被Map存储)
+	if p, ok := s.keys[hashValue]; ok {
+		if _, ok = s.peers[p]; ok {
+			next = p
+		}
+	}
+
+	return
+}
+
+/*
+在 Add 实现中建立了 hashRing 结构，
+它虽然是环形，但是是以数组和下标取模的方式来达成的。
+此外，keys 这个 map 解决从 peer 的 hash 值到 peer 的映射关系，今后（在 Next 中）就可以通过从 hashRing 上 pick 出一个 point 之后立即地获得相应的 peer.
+在 Next 中主要是在做 factor 的 hash 值计算，计算的结果在 hashRing 上映射为一个点 pt，如果不是恰好有一个 peer 被命中的话，就向后扫描离 pt 最近的 peer。
+
+*/
+func (s *HashKetama) Count() int {
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+	return len(s.peers)
+}
+
+func (s *HashKetama) Add(peers ...Balancer.Peer) {
+	s.rw.Lock()
+	defer s.rw.Unlock()
+
+	for _, p := range peers {
+		s.peers[p] = true
+		for i := 0; i < s.replica; i++ {
+			hash := s.hasher(s.peerToBinaryID(p, i))
+			s.hashRing = append(s.hashRing, hash)
+			s.keys[hash] = p
+		}
+	}
+
+	sort.Slice(s.hashRing, func(i, j int) bool {
+		return s.hashRing[i] < s.hashRing[j]
+	})
+}
+
+func (s *HashKetama) peerToBinaryID(p Balancer.Peer, replica int) []byte {
+	str := fmt.Sprintf("%v-%05d", p, replica)
+	return []byte(str)
+}
+
+func (s *HashKetama) Remove(peer Balancer.Peer) {
+	s.rw.Lock()
+	defer s.rw.Unlock()
+
+	if _, ok := s.peers[peer]; ok {
+		delete(s.peers, peer)
+	}
+
+	var keys []uint32
+	var km = make(map[uint32]bool)
+	for i, p := range s.keys {
+		if p == peer {
+			keys = append(keys, i)
+			km[i] = true
+		}
+	}
+
+	for _, key := range keys {
+		delete(s.keys, key)
+	}
+
+	var vn []uint32
+	for _, x := range s.hashRing {
+		if _, ok := km[x]; !ok {
+			vn = append(vn, x)
+		}
+	}
+	s.hashRing = vn
+}
+
+func (s *HashKetama) Clear() {
+	s.rw.Lock()
+	defer s.rw.Unlock()
+	s.hashRing = nil
+	s.keys = make(map[uint32]Balancer.Peer)
+	s.peers = make(map[Balancer.Peer]bool)
+}
 
 ```
 
 ```go
-// consistent hasing
+func TestHash(t *testing.T) {
+
+	h := int(uint(0+3) >> 1)
+	fmt.Print(h)
+
+}
+
+type ConcretePeer string
+
+func (s ConcretePeer) String() string {
+	return string(s)
+}
+
+var factors = []Balancer.FactorString{
+	"https://abc.local/user/profile",
+	"https://abc.local/admin/",
+	"https://abc.local/shop/item/1",
+	"https://abc.local/post/35719",
+}
+
+func TestHash1(t *testing.T) {
+	lb := New()
+	lb.Add(
+		ConcretePeer("172.16.0.7:3500"),
+		ConcretePeer("172.16.0.8:3500"),
+		ConcretePeer("172.16.0.9:3500"),
+	)
+	// 记录某个节点被调用的次数
+	sum := make(map[Balancer.Peer]int)
+	// 记录某个具体的节点被哪些ip地址访问过
+	hits := make(map[Balancer.Peer]map[Balancer.Factor]bool)
+	// 模拟不同时间三个ip 地址对服务端发起多次的请求
+	for i := 0; i < 300; i++ {
+		// ip 地址依次对服务端发起多次的请求
+		factor := factors[i%len(factors)]
+		// 把 ip 地址传进去得到具体的节点
+		peer, _ := lb.Next(factor)
+
+		sum[peer]++
+
+		if ps, ok := hits[peer]; ok {
+			// 判断该ip 地址是否之前访问过该节点
+			if _, ok := ps[factor]; !ok {
+				// 如果没有访问过则标志为访问过
+				ps[factor] = true
+			}
+		} else {
+			// 如过该节点对应的 (访问过该节点的map不存在)证明该节点一次都没有被访问过
+			// 那么创建map来 存储该ip地址已经被访问过
+			hits[peer] = make(map[Balancer.Factor]bool)
+			hits[peer][factor] = true
+		}
+	}
+
+	// results
+	total := 0
+	for _, v := range sum {
+		total += v
+	}
+
+	for p, v := range sum {
+		var keys []string
+		// p为节点
+		for fs := range hits[p] {
+			// 打印出每个节点被哪些ip地址访问过
+			if kk, ok := fs.(interface{ String() string }); ok {
+				keys = append(keys, kk.String())
+			} else {
+				keys = append(keys, fs.Factor())
+			}
+		}
+		fmt.Printf("%v\nis be invoked %v nums\nis be accessed by these [%v]\n", p, v, strings.Join(keys, ","))
+	}
+
+	lb.Clear()
+}
+
+func TestHash_M1(t *testing.T) {
+	lb := New()
+	lb.Add(
+		ConcretePeer("172.16.0.7:3500"),
+		ConcretePeer("172.16.0.8:3500"),
+		ConcretePeer("172.16.0.9:3500"),
+	)
+
+	var wg sync.WaitGroup
+	var rw sync.RWMutex
+	sum := make(map[Balancer.Peer]int)
+
+	const threads = 8
+	wg.Add(threads)
+
+	// 这个是最接近业务场景的因为是并发的请求
+	for x := 0; x < threads; x++ {
+		go func(xi int) {
+			defer wg.Done()
+			for i := 0; i < 600; i++ {
+				p, c := lb.Next(factors[i%3])
+				adder(p, c, sum, &rw)
+			}
+		}(x)
+	}
+	wg.Wait()
+	// results
+	for k, v := range sum {
+		fmt.Printf("Peer:%v InvokeNum:%v\n", k, v)
+	}
+}
+
+func TestHash2(t *testing.T) {
+	lb := New(
+		WithHashFunc(crc32.ChecksumIEEE),
+		WithReplica(16),
+	)
+	lb.Add(
+		ConcretePeer("172.16.0.7:3500"),
+		ConcretePeer("172.16.0.8:3500"),
+		ConcretePeer("172.16.0.9:3500"),
+	)
+	sum := make(map[Balancer.Peer]int)
+	hits := make(map[Balancer.Peer]map[Balancer.Factor]bool)
+
+	for i := 0; i < 300; i++ {
+		factor := factors[i%len(factors)]
+		peer, _ := lb.Next(factor)
+
+		sum[peer]++
+		if ps, ok := hits[peer]; ok {
+			if _, ok := ps[factor]; !ok {
+				ps[factor] = true
+			}
+		} else {
+			hits[peer] = make(map[Balancer.Factor]bool)
+			hits[peer][factor] = true
+		}
+	}
+	lb.Clear()
+}
+
+func adder(key Balancer.Peer, c Balancer.Constrainable, sum map[Balancer.Peer]int, rw *sync.RWMutex) {
+	rw.Lock()
+	defer rw.Unlock()
+	sum[key]++
+}
+
 
 ```
+
+> 在早些年，没有区分微服务和单体应用的那些年，Hash 算法的负载均衡常常被当作神器，因为 session 保持经常是一个服务无法横向增长的关键因素，(这里就涉及到 Session 同步使得服务器可以横向扩展)而针对用户的 session-id 的 hash 值进行调度分配时，就能保证同样 session-id 的来源用户的 session 总是落到某一确定的后端服务器，从而确保了其 session 总是有效的。在 Hash 算法被扩展之后，很明显，可以用 客户端 IP 值，主机名，url 或者无论什么你想得到的东西去做 hash 计算，只要得到了 hashCode，就可以应用 Hash 算法了。而像诸如客户端 IP，客户端主机名之类的标识由于其相同的 hashCode 的原因，所以对应的后端 peer 也能保持一致，这就是 session 年代 hash 算法显得重要的原因。
+
+> session 同步
+
+web 集群时 session 同步的 3 种方法
+
+1.利用数据库同步
+
+**利用数据库同步 session**用一个低端电脑建个数据库专门存放 web 服务器的 session，或者，把这个专门的数据库建在文件服务器上，用户访问 web 服务器时，会去这个专门的数据库 check 一下 session 的情况，以达到 session 同步的目的。
+
+把存放 session 的表和其他数据库表放在一起，如果 mysql 也做了集群了话，每个 mysql 节点都要有这张表，并且这张 session 表的数据表要实时同步。
+
+结论： 用数据库来同步 session，会加大数据库的负担，数据库本来就是容易产生瓶颈的地方，如果把 session 还放到数据库里面，无疑是雪上加霜。上面的二种方法，第一点方法较好，把放 session 的表独立开来，减轻了真正数据库的负担
+
+2.利用 cookie 同步 session
+
+**把 session 存在 cookie 里面里面** : session 是文件的形势存放在服务器端的，cookie 是文件的形势存在客户端的，怎么实现同步呢？方法很简单，就是把用户访问页面产生的 session 放到 cookie 里面，就是以 cookie 为中转站。你访问 web 服务器 A，产生了 session 把它放到 cookie 里面了，你访问被分配到 web 服务器 B，这个时候，web 服务器 B 先判断服务器有没有这个 session，如果没有，在去看看客户端的 cookie 里面有没有这个 session，如果也没有，说明 session 真的不存，如果 cookie 里面有，就把 cookie 里面的 sessoin 同步到 web 服务器 B，这样就可以实现 session 的同步了。
+
+说明：这种方法实现起来简单，方便，也不会加大数据库的负担，但是如果客户端把 cookie 禁掉了的话，那么 session 就无从同步了，这样会给网站带来损失；cookie 的安全性不高，虽然它已经加了密，但是还是可以伪造的。
+
+3.利用 memcache 同步 session(内存缓冲)
+
+**利用 memcache 同步 session** :memcache 可以做分布式，如果没有这功能，他也不能用来做 session 同步。他可以把 web 服务器中的内存组合起来，成为一个"内存池"，不管是哪个服务器产生的 sessoin 都可以放到这个"内存池"中，其他的都可以使用。
+
+优点：以这种方式来同步 session，不会加大数据库的负担，并且安全性比用 cookie 大大的提高，把 session 放到内存里面，比从文件中读取要快很多。
+
+缺点：memcache 把内存分成很多种规格的存储块，有块就有大小，这种方式也就决定了，memcache 不能完全利用内存，会产生内存碎片，如果存储块不足，还会产生内存溢出。
+
+第三种方法，个人觉得第三种方法是最好的，推荐大家使用
 
 ## 5. 数据存储
 
