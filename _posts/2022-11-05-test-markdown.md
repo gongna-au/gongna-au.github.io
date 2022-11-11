@@ -1,6 +1,6 @@
 ---
 layout: post
-title: rpcx微服务实战（3）
+title: rpcx 微服务实战（3）
 subtitle:
 tags: [golang]
 ---
@@ -18,9 +18,6 @@ rpcx 可以通过 TCP、HTTP、UnixDomain、QUIC 和 KCP 通信。你也可以�
 
 ```go
 s.Serve("tcp", *addr)
-```
-
-```go
     // 点对点采用Tcp通信
     d := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
     xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
@@ -44,37 +41,37 @@ HTTP Connect 并不被推荐。 TCP 是第一选择。
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
+    "context"
+    "flag"
+    "log"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr = flag.String("addr", "/tmp/rpcx.socket", "server address")
+    addr = flag.String("addr", "/tmp/rpcx.socket", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
      // 点对点采用Unixdomain通信
-	d, _ := client.NewPeer2PeerDiscovery("unix@"+*addr, "")
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewPeer2PeerDiscovery("unix@"+*addr, "")
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	reply := &example.Reply{}
-	err := xclient.Call(context.Background(), "Mul", args, reply)
-	if err != nil {
-		log.Fatalf("failed to call: %v", err)
-	}
+    reply := &example.Reply{}
+    err := xclient.Call(context.Background(), "Mul", args, reply)
+    if err != nil {
+        log.Fatalf("failed to call: %v", err)
+    }
 
-	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+    log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
 }
 ```
@@ -86,76 +83,76 @@ func main() {
 package main
 
 import (
-	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"flag"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"time"
+    "context"
+    "crypto/tls"
+    "crypto/x509"
+    "flag"
+    "fmt"
+    "io/ioutil"
+    "log"
+    "time"
 
-	"github.com/smallnest/rpcx/client"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr = flag.String("addr", "127.0.0.1:8972", "server address")
+    addr = flag.String("addr", "127.0.0.1:8972", "server address")
 )
 
 type Args struct {
-	A int
-	B int
+    A int
+    B int
 }
 
 type Reply struct {
-	C int
+    C int
 }
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	// CA
-	caCertPEM, err := ioutil.ReadFile("../ca.pem")
-	if err != nil {
-		panic(err)
-	}
+    // CA
+    caCertPEM, err := ioutil.ReadFile("../ca.pem")
+    if err != nil {
+        panic(err)
+    }
 
-	roots := x509.NewCertPool()
-	ok := roots.AppendCertsFromPEM(caCertPEM)
-	if !ok {
-		panic("failed to parse root certificate")
-	}
+    roots := x509.NewCertPool()
+    ok := roots.AppendCertsFromPEM(caCertPEM)
+    if !ok {
+        panic("failed to parse root certificate")
+    }
 
-	conf := &tls.Config{
-		// InsecureSkipVerify: true,
-		RootCAs: roots,
-	}
+    conf := &tls.Config{
+        // InsecureSkipVerify: true,
+        RootCAs: roots,
+    }
 
-	option := client.DefaultOption
-	option.TLSConfig = conf
+    option := client.DefaultOption
+    option.TLSConfig = conf
 
-	d, _ := client.NewPeer2PeerDiscovery("quic@"+*addr, "")
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
-	defer xclient.Close()
+    d, _ := client.NewPeer2PeerDiscovery("quic@"+*addr, "")
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
+    defer xclient.Close()
 
-	args := &Args{
-		A: 10,
-		B: 20,
-	}
+    args := &Args{
+        A: 10,
+        B: 20,
+    }
 
-	start := time.Now()
-	for i := 0; i < 100000; i++ {
-		reply := &Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    start := time.Now()
+    for i := 0; i < 100000; i++ {
+        reply := &Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-	}
-	t := time.Since(start).Nanoseconds() / int64(time.Millisecond)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+    }
+    t := time.Since(start).Nanoseconds() / int64(time.Millisecond)
 
-	fmt.Printf("tps: %d calls/s\n", 100000*1000/int(t))
+    fmt.Printf("tps: %d calls/s\n", 100000*1000/int(t))
 }
 
 ```
@@ -175,75 +172,75 @@ KCP 是一个快速并且可靠的 ARQ 协议。
 package main
 
 import (
-	"context"
-	"crypto/sha1"
-	"flag"
-	"fmt"
-	"log"
-	"net"
-	"time"
+    "context"
+    "crypto/sha1"
+    "flag"
+    "fmt"
+    "log"
+    "net"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
-	kcp "github.com/xtaci/kcp-go"
-	"golang.org/x/crypto/pbkdf2"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
+    kcp "github.com/xtaci/kcp-go"
+    "golang.org/x/crypto/pbkdf2"
 )
 
 var (
-	addr = flag.String("addr", "localhost:8972", "server address")
+    addr = flag.String("addr", "localhost:8972", "server address")
 )
 
 const cryptKey = "rpcx-key"
 const cryptSalt = "rpcx-salt"
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	pass := pbkdf2.Key([]byte(cryptKey), []byte(cryptSalt), 4096, 32, sha1.New)
-	bc, _ := kcp.NewAESBlockCrypt(pass)
-	option := client.DefaultOption
-	option.Block = bc
+    pass := pbkdf2.Key([]byte(cryptKey), []byte(cryptSalt), 4096, 32, sha1.New)
+    bc, _ := kcp.NewAESBlockCrypt(pass)
+    option := client.DefaultOption
+    option.Block = bc
 
-	d, _ := client.NewPeer2PeerDiscovery("kcp@"+*addr, "")
-	xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, option)
-	defer xclient.Close()
+    d, _ := client.NewPeer2PeerDiscovery("kcp@"+*addr, "")
+    xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, option)
+    defer xclient.Close()
 
-	// plugin
-	cs := &ConfigUDPSession{}
-	pc := client.NewPluginContainer()
-	pc.Add(cs)
-	xclient.SetPlugins(pc)
+    // plugin
+    cs := &ConfigUDPSession{}
+    pc := client.NewPluginContainer()
+    pc.Add(cs)
+    xclient.SetPlugins(pc)
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	start := time.Now()
-	for i := 0; i < 10000; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
-		//log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-	}
-	dur := time.Since(start)
-	qps := 10000 * 1000 / int(dur/time.Millisecond)
-	fmt.Printf("qps: %d call/s", qps)
+    start := time.Now()
+    for i := 0; i < 10000; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
+        //log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+    }
+    dur := time.Since(start)
+    qps := 10000 * 1000 / int(dur/time.Millisecond)
+    fmt.Printf("qps: %d call/s", qps)
 }
 
 type ConfigUDPSession struct{}
 
 func (p *ConfigUDPSession) ConnCreated(conn net.Conn) (net.Conn, error) {
-	session, ok := conn.(*kcp.UDPSession)
-	if !ok {
-		return conn, nil
-	}
+    session, ok := conn.(*kcp.UDPSession)
+    if !ok {
+        return conn, nil
+    }
 
-	session.SetACKNoDelay(true)
-	session.SetStreamMode(true)
-	return conn, nil
+    session.SetACKNoDelay(true)
+    session.SetStreamMode(true)
+    return conn, nil
 }
 ```
 
@@ -259,45 +256,45 @@ func (p *ConfigUDPSession) ConnCreated(conn net.Conn) (net.Conn, error) {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr = flag.String("addr", "localhost:8972", "server address")
+    addr = flag.String("addr", "localhost:8972", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+    d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
 
-	option := client.DefaultOption
+    option := client.DefaultOption
 
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
-	defer xclient.Close()
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    for {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-		time.Sleep(time.Second)
-	}
+        time.Sleep(time.Second)
+    }
 
 }
 ```
@@ -308,47 +305,47 @@ func main() {
 package main
 
 import (
-	"context"
-	"crypto/tls"
-	"flag"
-	"log"
+    "context"
+    "crypto/tls"
+    "flag"
+    "log"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr = flag.String("addr", "localhost:8972", "server address")
+    addr = flag.String("addr", "localhost:8972", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+    d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
 
-	option := client.DefaultOption
+    option := client.DefaultOption
 
-	conf := &tls.Config{
-		InsecureSkipVerify: true,
-	}
+    conf := &tls.Config{
+        InsecureSkipVerify: true,
+    }
 
-	option.TLSConfig = conf
+    option.TLSConfig = conf
 
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
-	defer xclient.Close()
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	reply := &example.Reply{}
-	err := xclient.Call(context.Background(), "Mul", args, reply)
-	if err != nil {
-		log.Fatalf("failed to call: %v", err)
-	}
+    reply := &example.Reply{}
+    err := xclient.Call(context.Background(), "Mul", args, reply)
+    if err != nil {
+        log.Fatalf("failed to call: %v", err)
+    }
 
-	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+    log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
 }
 ```
@@ -403,44 +400,44 @@ func (d *MultipleServersDiscovery) Update(pairs []*KVPair)
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	cclient "github.com/rpcxio/rpcx-zookeeper/client"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    cclient "github.com/rpcxio/rpcx-zookeeper/client"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	zkAddr   = flag.String("zkAddr", "localhost:2181", "zookeeper address")
-	basePath = flag.String("base", "/rpcx_test", "prefix path")
+    zkAddr   = flag.String("zkAddr", "localhost:2181", "zookeeper address")
+    basePath = flag.String("base", "/rpcx_test", "prefix path")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
    // 更改服务发现为--客户端发现之--从Zookeeper 发现
-	d, _ := cclient.NewZookeeperDiscovery(*basePath, "Arith", []string{*zkAddr}, nil)
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := cclient.NewZookeeperDiscovery(*basePath, "Arith", []string{*zkAddr}, nil)
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for {
+    for {
 
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-		time.Sleep(1e9)
-	}
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        time.Sleep(1e9)
+    }
 
 }
 ```
@@ -462,46 +459,46 @@ Zookeeper 一个应用场景就是服务发现，这在 Java 生态圈中得到�
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	etcd_client "github.com/rpcxio/rpcx-etcd/client"
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    etcd_client "github.com/rpcxio/rpcx-etcd/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	etcdAddr = flag.String("etcdAddr", "localhost:2379", "etcd address")
-	basePath = flag.String("base", "/rpcx_test", "prefix path")
+    etcdAddr = flag.String("etcdAddr", "localhost:2379", "etcd address")
+    basePath = flag.String("base", "/rpcx_test", "prefix path")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
     // // 更改服务发现为--客户端发现之--从etcd 发现
-	d, _ := etcd_client.NewEtcdDiscovery(*basePath, "Arith", []string{*etcdAddr}, false, nil)
-	xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := etcd_client.NewEtcdDiscovery(*basePath, "Arith", []string{*etcdAddr}, false, nil)
+    xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Printf("failed to call: %v\n", err)
-			time.Sleep(5 * time.Second)
-			continue
-		}
+    for {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Printf("failed to call: %v\n", err)
+            time.Sleep(5 * time.Second)
+            continue
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-		time.Sleep(5 * time.Second)
-	}
+        time.Sleep(5 * time.Second)
+    }
 }
 ```
 
@@ -513,43 +510,43 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	cclient "github.com/rpcxio/rpcx-consul/client"
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    cclient "github.com/rpcxio/rpcx-consul/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	consulAddr = flag.String("consulAddr", "localhost:8500", "consul address")
-	basePath   = flag.String("base", "/rpcx_test", "prefix path")
+    consulAddr = flag.String("consulAddr", "localhost:8500", "consul address")
+    basePath   = flag.String("base", "/rpcx_test", "prefix path")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
     // 更改服务发现为--客户端发现之--从consul 发现
-	d, _ := cclient.NewConsulDiscovery(*basePath, "Arith", []string{*consulAddr}, nil)
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := cclient.NewConsulDiscovery(*basePath, "Arith", []string{*consulAddr}, nil)
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Printf("ERROR failed to call: %v", err)
-		}
+    for {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Printf("ERROR failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-		time.Sleep(1e9)
-	}
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        time.Sleep(1e9)
+    }
 
 }
 ```
@@ -562,38 +559,38 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	basePath = flag.String("base", "/rpcx_test/Arith", "prefix path")
+    basePath = flag.String("base", "/rpcx_test/Arith", "prefix path")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
     // 更改服务发现为--客户端发现之--从mDNS发现
-	d, _ := client.NewMDNSDiscovery("Arith", 10*time.Second, 10*time.Second, "")
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewMDNSDiscovery("Arith", 10*time.Second, 10*time.Second, "")
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	reply := &example.Reply{}
-	err := xclient.Call(context.Background(), "Mul", args, reply)
-	if err != nil {
-		log.Fatalf("failed to call: %v", err)
-	}
+    reply := &example.Reply{}
+    err := xclient.Call(context.Background(), "Mul", args, reply)
+    if err != nil {
+        log.Fatalf("failed to call: %v", err)
+    }
 
-	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+    log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
 }
 ```

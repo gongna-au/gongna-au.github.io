@@ -22,43 +22,43 @@ FailMode 的设置仅仅对同步调用有效(XClient.Call), 异步调用用，�
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
+    "context"
+    "flag"
+    "log"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
-	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
+    addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	option := client.DefaultOption
-	option.Retries = 10
-	xclient := client.NewXClient("Arith", client.Failfast, client.RandomSelect, d, option)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    option := client.DefaultOption
+    option.Retries = 10
+    xclient := client.NewXClient("Arith", client.Failfast, client.RandomSelect, d, option)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Printf("failed to call: %v", err)
-		} else {
-			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-		}
+    for i := 0; i < 10; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Printf("failed to call: %v", err)
+        } else {
+            log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        }
 
-	}
+    }
 }
 ```
 
@@ -72,45 +72,45 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
-	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
+    addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	option := client.DefaultOption
-	option.Retries = 10
-	xclient := client.NewXClient("Arith", client.Failover, client.RandomSelect, d, option)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    option := client.DefaultOption
+    option.Retries = 10
+    xclient := client.NewXClient("Arith", client.Failover, client.RandomSelect, d, option)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Printf("failed to call: %v", err)
-		} else {
-			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-		}
+    for {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Printf("failed to call: %v", err)
+        } else {
+            log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        }
 
-		time.Sleep(time.Second)
-	}
+        time.Sleep(time.Second)
+    }
 }
 ```
 
@@ -123,43 +123,43 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
+    "context"
+    "flag"
+    "log"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
-	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
+    addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	option := client.DefaultOption
-	option.Retries = 10
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    option := client.DefaultOption
+    option.Retries = 10
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Printf("failed to call: %v", err)
-		} else {
-			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-		}
+    for i := 0; i < 10; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Printf("failed to call: %v", err)
+        } else {
+            log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        }
 
-	}
+    }
 }
 ```
 
@@ -174,39 +174,39 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
+    "context"
+    "flag"
+    "log"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr = flag.String("addr", "localhost:8972", "server address")
+    addr = flag.String("addr", "localhost:8972", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
-	xclient := client.NewXClient("Arith", client.Failbackup, client.RandomSelect, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+    xclient := client.NewXClient("Arith", client.Failbackup, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 1; i < 100; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    for i := 1; i < 100; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-	}
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+    }
 
 }
 ```
@@ -247,7 +247,7 @@ Broadcast 是 XClient 的一个方法， 你可以将一个请求发送到这个
 
 ```go
 func main() {
-	//......
+    //......
 
     xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
     defer xclient.Close()

@@ -19,43 +19,43 @@ rpcx 提供了多个路由策略算法，你可以在创建 XClient 来指定。
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+    addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    for i := 0; i < 10; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-		time.Sleep(time.Second)
-	}
+        time.Sleep(time.Second)
+    }
 }
 ```
 
@@ -65,43 +65,43 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+    addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    for i := 0; i < 10; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-		time.Sleep(time.Second)
-	}
+        time.Sleep(time.Second)
+    }
 
 }
 ```
@@ -112,43 +112,43 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+    addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: "weight=7"}, {Key: *addr2, Value: "weight=3"}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.WeightedRoundRobin, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: "weight=7"}, {Key: *addr2, Value: "weight=3"}})
+    xclient := client.NewXClient("Arith", client.Failtry, client.WeightedRoundRobin, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    for i := 0; i < 10; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-		time.Sleep(time.Second)
-	}
+        time.Sleep(time.Second)
+    }
 
 }
 ```
@@ -167,68 +167,68 @@ func main() {
 在 { 5, 1, 1 } 权重的情况下，这给出了以下序列
 当前重量的：
 
-     0 0 0（初始状态）
+​ 0 0 0（初始状态）
 
-     5 1 1（已选）        //  -2 1 1 分别加5 1 1
-    -2 1 1
+​ 5 1 1（已选） // -2 1 1 分别加 5 1 1
+​ -2 1 1
 
-     3 2 2（已选）        //  -4 2 2 分别加5 1 1
-    -4 2 2
+​ 3 2 2（已选） // -4 2 2 分别加 5 1 1
+​ -4 2 2
 
-     1 3 3（选择 b）     //   1 -4 3 分别加5 1 1
-     1 -4 3
+​ 1 3 3（选择 b） // 1 -4 3 分别加 5 1 1
+​ 1 -4 3
 
-     6 -3 4（一个选择）  //    -1 -3 4 分别加 5 1 1
-    -1 -3 4
+​ 6 -3 4（一个选择） // -1 -3 4 分别加 5 1 1
+​ -1 -3 4
 
-     4 -2 5（选择 c）    //   4 -2 -2  分别加 5 1 1
-     4 -2 -2
+​ 4 -2 5（选择 c） // 4 -2 -2 分别加 5 1 1
+​ 4 -2 -2
 
-     9 -1 -1（一个选择） //    2 -1 -1 分别加 5 1 1
-     2 -1 -1
+​ 9 -1 -1（一个选择） // 2 -1 -1 分别加 5 1 1
+​ 2 -1 -1
 
-     7 0 0（一个选定的） //
-     0 0 0
+​ 7 0 0（一个选定的） //
+​ 0 0 0
 
 ```go
 package SmoothWeightRoundRobin
 
 import (
-	"strings"
+    "strings"
 )
 
 type Node struct {
-	Name    string
-	Current int
-	Weight  int
+    Name    string
+    Current int
+    Weight  int
 }
 
 // 一次负载均衡的选择 找到最大的节点，把最大的节点减去权重量和
 // 算法的核心是current 记录找到权重最大的节点，这个节点的权重-总权重
 // 然后在这个基础上的切片 他们的状态是 现在的权重状态+最初的权重状态
 func SmoothWeightRoundRobin(nodes []*Node) (best *Node) {
-	if len(nodes) == 0 {
-		return nil
-	}
-	weightnum := 0
-	for k, v := range nodes {
-		weightnum = weightnum + v.Weight
-		if k == 0 {
-			best = v
-		}
-		if v.Current > best.Current {
-			best = v
-		}
-	}
-	for _, v := range nodes {
-		if strings.Compare(v.Name, best.Name) == 0 {
-			v.Current = v.Current - weightnum + v.Weight
-		} else {
-			v.Current = v.Current + v.Weight
-		}
-	}
+    if len(nodes) == 0 {
+        return nil
+    }
+    weightnum := 0
+    for k, v := range nodes {
+        weightnum = weightnum + v.Weight
+        if k == 0 {
+            best = v
+        }
+        if v.Current > best.Current {
+            best = v
+        }
+    }
+    for _, v := range nodes {
+        if strings.Compare(v.Name, best.Name) == 0 {
+            v.Current = v.Current - weightnum + v.Weight
+        } else {
+            v.Current = v.Current + v.Weight
+        }
+    }
 
-	return best
+    return best
 }
 
 ```
@@ -239,22 +239,22 @@ func SmoothWeightRoundRobin(nodes []*Node) (best *Node) {
 package SmoothWeightRoundRobin
 
 import (
-	"fmt"
-	"testing"
+    "fmt"
+    "testing"
 )
 
 func TestSmoothWeight(t *testing.T) {
-	nodes := []*Node{
-		{"a", 0, 5},
-		{"b", 0, 1},
-		{"c", 0, 1},
-	}
-	for i := 0; i < 7; i++ {
-		best := SmoothWeightRoundRobin(nodes)
-		if best != nil {
-			fmt.Println(best.Name)
-		}
-	}
+    nodes := []*Node{
+        {"a", 0, 5},
+        {"b", 0, 1},
+        {"c", 0, 1},
+    }
+    for i := 0; i < 7; i++ {
+        best := SmoothWeightRoundRobin(nodes)
+        if best != nil {
+            fmt.Println(best.Name)
+        }
+    }
 
 }
 
@@ -275,43 +275,43 @@ weight=0 if t >= 1000
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@baidu.com:8080", "server address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+    addr2 = flag.String("addr2", "tcp@baidu.com:8080", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.WeightedICMP, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    xclient := client.NewXClient("Arith", client.Failtry, client.WeightedICMP, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    for i := 0; i < 10; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-		time.Sleep(time.Second)
-	}
+        time.Sleep(time.Second)
+    }
 
 }
 ```
@@ -324,44 +324,44 @@ func main() {
 package main
 
 import (
-	"context"
-	"flag"
-	"log"
-	"time"
+    "context"
+    "flag"
+    "log"
+    "time"
 
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
+    example "github.com/rpcxio/rpcx-examples"
+    "github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+    addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+    addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
 )
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: ""},
-		{Key: *addr2, Value: ""}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.ConsistentHash, d, client.DefaultOption)
-	defer xclient.Close()
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: ""},
+        {Key: *addr2, Value: ""}})
+    xclient := client.NewXClient("Arith", client.Failtry, client.ConsistentHash, d, client.DefaultOption)
+    defer xclient.Close()
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    for i := 0; i < 10; i++ {
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-		time.Sleep(time.Second)
-	}
+        time.Sleep(time.Second)
+    }
 
 }
 ```

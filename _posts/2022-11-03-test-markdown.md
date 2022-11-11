@@ -1,8 +1,8 @@
 ---
 layout: post
-title: RPC vs RESTful 以及 rpcx微服务实战（1）
-subtitle:
-tags: [rpc]
+title: 进程？线程？
+subtitle: RPC vs RESTful 以及 rpcx微服务实战（1）
+tags: [golang]
 ---
 
 1.RESTful 是通过 http 方法操作资源 Rpc 操作的是方法和过程，要操作的是方法对象 2. RESTful 的客户端和服务端是解耦的。Rpc 的客户端是紧密耦合的。 3. Resful 执行的是对资源的操作 CURD 如果是张三的成绩加 3。这个特定目地的操作在 Resful 下不直观，但是在 RPC 下是 Student.Increment(Name,Score)的方法供给客户端口调用。4 .RESTful 的 Request -Response 模型是阻塞。(http1.0 和 http1.1, http 2.0 没这个问题)，发送一个请求后只有等到 response 返回才能发送第二个请求 (有些 http server 实现了 pipeling 的功能，但不是标配)， RPC 的实现没有这个限制。
@@ -52,37 +52,36 @@ func (t *Arith) Mul(ctx context.Context, args *Args, reply *Reply) error {
 编写 RPC 服务的时候，相当于抽取 RESTful 下的这个函数的逻辑：
 
 ```go
-
 // requests.LoginByPhoneRequest{}
 type LoginByPhoneRequest struct {
-	Phone    string `json:"phone,omitempty" valid:"phone"`
-	Password string `json:"password,omitempty" valid:"password"`
+    Phone    string `json:"phone,omitempty" valid:"phone"`
+    Password string `json:"password,omitempty" valid:"password"`
 }
 
 // LoginByPhone 手机登录
 func LoginByPhone(c *gin.Context) {
-	// 1. 验证表单
-	request := requests.LoginByPhoneRequest{}
+    // 1. 验证表单
+    request := requests.LoginByPhoneRequest{}
 
-	if err := c.Bind(&request); err != nil {
-		response.Error(c, err, "请求失败")
-		return
-	}
+    if err := c.Bind(&request); err != nil {
+        response.Error(c, err, "请求失败")
+        return
+    }
 
-	// 2. 尝试登录
-	user, err := AttemptLoginByPhone(request.Phone, request.Password)
+    // 2. 尝试登录
+    user, err := AttemptLoginByPhone(request.Phone, request.Password)
 
-	if err != nil {
-		// 失败，显示错误提示
-		response.Error(c, err, "账号不存在或密码错误")
-	} else {
-		// 登录成功
-		token := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
+    if err != nil {
+        // 失败，显示错误提示
+        response.Error(c, err, "账号不存在或密码错误")
+    } else {
+        // 登录成功
+        token := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
 
-		response.JSON(c, gin.H{
-			"token": token,
-		})
-	}
+        response.JSON(c, gin.H{
+            "token": token,
+        })
+    }
 }
 
 ```
@@ -108,15 +107,15 @@ type UserLogin int
 func (t *UserLogin) Mul(ctx context.Context, args *LoginRequest, reply *TokenResponse) error {
 
     user, err := AttemptLoginByPhone(args.A ,args.B)
-	if err != nil {
-		// 失败，显示错误提示
-		reply.Error="Password and Phone wrong"
+    if err != nil {
+        // 失败，显示错误提示
+        reply.Error="Password and Phone wrong"
         return err
-	} else {
-		// 登录成功
-		reply.Tokentoken := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
+    } else {
+        // 登录成功
+        reply.Tokentoken := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
         return nil
-	}
+    }
 }
 ```
 
@@ -269,15 +268,12 @@ Eureka 客户端 — 服务与服务客户端 — 查询 DNS 以发现 Eureka �
 
 当使用自注册模式时，服务实例负责在服务注册中心注册和注销自己。此外，如果有必要，服务实例将通过发送心跳请求来防止其注册信息过期。
 
-[!]("https://872026152-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LAinv8dInYi41sSnmWu%2F-LAinzxGnqu1h1CS4HMv%2F-LAio3WzMlbz0YLIvHzd%2F4-4.png?generation=1524425068345387&alt=media")
-
 该方式的一个很好的范例就是 Netflix OSS Eureka 客户端。Eureka 客户端负责处理服务实例注册与注销的所有方面。实现了包括服务发现在内的多种模式的 Spring Cloud 项目可以轻松地使用 Eureka 自动注册服务实例。你只需在 Java Configuration 类上应用 @EnableEurekaClient 注解即可。自注册模式有好有坏。一个好处是它相对简单，不需要任何其他系统组件。然而，主要缺点是它将服务实例与服务注册中心耦合。你必须为服务使用的每种编程语言和框架都实现注册代码。
 
 ### 2.第三方注册
 
 **服务注册器要么轮询部署环境 或者 订阅事件来跟踪运行的实例集**
 当使用第三方注册模式时，服务实例不再负责向服务注册中心注册自己。相反，该工作将由被称为服务注册器（service registrar）的另一系统组件负责。服务注册器通过轮询部署环境或订阅事件来跟踪运行实例集的变更情况。当它检测到一个新的可用服务实例时，它会将该实例注册到服务注册中心。此外，服务注册器可以注销终止的服务实例。
-[!]("https://872026152-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LAinv8dInYi41sSnmWu%2F-LAinzxGnqu1h1CS4HMv%2F-LAio3bKa2cI95XC2tOl%2F4-5.png?generation=1524425068903373&alt=media")
 
 开源的 Registrator 项目是一个很好的服务注册器示例。它可以自动注册和注销作为 Docker 容器部署的服务实例。注册器支持多种服务注册中心，包括 etcd 和 Consul。
 另一个服务注册器例子是 NetflixOSS Prana。其主要用于非 JVM 语言编写的服务，它是一个与服务实例并行运行的附加应用。Prana 使用了 Netflix Eureka 来注册和注销服务实例。

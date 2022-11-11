@@ -25,15 +25,15 @@ type UserLogin int
 func (t *UserLogin) Mul(ctx context.Context, args *LoginRequest, reply *TokenResponse) error {
 
     user, err := AttemptLoginByPhone(args.A ,args.B)
-	if err != nil {
-		// 失败，显示错误提示
-		reply.Error="Password and Phone wrong"
+    if err != nil {
+        // 失败，显示错误提示
+        reply.Error="Password and Phone wrong"
         return err
-	} else {
-		// 登录成功
-		reply.Tokentoken := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
+    } else {
+        // 登录成功
+        reply.Tokentoken := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
         return nil
-	}
+    }
 }
 ```
 
@@ -41,9 +41,6 @@ func (t *UserLogin) Mul(ctx context.Context, args *LoginRequest, reply *TokenRes
 
 ```go
 func (s *Server) Register(rcvr interface{}, metadata string) error
-```
-
-```go
 func (s *Server) Register(rcvr interface{}, metadata string) error
 ```
 
