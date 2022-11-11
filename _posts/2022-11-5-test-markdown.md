@@ -374,8 +374,7 @@ rpcx 会自动将服务的信息比如服务名，监听地址，监听协议，
     defer xclient.Close()
 ```
 
-注意:rpcx 使用 network @ Host: port 格式表示一项服务。在 network 可以 tcp ， http ，unix ，quic 或 kcp。该 Host 可以所主机名或 IP 地址。
-NewXClient 必须使用服务名称作为第一个参数，然后使用 failmode，selector，discovery 和其他选项。
+注意:rpcx 使用 network @ Host: port 格式表示一项服务。在 network 可以 tcp ， http ，unix ，quic 或 kcp。该 Host 可以所主机名或 IP 地址。NewXClient 必须使用服务名称作为第一个参数，然后使用 failmode，selector，discovery 和其他选项。
 
 ## MultipleServers
 

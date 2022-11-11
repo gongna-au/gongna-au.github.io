@@ -240,7 +240,7 @@ ubuntu              bionic              329ed837d508        3 days ago          
 
 ##### 列出特定的某个镜像，也就是说指定仓库名和标签
 
-```
+```shell
 $ docker image ls ubuntu:18.04
 ```
 
@@ -258,7 +258,7 @@ fe9198c04d62: mongo
 
 #### 8.删除本地镜像
 
-```
+```shell
 $ docker image rm [选项] <镜像1> [<镜像2> ...]
 ```
 
