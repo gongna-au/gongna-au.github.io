@@ -1,604 +1,664 @@
 ---
 layout: post
-title: Gin 中的设计模式？
-subtitle: 设计模式
-tags: [golang]
+title: rpcx微服务实战（2）
+subtitle:
+tags: [rpcx Microservices]
 ---
 
-# Gin 中的设计模式
+# Part 5 失败模式
 
-> 项目链接 https://github.com/gin-gonic/gin
+在分布式架构中， 如 SOA 或者微服务架构，你不能担保服务调用如你所预想的一样好。有时候服务会宕机、网络被挖断、网络变慢等，所以你需要容忍这些状况。
 
-### 1.责任链模式
+rpcx 支持四种调用失败模式，用来处理服务调用失败后的处理逻辑， 你可以在创建 XClient 的时候设置它。
 
-##### Example 1
+FailMode 的设置仅仅对同步调用有效(XClient.Call), 异步调用用，这个参数是无意义的。
 
-**定义：**
+## Failfast
 
-> https://github.com/gin-gonic/gin/blob/aefae309a4fc197ce5d57cd8391562b6d2a63a95/gin.go#L47
-
-```go
-// HandlerFunc defines the handler used by gin middleware as return value.
-type HandlerFunc func(*Context)
-
-// HandlersChain defines a HandlerFunc slice.
-type HandlersChain []HandlerFunc
-```
+**直接返回错误**
+在这种模式下， 一旦调用一个节点失败， rpcx 立即会返回错误。 注意这个错误不是业务上的 Error, 业务上服务端返回的 Error 应该正常返回给客户端，这里的错误可能是网络错误或者服务异常。
 
 ```go
-//  Engine 是框架的实例，它包含复用器、中间件和配置设置。
-// 通过使用 New() 或 Default() 创建一个 Engine 实例
+package main
 
-type Engine struct {
-	RouterGroup
-	RedirectTrailingSlash bool
-	RedirectFixedPath bool
-	HandleMethodNotAllowed bool
-	ForwardedByClientIP bool
-	AppEngine bool
-	UseRawPath bool
-	RemoveExtraSlash bool
-	RemoteIPHeaders []string
-	TrustedPlatform string
-	MaxMultipartMemory int64
-	ContextWithFallback bool
-	delims           render.Delims
-	secureJSONPrefix string
-	HTMLRender       render.HTMLRender
-	FuncMap          template.FuncMap
-	allNoRoute       HandlersChain
-	allNoMethod      HandlersChain
-	noRoute          HandlersChain
-	noMethod         HandlersChain
-	pool             sync.Pool
-	trees            methodTrees
-	maxParams        uint16
-	maxSections      uint16
-	trustedProxies   []string
-	trustedCIDRs     []*net.IPNet
-}
+import (
+	"context"
+	"flag"
+	"log"
 
-```
-
-```go
-// Default returns an Engine instance with the Logger and Recovery middleware already attached.
-func Default() *Engine {
-	debugPrintWARNINGDefault()
-	engine := New()
-	engine.Use(Logger(), Recovery())
-	return engine
-}
-```
-
-```go
-func (engine *Engine) Use(middleware ...HandlerFunc) IRoutes {
-	engine.RouterGroup.Use(middleware...)
-	engine.rebuild404Handlers()
-	engine.rebuild405Handlers()
-	return engine
-}
-```
-
-```go
-// Use adds middleware to the group, see example code in GitHub.
-func (group *RouterGroup) Use(middleware ...HandlerFunc) IRoutes {
-	group.Handlers = append(group.Handlers, middleware...)
-	return group.returnObj()
-}
-```
-
-```go
-func (group *RouterGroup) returnObj() IRoutes {
-	if group.root {
-		return group.engine
-	}
-	return group
-}
-```
-
-### 2.迭代器模式
-
-```go
-// Routes returns a slice of registered routes, including some useful information, such as:
-// the http method, path and the handler name.
-func (engine *Engine) Routes() (routes RoutesInfo) {
-	for _, tree := range engine.trees {
-		routes = iterate("", tree.method, routes, tree.root)
-	}
-	return routes
-}
-
-func iterate(path, method string, routes RoutesInfo, root *node) RoutesInfo {
-	path += root.path
-	if len(root.handlers) > 0 {
-		handlerFunc := root.handlers.Last()
-		routes = append(routes, RouteInfo{
-			Method:      method,
-			Path:        path,
-			Handler:     nameOfFunction(handlerFunc),
-			HandlerFunc: handlerFunc,
-		})
-	}
-	for _, child := range root.children {
-		routes = iterate(path, method, routes, child)
-	}
-	return routes
-}
-```
-
-### 3.单例模式
-
-##### Example 1
-
-**定义且初始化：**
-
-> https://github.com/gin-gonic/gin/blob/master/mode.go
-
-```
-// DefaultWriter 是 Gin 用于调试输出的默认 io.Writer // 中间件输出，如 Logger() 或 Recovery()。
-var DefaultWriter io.Writer = os.Stdout
-```
-
-**使用：**
-
-> https://github.com/gin-gonic/gin/blob/master/logger.go
-
-```go
-// Logger instances a Logger middleware that will write the logs to gin.DefaultWriter.
-// By default, gin.DefaultWriter = os.Stdout.
-func Logger() HandlerFunc {
-	return LoggerWithConfig(LoggerConfig{})
-}
-
-// LoggerWithConfig instance a Logger middleware with config.
-func LoggerWithConfig(conf LoggerConfig) HandlerFunc {
-	formatter := conf.Formatter
-	if formatter == nil {
-		formatter = defaultLogFormatter
-	}
-
-	out := conf.Output
-	if out == nil {
-
-	//******************************
-		out = DefaultWriter
-	//********************************
-	}
-
-	notlogged := conf.SkipPaths
-
-	isTerm := true
-
-	if w, ok := out.(*os.File); !ok || os.Getenv("TERM") == "dumb" ||
-		(!isatty.IsTerminal(w.Fd()) && !isatty.IsCygwinTerminal(w.Fd())) {
-		isTerm = false
-	}
-
-	var skip map[string]struct{}
-
-	if length := len(notlogged); length > 0 {
-		skip = make(map[string]struct{}, length)
-
-		for _, path := range notlogged {
-			skip[path] = struct{}{}
-		}
-	}
-
-	return func(c *Context) {
-		// Start timer
-		start := time.Now()
-		path := c.Request.URL.Path
-		raw := c.Request.URL.RawQuery
-
-		// Process request
-		c.Next()
-
-		// Log only when path is not being skipped
-		if _, ok := skip[path]; !ok {
-			param := LogFormatterParams{
-				Request: c.Request,
-				isTerm:  isTerm,
-				Keys:    c.Keys,
-			}
-
-			// Stop timer
-			param.TimeStamp = time.Now()
-			param.Latency = param.TimeStamp.Sub(start)
-
-			param.ClientIP = c.ClientIP()
-			param.Method = c.Request.Method
-			param.StatusCode = c.Writer.Status()
-			param.ErrorMessage = c.Errors.ByType(ErrorTypePrivate).String()
-
-			param.BodySize = c.Writer.Size()
-
-			if raw != "" {
-				path = path + "?" + raw
-			}
-
-			param.Path = path
-
-			fmt.Fprint(out, formatter(param))
-		}
-	}
-}
-```
-
-##### Example 2
-
-**定义且初始化：**
-
-> https://github.com/gin-gonic/gin/blob/master/mode.go
-
-```go
-// DefaultErrorWriter 是 Gin 用来调试错误的默认 io.Writer
-var DefaultErrorWriter io.Writer = os.Stderr
-```
-
-**使用：**
-
-> https://github.com/gin-gonic/gin/blob/master/recovery.go
-
-```go
-// Recovery returns a middleware that recovers from any panics and writes a 500 if there was one.
-func Recovery() HandlerFunc {
-	return RecoveryWithWriter(DefaultErrorWriter)
-}
-
-// CustomRecovery returns a middleware that recovers from any panics and calls the provided handle func to handle it.
-func CustomRecovery(handle RecoveryFunc) HandlerFunc {
-	return RecoveryWithWriter(DefaultErrorWriter, handle)
-}
-
-// RecoveryWithWriter returns a middleware for a given writer that recovers from any panics and writes a 500 if there was one.
-func RecoveryWithWriter(out io.Writer, recovery ...RecoveryFunc) HandlerFunc {
-	if len(recovery) > 0 {
-		return CustomRecoveryWithWriter(out, recovery[0])
-	}
-	return CustomRecoveryWithWriter(out, defaultHandleRecovery)
-}
-```
-
-##### Example 3
-
-**定义：**
-
-> https://github.com/gin-gonic/gin/blob/master/mode.go
-
-```go
-var (
-	ginMode  = debugCode
-	modeName = DebugMode
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
 )
-```
 
-**初始化：**
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
+	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+)
 
-> https://github.com/gin-gonic/gin/blob/master/mode.go
+func main() {
+	flag.Parse()
 
-```go
-// SetMode sets gin mode according to input string.
-func SetMode(value string) {
-	if value == "" {
-		if flag.Lookup("test.v") != nil {
-			value = TestMode
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	option := client.DefaultOption
+	option.Retries = 10
+	xclient := client.NewXClient("Arith", client.Failfast, client.RandomSelect, d, option)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Printf("failed to call: %v", err)
 		} else {
-			value = DebugMode
+			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+		}
+
+	}
+}
+```
+
+## Failover
+
+**选择另外一个节点进行尝试，直到达到最大的尝试次数**
+
+在这种模式下, rpcx 如果遇到错误，它会尝试调用另外一个节点， 直到服务节点能正常返回信息，或者达到最大的重试次数。 重试测试 Retries 在参数 Option 中设置， 缺省设置为 3。
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
+	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	option := client.DefaultOption
+	option.Retries = 10
+	xclient := client.NewXClient("Arith", client.Failover, client.RandomSelect, d, option)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Printf("failed to call: %v", err)
+		} else {
+			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+		}
+
+		time.Sleep(time.Second)
+	}
+}
+```
+
+## Failtry
+
+**选择该节点进行尝试，直到尝试的次数达到最大。**
+在这种模式下， rpcx 如果调用一个节点的服务出现错误， 它也会尝试，但是还是选择这个节点进行重试， 直到节点正常返回数据或者达到最大重试次数。
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
+	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	option := client.DefaultOption
+	option.Retries = 10
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Printf("failed to call: %v", err)
+		} else {
+			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+		}
+
+	}
+}
+```
+
+## Failbackup
+
+**也是选择另外一个节点，只要节点中有一个调用成功，那么就算调用成功。**
+在这种模式下， 如果服务节点在一定的时间内不返回结果， rpcx 客户端会发送相同的请求到另外一个节点， 只要这两个节点有一个返回， rpcx 就算调用成功。
+
+这个设定的时间配置在 Option.BackupLatency 参数中。
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr = flag.String("addr", "localhost:8972", "server address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+	xclient := client.NewXClient("Arith", client.Failbackup, client.RandomSelect, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 1; i < 100; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+	}
+
+}
+```
+
+# Part 6 Fork
+
+如果是在 failbackup 模式下，服务节点不能返回结果的时候，将会发送相同请求到另外一个节点，但是在 fork 下，会**向所有的服务节点发送请求**
+
+```go
+func main() {
+    // ...
+
+    xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
+    defer xclient.Close()
+
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
+
+    for {
+        reply := &example.Reply{}
+        err := xclient.Fork(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
+
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        time.Sleep(1e9)
+    }
+
+}
+```
+
+# Part 7 广播 broadcast
+
+Broadcast 是 XClient 的一个方法， 你可以将一个请求发送到这个服务的所有节点。 如果所有的节点都正常返回，没有错误的话， Broadcast 将返回其中的一个节点的返回结果。 如果有节点返回错误的话，Broadcast 将返回这些错误信息中的一个。
+
+```go
+func main() {
+	//......
+
+    xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
+    defer xclient.Close()
+
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
+
+    for {
+        reply := &example.Reply{}
+        err := xclient.Broadcast(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
+
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+        time.Sleep(1e9)
+    }
+
+}
+```
+
+# Part 8 路由
+
+实际的场景中，我们往往为同一个服务部署多个节点，便于大量并发的访问，节点的集合可能在同一个数据中心，也可能在多个数据中心。
+
+客户端该如何选择一个节点呢？ rpcx 通过 Selector 来实现路由选择， 它就像一个负载均衡器，帮助你选择出一个合适的节点。
+rpcx 提供了多个路由策略算法，你可以在创建 XClient 来指定。
+注意，这里的路由是针对 ServicePath 和 ServiceMethod 的路由。
+
+## 随机
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(time.Second)
+	}
+}
+```
+
+## 轮询
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(time.Second)
+	}
+
+}
+```
+
+## WeightedRoundRobin
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: "weight=7"}, {Key: *addr2, Value: "weight=3"}})
+	xclient := client.NewXClient("Arith", client.Failtry, client.WeightedRoundRobin, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(time.Second)
+	}
+
+}
+```
+
+使用 Nginx 平滑的基于权重的轮询算法。
+比如如果三个节点 a、b、c 的权重是{ 5, 1, 1 }, 这个算法的调用顺序是 { a, a, b, a, c, a, a }, 相比较 { c, b, a, a, a, a, a }, 虽然权重都一样，但是前者更好，不至于在一段时间内将请求都发送给 a。
+上游：平滑加权循环平衡。
+对于像 { 5, 1, 1 } 这样的边缘情况权重，我们现在生成 { a, a, b, a, c, a, a }
+序列而不是先前产生的 { c, b, a, a, a, a, a }。
+
+算法执行 2 步：
+
+- 每个节点，用它们的当前值加上它们自己的权重。
+- 选择当前值最大的节点为选中节点，并把它的（只有被选中的节点才会减少）当前值减去所有节点的权重总和。
+
+在 { 5, 1, 1 } 权重的情况下，这给出了以下序列
+当前重量的：
+
+     0 0 0（初始状态）
+
+     5 1 1（已选）        //  -2 1 1 分别加5 1 1
+    -2 1 1
+
+     3 2 2（已选）        //  -4 2 2 分别加5 1 1
+    -4 2 2
+
+     1 3 3（选择 b）     //   1 -4 3 分别加5 1 1
+     1 -4 3
+
+     6 -3 4（一个选择）  //    -1 -3 4 分别加 5 1 1
+    -1 -3 4
+
+     4 -2 5（选择 c）    //   4 -2 -2  分别加 5 1 1
+     4 -2 -2
+
+     9 -1 -1（一个选择） //    2 -1 -1 分别加 5 1 1
+     2 -1 -1
+
+     7 0 0（一个选定的） //
+     0 0 0
+
+```go
+package SmoothWeightRoundRobin
+
+import (
+	"strings"
+)
+
+type Node struct {
+	Name    string
+	Current int
+	Weight  int
+}
+
+// 一次负载均衡的选择 找到最大的节点，把最大的节点减去权重量和
+// 算法的核心是current 记录找到权重最大的节点，这个节点的权重-总权重
+// 然后在这个基础上的切片 他们的状态是 现在的权重状态+最初的权重状态
+func SmoothWeightRoundRobin(nodes []*Node) (best *Node) {
+	if len(nodes) == 0 {
+		return nil
+	}
+	weightnum := 0
+	for k, v := range nodes {
+		weightnum = weightnum + v.Weight
+		if k == 0 {
+			best = v
+		}
+		if v.Current > best.Current {
+			best = v
+		}
+	}
+	for _, v := range nodes {
+		if strings.Compare(v.Name, best.Name) == 0 {
+			v.Current = v.Current - weightnum + v.Weight
+		} else {
+			v.Current = v.Current + v.Weight
 		}
 	}
 
-	switch value {
-	case DebugMode:
-		ginMode = debugCode
-	case ReleaseMode:
-		ginMode = releaseCode
-	case TestMode:
-		ginMode = testCode
-	default:
-		panic("gin mode unknown: " + value + " (available mode: debug release test)")
-	}
-
-	modeName = value
+	return best
 }
+
 ```
 
-**使用：**
+测试函数
 
 ```go
-// IsDebugging returns true if the framework is running in debug mode.
-// Use SetMode(gin.ReleaseMode) to disable debug mode.
-func IsDebugging() bool {
-	return ginMode == debugCode
-}
-```
+package SmoothWeightRoundRobin
 
-##### Example 4
-
-**定义且初始化：**
-
-> https://github.com/gin-gonic/gin/blob/master/internal/json/jsoniter.go
-
-```go
-var (
-	// Marshal is exported by gin/json package.
-	Marshal = json.Marshal
-	// Unmarshal is exported by gin/json package.
-	Unmarshal = json.Unmarshal
-	// MarshalIndent is exported by gin/json package.
-	MarshalIndent = json.MarshalIndent
-	// NewDecoder is exported by gin/json package.
-	NewDecoder = json.NewDecoder
-	// NewEncoder is exported by gin/json package.
-	NewEncoder = json.NewEncoder
-)
-```
-
-**使用：**
-
-> https://github.com/gin-gonic/gin/blob/master/errors.go
-
-```go
 import (
 	"fmt"
-	"reflect"
-	"strings"
-	// 在这里导入定义的单例
-	"github.com/gin-gonic/gin/internal/json"
+	"testing"
 )
-// Error represents a error's specification.
-type Error struct {
-	Err  error
-	Type ErrorType
-	Meta any
-}
 
-// MarshalJSON implements the json.Marshaller interface.
-func (msg *Error) MarshalJSON() ([]byte, error) {
-	return json.Marshal(msg.JSON())
-}
-
-type errorMsgs []*Error
-
-// MarshalJSON implements the json.Marshaller interface.
-func (a errorMsgs) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.JSON())
-}
-```
-
-##### Example 5
-
-**定义：**(典型的单例模式，且高并发安全)
-
-> https://github.com/gin-gonic/gin/blob/master/ginS/gins.go
-
-```go
-package ginS
-
-import (
-	"html/template"
-	"net/http"
-	"sync"
-	"github.com/gin-gonic/gin"
-)
-var once sync.Once
-var internalEngine *gin.Engine
-```
-
-**初始化：**
-
-> https://github.com/gin-gonic/gin/blob/master/ginS/gins.go
-
-```go
-// 提供给一个方法供给外界调用，但实际都是得到的同一个变量
-func engine() *gin.Engine {
-	once.Do(func() {
-		internalEngine = gin.Default()
-	})
-	return internalEngine
-}
-```
-
-**使用：**
-
-> https://github.com/gin-gonic/gin/blob/master/ginS/gins.go
-
-```go
-// 在这里不同的函数调用engine()方法，但始终得到的是同一个变量 internalEngine
-// LoadHTMLGlob is a wrapper for Engine.LoadHTMLGlob.
-func LoadHTMLGlob(pattern string) {
-    // 本质是调用internalEngine.LoadHTMLGlob(pattern)
-	engine().LoadHTMLGlob(pattern)
-}
-
-// LoadHTMLFiles is a wrapper for Engine.LoadHTMLFiles.
-func LoadHTMLFiles(files ...string) {
-    // 本质是调用internalEngine.LoadHTMLFiles(files...)
-	engine().LoadHTMLFiles(files...)
-}
-
-// SetHTMLTemplate is a wrapper for Engine.SetHTMLTemplate.
-func SetHTMLTemplate(templ *template.Template) {
-    // 本质是调用internalEngine.SetHTMLTemplate(templ)
-	engine().SetHTMLTemplate(templ)
-}
-
-// NoRoute adds handlers for NoRoute. It returns a 404 code by default.
-func NoRoute(handlers ...gin.HandlerFunc) {
-    // 本质是调用internalEngine.NoRoute(handlers...)
-	engine().NoRoute(handlers...)
-}
-
-// NoMethod is a wrapper for Engine.NoMethod.
-func NoMethod(handlers ...gin.HandlerFunc) {
-    // 本质是调用internalEngine.NoMethod(handlers...)
-	engine().NoMethod(handlers...)
-}
-
-// Group creates a new router group. You should add all the routes that have common middlewares or the same path prefix.
-// For example, all the routes that use a common middleware for authorization could be grouped.
-func Group(relativePath string, handlers ...gin.HandlerFunc) *gin.RouterGroup {
-    // 本质是调用internalEngine.Group(relativePath, handlers...)
-	return engine().Group(relativePath, handlers...)
-}
-```
-
-### 4.装饰模式
-
-##### Example 1
-
-**定义：**
-
-> https://github.com/gin-gonic/gin/blob/master/ginS/gins.go
->
-> https://github.com/gin-gonic/gin/blob/master/gin.go
-
-```go
-// LoadHTMLGlob is a wrapper for Engine.LoadHTMLGlob.
-// 装饰器
-func LoadHTMLGlob(pattern string) {
-	engine().LoadHTMLGlob(pattern)
-}
-
-// LoadHTMLGlob loads HTML files identified by glob pattern
-// and associates the result with HTML renderer.
-// 被装饰器装饰的方法
-func (engine *Engine) LoadHTMLGlob(pattern string) {
-	left := engine.delims.Left
-	right := engine.delims.Right
-	templ := template.Must(template.New("").Delims(left, right).Funcs(engine.FuncMap).ParseGlob(pattern))
-
-	if IsDebugging() {
-		debugPrintLoadTemplate(templ)
-		engine.HTMLRender = render.HTMLDebug{Glob: pattern, FuncMap: engine.FuncMap, Delims: engine.delims}
-		return
+func TestSmoothWeight(t *testing.T) {
+	nodes := []*Node{
+		{"a", 0, 5},
+		{"b", 0, 1},
+		{"c", 0, 1},
+	}
+	for i := 0; i < 7; i++ {
+		best := SmoothWeightRoundRobin(nodes)
+		if best != nil {
+			fmt.Println(best.Name)
+		}
 	}
 
-	engine.SetHTMLTemplate(templ)
 }
-
-
-
-// LoadHTMLFiles is a wrapper for Engine.LoadHTMLFiles.
-// 装饰器
-func LoadHTMLFiles(files ...string) {
-	engine().LoadHTMLFiles(files...)
-}
-
-// LoadHTMLFiles loads a slice of HTML files
-// and associates the result with HTML renderer.
-// 被装饰器装饰的方法
-func (engine *Engine) LoadHTMLFiles(files ...string) {
-	if IsDebugging() {
-		engine.HTMLRender = render.HTMLDebug{Files: files, FuncMap: engine.FuncMap, Delims: engine.delims}
-		return
-	}
-
-	templ := template.Must(template.New("").Delims(engine.delims.Left, engine.delims.Right).Funcs(engine.FuncMap).ParseFiles(files...))
-	engine.SetHTMLTemplate(templ)
-}
-
-
-
-// SetHTMLTemplate is a wrapper for Engine.SetHTMLTemplate.
-// 装饰器
-func SetHTMLTemplate(templ *template.Template) {
-	engine().SetHTMLTemplate(templ)
-}
-
-// SetHTMLTemplate associate a template with HTML renderer.
-// 被装饰器装饰的方法
-func (engine *Engine) SetHTMLTemplate(templ *template.Template) {
-	if len(engine.trees) > 0 {
-		debugPrintWARNINGSetHTMLTemplate()
-	}
-
-	engine.HTMLRender = render.HTMLProduction{Template: templ.Funcs(engine.FuncMap)}
-}
-
-
-
-// NoMethod is a wrapper for Engine.NoMethod.
-// 装饰器
-func NoMethod(handlers ...gin.HandlerFunc) {
-	engine().NoMethod(handlers...)
-}
-
-// NoMethod sets the handlers called when Engine.HandleMethodNotAllowed = true.
-// 被装饰器装饰的方法
-func (engine *Engine) NoMethod(handlers ...HandlerFunc) {
-	engine.noMethod = handlers
-	engine.rebuild405Handlers()
-}
-
 
 ```
 
-### 5.外观模式
+## 网络质量优先
 
-##### Example 1
+首先客户端会基于 ping(ICMP)探测各个节点的网络质量，越短的 ping 时间，这个节点的权重也就越高。但是，我们也会保证网络较差的节点也有被调用的机会。
 
-**定义：**
+假定 t 是 ping 的返回时间， 如果超过 1 秒基本就没有调用机会了:
 
-> https://github.com/gin-gonic/gin/blob/master/internal/bytesconv/bytesconv.go
+weight=191 if t <= 10
+weight=201 -t if 10 < t <=200
+weight=1 if 200 < t < 1000
+weight=0 if t >= 1000
 
 ```go
-
-package bytesconv
+package main
 
 import (
-	"unsafe"
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
 )
 
-// StringToBytes converts string to byte slice without a memory allocation.
-func StringToBytes(s string) []byte {
-	return *(*[]byte)(unsafe.Pointer(
-		&struct {
-			string
-			Cap int
-		}{s, len(s)},
-	))
-}
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+	addr2 = flag.String("addr2", "tcp@baidu.com:8080", "server address")
+)
 
-// BytesToString converts byte slice to string without a memory allocation.
-func BytesToString(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	xclient := client.NewXClient("Arith", client.Failtry, client.WeightedICMP, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(time.Second)
+	}
+
 }
 ```
 
-##### Example 2
+## 一致性哈希
 
-> https://github.com/gin-gonic/gin/blob/master/render/msgpack.go
-
-**定义：**
+使用 JumpConsistentHash 选择节点， 相同的 servicePath, serviceMethod 和 参数会路由到同一个节点上。 JumpConsistentHash 是一个快速计算一致性哈希的算法，但是有一个缺陷是它不能删除节点，如果删除节点，路由就不准确了，所以在节点有变动的时候它会重新计算一致性哈希。
 
 ```go
-package render
+package main
 
 import (
-	"net/http"
-    //  这是一个高性能、功能丰富的惯用 Go 1.4+ 编解码器/编码库，适用于二进制和文本格式：binc、msgpack、cbor、json 和 simple。在这里是使用了其他的包并进行了封装
-	"github.com/ugorji/go/codec"
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
 )
-// WriteMsgPack writes MsgPack ContentType and encodes the given interface object.
-func WriteMsgPack(w http.ResponseWriter, obj any) error {
-	writeContentType(w, msgpackContentType)
-	var mh codec.MsgpackHandle
-	return codec.NewEncoder(w, &mh).Encode(obj)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: ""},
+		{Key: *addr2, Value: ""}})
+	xclient := client.NewXClient("Arith", client.Failtry, client.ConsistentHash, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(time.Second)
+	}
+
 }
+```
+
+go 实现一致性哈希
+
+```go
 
 ```
 
-**使用：**
+## 地理位置优先
+
+如果我们希望的是客户端会优先选择离它最新的节点， 比如在同一个机房。 如果客户端在北京， 服务在上海和美国硅谷，那么我们优先选择上海的机房。
+
+它要求服务在注册的时候要设置它所在的地理经纬度。
+
+如果两个服务的节点的经纬度是一样的， rpcx 会随机选择一个。
 
 ```go
-// WriteContentType (MsgPack) writes MsgPack ContentType.
-func (r MsgPack) WriteContentType(w http.ResponseWriter) {
-	writeContentType(w, msgpackContentType)
-}
+func (c *xClient) ConfigGeoSelector(latitude, longitude float64)
+```
 
-// Render (MsgPack) encodes the given interface object and writes data with custom ContentType.
-func (r MsgPack) Render(w http.ResponseWriter) error {
-	return WriteMsgPack(w, r.Data)
-}
+## 定制路由规则
 
+如果上面内置的路由规则不满足你的需求，你可以参考上面的路由器自定义你自己的路由规则。
+
+曾经有一个网友提到， 如果调用参数的某个字段的值是特殊的值的话，他们会把请求路由到一个指定的机房。这样的需求就要求你自己定义一个路由器，只需实现实现下面的接口：
+
+```go
+type Selector interface {
+    Select(ctx context.Context, servicePath, serviceMethod string, args interface{}) string
+    UpdateServer(servers map[string]string)
+}
 ```
