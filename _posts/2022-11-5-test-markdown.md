@@ -2,21 +2,43 @@
 layout: post
 title: rpcx微服务实战（2）
 subtitle:
-tags: [Microservices]
+tags: [golang]
 ---
 
-# Part 5 失败模式
+# Part3 Transport
 
-在分布式架构中， 如 SOA 或者微服务架构，你不能担保服务调用如你所预想的一样好。有时候服务会宕机、网络被挖断、网络变慢等，所以你需要容忍这些状况。
+> rpcx 的 Transport
 
-rpcx 支持四种调用失败模式，用来处理服务调用失败后的处理逻辑， 你可以在创建 XClient 的时候设置它。
+rpcx 可以通过 TCP、HTTP、UnixDomain、QUIC 和 KCP 通信。你也可以使用 http 客户端通过网关或者 http 调用来访问 rpcx 服务。
 
-FailMode 的设置仅仅对同步调用有效(XClient.Call), 异步调用用，这个参数是无意义的。
+### TCP
 
-## Failfast
+这是最常用的通信方式。高性能易上手。你可以使用 TLS 加密 TCP 流量。
+服务端使用 tcp 做为网络名并且**在注册中心注册了名为 serviceName/tcp@ipaddress:port 的服务**。
 
-**直接返回错误**
-在这种模式下， 一旦调用一个节点失败， rpcx 立即会返回错误。 注意这个错误不是业务上的 Error, 业务上服务端返回的 Error 应该正常返回给客户端，这里的错误可能是网络错误或者服务异常。
+```go
+s.Serve("tcp", *addr)
+```
+
+```go
+    // 点对点采用Tcp通信
+    d := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
+```
+
+### HTTP Connect
+
+**如果想要使用 HttpConnect 方法，那么应该使用网关**
+你可以发送 HTTP CONNECT 方法给 rpcx 服务器。 Rpcx 服务器会劫持这个连接然后将它作为 TCP 连接来使用。 需要注意，客户端和服务端并不使用 http 请求/响应模型来通信，他们仍然使用二进制协议。
+
+网络名称是 http， 它注册的格式是 serviceName/http@ipaddress:port。
+
+HTTP Connect 并不被推荐。 TCP 是第一选择。
+
+**如果你想使用 http 请求/响应 模型来访问服务，你应该使用网关或者 http_invoke。**
+
+### Unixdomain
 
 ```go
 package main
@@ -31,17 +53,14 @@ import (
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
-	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+	addr = flag.String("addr", "/tmp/rpcx.socket", "server address")
 )
 
 func main() {
 	flag.Parse()
-
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	option := client.DefaultOption
-	option.Retries = 10
-	xclient := client.NewXClient("Arith", client.Failfast, client.RandomSelect, d, option)
+     // 点对点采用Unixdomain通信
+	d, _ := client.NewPeer2PeerDiscovery("unix@"+*addr, "")
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
 	defer xclient.Close()
 
 	args := &example.Args{
@@ -49,26 +68,194 @@ func main() {
 		B: 20,
 	}
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Printf("failed to call: %v", err)
-		} else {
-			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-		}
-
+	reply := &example.Reply{}
+	err := xclient.Call(context.Background(), "Mul", args, reply)
+	if err != nil {
+		log.Fatalf("failed to call: %v", err)
 	}
+
+	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
 }
 ```
 
-## Failover
-
-**选择另外一个节点进行尝试，直到达到最大的尝试次数**
-
-在这种模式下, rpcx 如果遇到错误，它会尝试调用另外一个节点， 直到服务节点能正常返回信息，或者达到最大的重试次数。 重试测试 Retries 在参数 Option 中设置， 缺省设置为 3。
+### QUIC
 
 ```go
+//go run -tags quic client.go
+package main
+
+import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"time"
+
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr = flag.String("addr", "127.0.0.1:8972", "server address")
+)
+
+type Args struct {
+	A int
+	B int
+}
+
+type Reply struct {
+	C int
+}
+
+func main() {
+	flag.Parse()
+
+	// CA
+	caCertPEM, err := ioutil.ReadFile("../ca.pem")
+	if err != nil {
+		panic(err)
+	}
+
+	roots := x509.NewCertPool()
+	ok := roots.AppendCertsFromPEM(caCertPEM)
+	if !ok {
+		panic("failed to parse root certificate")
+	}
+
+	conf := &tls.Config{
+		// InsecureSkipVerify: true,
+		RootCAs: roots,
+	}
+
+	option := client.DefaultOption
+	option.TLSConfig = conf
+
+	d, _ := client.NewPeer2PeerDiscovery("quic@"+*addr, "")
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
+	defer xclient.Close()
+
+	args := &Args{
+		A: 10,
+		B: 20,
+	}
+
+	start := time.Now()
+	for i := 0; i < 100000; i++ {
+		reply := &Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+	}
+	t := time.Since(start).Nanoseconds() / int64(time.Millisecond)
+
+	fmt.Printf("tps: %d calls/s\n", 100000*1000/int(t))
+}
+
+```
+
+其余的 ca.key 和 ca.pem 以及 ca.srl 文件暂且省略
+
+### KCP
+
+KCP 是一个快速并且可靠的 ARQ 协议。
+
+网络名称是 kcp。
+
+当你使用 kcp 的时候，你必须设置 Timeout，利用 timeout 保持连接的检测。因为 kcp-go 本身不提供 keepalive/heartbeat 的功能，当服务器宕机重启的时候，原有的连接没有任何异常，只会 hang 住，我们只能依靠 Timeout 避免 hang 住。
+
+```go
+//go run -tags kcp client.go
+package main
+
+import (
+	"context"
+	"crypto/sha1"
+	"flag"
+	"fmt"
+	"log"
+	"net"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+	kcp "github.com/xtaci/kcp-go"
+	"golang.org/x/crypto/pbkdf2"
+)
+
+var (
+	addr = flag.String("addr", "localhost:8972", "server address")
+)
+
+const cryptKey = "rpcx-key"
+const cryptSalt = "rpcx-salt"
+
+func main() {
+	flag.Parse()
+
+	pass := pbkdf2.Key([]byte(cryptKey), []byte(cryptSalt), 4096, 32, sha1.New)
+	bc, _ := kcp.NewAESBlockCrypt(pass)
+	option := client.DefaultOption
+	option.Block = bc
+
+	d, _ := client.NewPeer2PeerDiscovery("kcp@"+*addr, "")
+	xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, option)
+	defer xclient.Close()
+
+	// plugin
+	cs := &ConfigUDPSession{}
+	pc := client.NewPluginContainer()
+	pc.Add(cs)
+	xclient.SetPlugins(pc)
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	start := time.Now()
+	for i := 0; i < 10000; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+		//log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+	}
+	dur := time.Since(start)
+	qps := 10000 * 1000 / int(dur/time.Millisecond)
+	fmt.Printf("qps: %d call/s", qps)
+}
+
+type ConfigUDPSession struct{}
+
+func (p *ConfigUDPSession) ConnCreated(conn net.Conn) (net.Conn, error) {
+	session, ok := conn.(*kcp.UDPSession)
+	if !ok {
+		return conn, nil
+	}
+
+	session.SetACKNoDelay(true)
+	session.SetStreamMode(true)
+	return conn, nil
+}
+```
+
+### reuseport
+
+网络名称是 reuseport。
+
+它使用 tcp 协议并且在 linux/uxix 服务器上开启 SO_REUSEPORT socket 选项。
+
+```go
+//go run -tags reuseport client.go
+
 package main
 
 import (
@@ -82,17 +269,17 @@ import (
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
-	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
+	addr = flag.String("addr", "localhost:8972", "server address")
 )
 
 func main() {
 	flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+
 	option := client.DefaultOption
-	option.Retries = 10
-	xclient := client.NewXClient("Arith", client.Failover, client.RandomSelect, d, option)
+
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
 	defer xclient.Close()
 
 	args := &example.Args{
@@ -104,77 +291,25 @@ func main() {
 		reply := &example.Reply{}
 		err := xclient.Call(context.Background(), "Mul", args, reply)
 		if err != nil {
-			log.Printf("failed to call: %v", err)
-		} else {
-			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+			log.Fatalf("failed to call: %v", err)
 		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
 		time.Sleep(time.Second)
 	}
+
 }
 ```
 
-## Failtry
-
-**选择该节点进行尝试，直到尝试的次数达到最大。**
-在这种模式下， rpcx 如果调用一个节点的服务出现错误， 它也会尝试，但是还是选择这个节点进行重试， 直到节点正常返回数据或者达到最大重试次数。
+### TLS
 
 ```go
 package main
 
 import (
 	"context"
-	"flag"
-	"log"
-
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
-)
-
-var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server1 address")
-	addr2 = flag.String("addr2", "tcp@localhost:9981", "server2 address")
-)
-
-func main() {
-	flag.Parse()
-
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	option := client.DefaultOption
-	option.Retries = 10
-	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
-	defer xclient.Close()
-
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
-
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Printf("failed to call: %v", err)
-		} else {
-			log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-		}
-
-	}
-}
-```
-
-## Failbackup
-
-**也是选择另外一个节点，只要节点中有一个调用成功，那么就算调用成功。**
-在这种模式下， 如果服务节点在一定的时间内不返回结果， rpcx 客户端会发送相同的请求到另外一个节点， 只要这两个节点有一个返回， rpcx 就算调用成功。
-
-这个设定的时间配置在 Option.BackupLatency 参数中。
-
-```go
-package main
-
-import (
-	"context"
+	"crypto/tls"
 	"flag"
 	"log"
 
@@ -190,7 +325,16 @@ func main() {
 	flag.Parse()
 
 	d, _ := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
-	xclient := client.NewXClient("Arith", client.Failbackup, client.RandomSelect, d, client.DefaultOption)
+
+	option := client.DefaultOption
+
+	conf := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+
+	option.TLSConfig = conf
+
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, option)
 	defer xclient.Close()
 
 	args := &example.Args{
@@ -198,88 +342,63 @@ func main() {
 		B: 20,
 	}
 
-	for i := 1; i < 100; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
-
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+	reply := &example.Reply{}
+	err := xclient.Call(context.Background(), "Mul", args, reply)
+	if err != nil {
+		log.Fatalf("failed to call: %v", err)
 	}
 
+	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
 }
 ```
 
-# Part 6 Fork
+# Part 4 注册中心 （rpcx 是典型的两种服务发现模式下的--服务端发现）
 
-如果是在 failbackup 模式下，服务节点不能返回结果的时候，将会发送相同请求到另外一个节点，但是在 fork 下，会**向所有的服务节点发送请求**
+> 注册中心 和 服务端 耦合
+
+（如果你是采用点对点的方式实际上是没有注册中心的 ，客户端直接得到唯一的服务器的地址，连接服务。在系统扩展时，你可以进行一些更改，服务器不需要进行更多的配置 客户端使用 Peer2PeerDiscovery 来设置该服务的网络和地址。而且由于只有有一个节点，因此选择器是不可用的。`d := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")` `xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)`）服务端可以采用自注册和第三方注册的方式进行注册。
+
+rpcx 会自动将服务的信息比如服务名，监听地址，监听协议，权重等注册到注册中心，同时还会定时的将服务的吞吐率更新到注册中心。如果服务意外中断或者宕机，注册中心能够监测到这个事件，它会通知客户端这个服务目前不可用，在服务调用的时候不要再选择这个服务器。
+
+客户端初始化的时候会从注册中心得到服务器的列表，然后根据不同的路由选择选择合适的服务器进行服务调用。 同时注册中心还会通知客户端某个服务暂时不可用
+通常客户端会选择一个服务器进行调用。
+
+## Peer2Peer
+
+- Peer to Peer: 客户端直连每个服务节点。（实际上没有注册中心）
 
 ```go
-func main() {
-    // ...
-
-    xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
+       d := client.NewPeer2PeerDiscovery("tcp@"+*addr, "")
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
     defer xclient.Close()
-
-    args := &example.Args{
-        A: 10,
-        B: 20,
-    }
-
-    for {
-        reply := &example.Reply{}
-        err := xclient.Fork(context.Background(), "Mul", args, reply)
-        if err != nil {
-            log.Fatalf("failed to call: %v", err)
-        }
-
-        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-        time.Sleep(1e9)
-    }
-
-}
 ```
 
-# Part 7 广播 broadcast
+注意:rpcx 使用 network @ Host: port 格式表示一项服务。在 network 可以 tcp ， http ，unix ，quic 或 kcp。该 Host 可以所主机名或 IP 地址。
+NewXClient 必须使用服务名称作为第一个参数，然后使用 failmode，selector，discovery 和其他选项。
 
-Broadcast 是 XClient 的一个方法， 你可以将一个请求发送到这个服务的所有节点。 如果所有的节点都正常返回，没有错误的话， Broadcast 将返回其中的一个节点的返回结果。 如果有节点返回错误的话，Broadcast 将返回这些错误信息中的一个。
+## MultipleServers
+
+- Peer to Multiple: 客户端可以连接多个服务。服务可以被编程式配置。（实际上也没有注册中心，那么具体是怎么做的？
+  假设我们有固定的几台服务器提供相同的服务，我们可以采用这种方式。如果你有多个服务但没有注册中心.你可以用编码的方式在客户端中配置服务的地址。 服务器不需要进行更多的配置。）
 
 ```go
-func main() {
-	//......
-
-    xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
+    d := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
     defer xclient.Close()
-
-    args := &example.Args{
-        A: 10,
-        B: 20,
-    }
-
-    for {
-        reply := &example.Reply{}
-        err := xclient.Broadcast(context.Background(), "Mul", args, reply)
-        if err != nil {
-            log.Fatalf("failed to call: %v", err)
-        }
-
-        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-        time.Sleep(1e9)
-    }
-
-}
 ```
 
-# Part 8 路由
+上面的方式只能访问一台服务器，假设我们有固定的几台服务器提供相同的服务，我们可以采用这种方式。
+如果你有多个服务但没有注册中心.你可以用编码的方式在客户端中配置服务的地址。 服务器不需要进行更多的配置。
+客户端使用 MultipleServersDiscovery 并仅设置该服务的网络和地址。你必须在 MultipleServersDiscovery 中设置服务信息和元数据。如果添加或删除了某些服务，你可以调用 MultipleServersDiscovery.Update 来动态
 
-实际的场景中，我们往往为同一个服务部署多个节点，便于大量并发的访问，节点的集合可能在同一个数据中心，也可能在多个数据中心。
+```go
+func (d *MultipleServersDiscovery) Update(pairs []*KVPair)
+```
 
-客户端该如何选择一个节点呢？ rpcx 通过 Selector 来实现路由选择， 它就像一个负载均衡器，帮助你选择出一个合适的节点。
-rpcx 提供了多个路由策略算法，你可以在创建 XClient 来指定。
-注意，这里的路由是针对 ServicePath 和 ServiceMethod 的路由。
+## Zookeeper
 
-## 随机
+- Zookeeper: 通过 zookeeper 寻找服务。
 
 ```go
 package main
@@ -291,18 +410,19 @@ import (
 	"time"
 
 	example "github.com/rpcxio/rpcx-examples"
+	cclient "github.com/rpcxio/rpcx-zookeeper/client"
 	"github.com/smallnest/rpcx/client"
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+	zkAddr   = flag.String("zkAddr", "localhost:2181", "zookeeper address")
+	basePath = flag.String("base", "/rpcx_test", "prefix path")
 )
 
 func main() {
 	flag.Parse()
-
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+   // 更改服务发现为--客户端发现之--从Zookeeper 发现
+	d, _ := cclient.NewZookeeperDiscovery(*basePath, "Arith", []string{*zkAddr}, nil)
 	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
 	defer xclient.Close()
 
@@ -311,7 +431,8 @@ func main() {
 		B: 20,
 	}
 
-	for i := 0; i < 10; i++ {
+	for {
+
 		reply := &example.Reply{}
 		err := xclient.Call(context.Background(), "Mul", args, reply)
 		if err != nil {
@@ -319,13 +440,124 @@ func main() {
 		}
 
 		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+		time.Sleep(1e9)
+	}
 
-		time.Sleep(time.Second)
+}
+```
+
+**某个服务实例对客户端无应答案**
+Apache ZooKeeper 是 Apache 软件基金会的一个软件项目，他为大型分布式计算提供开源的分布式配置服务、**同步服务**和命名注册。 ZooKeeper 曾经是 Hadoop 的一个子项目，但现在是一个独立的顶级项目。ZooKeeper 的架构通过冗余服务实现高可用性。因此，如果第一次无应答，客户端就可以询问另一台 ZooKeeper 主机。ZooKeeper 节点将它们的数据存储于一个分层的命名空间，非常类似于一个文件系统或一个前缀树结构。客户端可以在节点读写，从而以这种方式拥有一个共享的配置服务。更新是全序的。
+
+使用 ZooKeeper 的公司包括 Rackspace、雅虎和 eBay，以及类似于象 Solr 这样的开源企业级搜索系统。
+
+ZooKeeper Atomic Broadcast (ZAB)协议是一个类似 Paxos 的协议，但也有所不同。
+
+Zookeeper 一个应用场景就是服务发现，这在 Java 生态圈中得到了广泛的应用。Go 也可以使用 Zookeeper，尤其是在和 Java 项目混布的情况。
+
+## Etcd
+
+- Etcd: 通过 etcd 寻找服务。
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	etcd_client "github.com/rpcxio/rpcx-etcd/client"
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	etcdAddr = flag.String("etcdAddr", "localhost:2379", "etcd address")
+	basePath = flag.String("base", "/rpcx_test", "prefix path")
+)
+
+func main() {
+	flag.Parse()
+    // // 更改服务发现为--客户端发现之--从etcd 发现
+	d, _ := etcd_client.NewEtcdDiscovery(*basePath, "Arith", []string{*etcdAddr}, false, nil)
+	xclient := client.NewXClient("Arith", client.Failover, client.RoundRobin, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Printf("failed to call: %v\n", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(5 * time.Second)
 	}
 }
 ```
 
-## 轮询
+## Consul
+
+- Consul: 通过 consul 寻找服务。
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	cclient "github.com/rpcxio/rpcx-consul/client"
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	consulAddr = flag.String("consulAddr", "localhost:8500", "consul address")
+	basePath   = flag.String("base", "/rpcx_test", "prefix path")
+)
+
+func main() {
+	flag.Parse()
+    // 更改服务发现为--客户端发现之--从consul 发现
+	d, _ := cclient.NewConsulDiscovery(*basePath, "Arith", []string{*consulAddr}, nil)
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Printf("ERROR failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+		time.Sleep(1e9)
+	}
+
+}
+```
+
+## mDNS
+
+- mDNS: 通过 mDNS 寻找服务（支持本地服务发现）。
 
 ```go
 package main
@@ -341,15 +573,14 @@ import (
 )
 
 var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+	basePath = flag.String("base", "/rpcx_test/Arith", "prefix path")
 )
 
 func main() {
 	flag.Parse()
-
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, client.DefaultOption)
+    // 更改服务发现为--客户端发现之--从mDNS发现
+	d, _ := client.NewMDNSDiscovery("Arith", 10*time.Second, 10*time.Second, "")
+	xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
 	defer xclient.Close()
 
 	args := &example.Args{
@@ -357,308 +588,60 @@ func main() {
 		B: 20,
 	}
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
-
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-
-		time.Sleep(time.Second)
+	reply := &example.Reply{}
+	err := xclient.Call(context.Background(), "Mul", args, reply)
+	if err != nil {
+		log.Fatalf("failed to call: %v", err)
 	}
+
+	log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
 }
 ```
 
-## WeightedRoundRobin
+## In process
+
+- In process: 在同一进程寻找服务。客户端通过进程调用服务，不走 TCP 或 UDP，方便调试使用。
 
 ```go
-package main
-
-import (
-	"context"
-	"flag"
-	"log"
-	"time"
-
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
-)
-
-var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
-)
-
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: "weight=7"}, {Key: *addr2, Value: "weight=3"}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.WeightedRoundRobin, d, client.DefaultOption)
-	defer xclient.Close()
+    s := server.NewServer()
+    addRegistryPlugin(s)
 
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
+    s.RegisterName("Arith", new(example.Arith), "")
 
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
+    go func() {
+        s.Serve("tcp", *addr)
+    }()
+    // 更改服务发现为--客户端发现之--从process中发现
+    d := client.NewInprocessDiscovery()
+    xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
+    defer xclient.Close()
 
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+    args := &example.Args{
+        A: 10,
+        B: 20,
+    }
 
-		time.Sleep(time.Second)
-	}
+    for i := 0; i < 100; i++ {
 
-}
-```
+        reply := &example.Reply{}
+        err := xclient.Call(context.Background(), "Mul", args, reply)
+        if err != nil {
+            log.Fatalf("failed to call: %v", err)
+        }
 
-使用 Nginx 平滑的基于权重的轮询算法。
-比如如果三个节点 a、b、c 的权重是{ 5, 1, 1 }, 这个算法的调用顺序是 { a, a, b, a, c, a, a }, 相比较 { c, b, a, a, a, a, a }, 虽然权重都一样，但是前者更好，不至于在一段时间内将请求都发送给 a。
-上游：平滑加权循环平衡。
-对于像 { 5, 1, 1 } 这样的边缘情况权重，我们现在生成 { a, a, b, a, c, a, a }
-序列而不是先前产生的 { c, b, a, a, a, a, a }。
+        log.Printf("%d * %d = %d", args.A, args.B, reply.C)
 
-算法执行 2 步：
-
-- 每个节点，用它们的当前值加上它们自己的权重。
-- 选择当前值最大的节点为选中节点，并把它的（只有被选中的节点才会减少）当前值减去所有节点的权重总和。
-
-在 { 5, 1, 1 } 权重的情况下，这给出了以下序列
-当前重量的：
-
-     0 0 0（初始状态）
-
-     5 1 1（已选）        //  -2 1 1 分别加5 1 1
-    -2 1 1
-
-     3 2 2（已选）        //  -4 2 2 分别加5 1 1
-    -4 2 2
-
-     1 3 3（选择 b）     //   1 -4 3 分别加5 1 1
-     1 -4 3
-
-     6 -3 4（一个选择）  //    -1 -3 4 分别加 5 1 1
-    -1 -3 4
-
-     4 -2 5（选择 c）    //   4 -2 -2  分别加 5 1 1
-     4 -2 -2
-
-     9 -1 -1（一个选择） //    2 -1 -1 分别加 5 1 1
-     2 -1 -1
-
-     7 0 0（一个选定的） //
-     0 0 0
-
-```go
-package SmoothWeightRoundRobin
-
-import (
-	"strings"
-)
-
-type Node struct {
-	Name    string
-	Current int
-	Weight  int
+    }
 }
 
-// 一次负载均衡的选择 找到最大的节点，把最大的节点减去权重量和
-// 算法的核心是current 记录找到权重最大的节点，这个节点的权重-总权重
-// 然后在这个基础上的切片 他们的状态是 现在的权重状态+最初的权重状态
-func SmoothWeightRoundRobin(nodes []*Node) (best *Node) {
-	if len(nodes) == 0 {
-		return nil
-	}
-	weightnum := 0
-	for k, v := range nodes {
-		weightnum = weightnum + v.Weight
-		if k == 0 {
-			best = v
-		}
-		if v.Current > best.Current {
-			best = v
-		}
-	}
-	for _, v := range nodes {
-		if strings.Compare(v.Name, best.Name) == 0 {
-			v.Current = v.Current - weightnum + v.Weight
-		} else {
-			v.Current = v.Current + v.Weight
-		}
-	}
+func addRegistryPlugin(s *server.Server) {
 
-	return best
+    r := client.InprocessClient
+    s.Plugins.Add(r)
 }
 
-```
-
-测试函数
-
-```go
-package SmoothWeightRoundRobin
-
-import (
-	"fmt"
-	"testing"
-)
-
-func TestSmoothWeight(t *testing.T) {
-	nodes := []*Node{
-		{"a", 0, 5},
-		{"b", 0, 1},
-		{"c", 0, 1},
-	}
-	for i := 0; i < 7; i++ {
-		best := SmoothWeightRoundRobin(nodes)
-		if best != nil {
-			fmt.Println(best.Name)
-		}
-	}
-
-}
-
-```
-
-## 网络质量优先
-
-首先客户端会基于 ping(ICMP)探测各个节点的网络质量，越短的 ping 时间，这个节点的权重也就越高。但是，我们也会保证网络较差的节点也有被调用的机会。
-
-假定 t 是 ping 的返回时间， 如果超过 1 秒基本就没有调用机会了:
-
-weight=191 if t <= 10
-weight=201 -t if 10 < t <=200
-weight=1 if 200 < t < 1000
-weight=0 if t >= 1000
-
-```go
-package main
-
-import (
-	"context"
-	"flag"
-	"log"
-	"time"
-
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
-)
-
-var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@baidu.com:8080", "server address")
-)
-
-func main() {
-	flag.Parse()
-
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.WeightedICMP, d, client.DefaultOption)
-	defer xclient.Close()
-
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
-
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
-
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-
-		time.Sleep(time.Second)
-	}
-
-}
-```
-
-## 一致性哈希
-
-使用 JumpConsistentHash 选择节点， 相同的 servicePath, serviceMethod 和 参数会路由到同一个节点上。 JumpConsistentHash 是一个快速计算一致性哈希的算法，但是有一个缺陷是它不能删除节点，如果删除节点，路由就不准确了，所以在节点有变动的时候它会重新计算一致性哈希。
-
-```go
-package main
-
-import (
-	"context"
-	"flag"
-	"log"
-	"time"
-
-	example "github.com/rpcxio/rpcx-examples"
-	"github.com/smallnest/rpcx/client"
-)
-
-var (
-	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
-	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
-)
-
-func main() {
-	flag.Parse()
-
-	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: ""},
-		{Key: *addr2, Value: ""}})
-	xclient := client.NewXClient("Arith", client.Failtry, client.ConsistentHash, d, client.DefaultOption)
-	defer xclient.Close()
-
-	args := &example.Args{
-		A: 10,
-		B: 20,
-	}
-
-	for i := 0; i < 10; i++ {
-		reply := &example.Reply{}
-		err := xclient.Call(context.Background(), "Mul", args, reply)
-		if err != nil {
-			log.Fatalf("failed to call: %v", err)
-		}
-
-		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
-
-		time.Sleep(time.Second)
-	}
-
-}
-```
-
-go 实现一致性哈希
-
-```go
-
-```
-
-## 地理位置优先
-
-如果我们希望的是客户端会优先选择离它最新的节点， 比如在同一个机房。 如果客户端在北京， 服务在上海和美国硅谷，那么我们优先选择上海的机房。
-
-它要求服务在注册的时候要设置它所在的地理经纬度。
-
-如果两个服务的节点的经纬度是一样的， rpcx 会随机选择一个。
-
-```go
-func (c *xClient) ConfigGeoSelector(latitude, longitude float64)
-```
-
-## 定制路由规则
-
-如果上面内置的路由规则不满足你的需求，你可以参考上面的路由器自定义你自己的路由规则。
-
-曾经有一个网友提到， 如果调用参数的某个字段的值是特殊的值的话，他们会把请求路由到一个指定的机房。这样的需求就要求你自己定义一个路由器，只需实现实现下面的接口：
-
-```go
-type Selector interface {
-    Select(ctx context.Context, servicePath, serviceMethod string, args interface{}) string
-    UpdateServer(servers map[string]string)
-}
 ```
