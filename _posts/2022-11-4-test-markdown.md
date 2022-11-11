@@ -1827,3 +1827,140 @@ func TestSmoothWeight(t *testing.T) {
 }
 
 ```
+
+## 网络质量优先
+
+首先客户端会基于 ping(ICMP)探测各个节点的网络质量，越短的 ping 时间，这个节点的权重也就越高。但是，我们也会保证网络较差的节点也有被调用的机会。
+
+假定 t 是 ping 的返回时间， 如果超过 1 秒基本就没有调用机会了:
+
+weight=191 if t <= 10
+weight=201 -t if 10 < t <=200
+weight=1 if 200 < t < 1000
+weight=0 if t >= 1000
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+	addr2 = flag.String("addr2", "tcp@baidu.com:8080", "server address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+	xclient := client.NewXClient("Arith", client.Failtry, client.WeightedICMP, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(time.Second)
+	}
+
+}
+```
+
+## 一致性哈希
+
+使用 JumpConsistentHash 选择节点， 相同的 servicePath, serviceMethod 和 参数会路由到同一个节点上。 JumpConsistentHash 是一个快速计算一致性哈希的算法，但是有一个缺陷是它不能删除节点，如果删除节点，路由就不准确了，所以在节点有变动的时候它会重新计算一致性哈希。
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"time"
+
+	example "github.com/rpcxio/rpcx-examples"
+	"github.com/smallnest/rpcx/client"
+)
+
+var (
+	addr1 = flag.String("addr1", "tcp@localhost:8972", "server address")
+	addr2 = flag.String("addr2", "tcp@localhost:8973", "server address")
+)
+
+func main() {
+	flag.Parse()
+
+	d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: ""},
+		{Key: *addr2, Value: ""}})
+	xclient := client.NewXClient("Arith", client.Failtry, client.ConsistentHash, d, client.DefaultOption)
+	defer xclient.Close()
+
+	args := &example.Args{
+		A: 10,
+		B: 20,
+	}
+
+	for i := 0; i < 10; i++ {
+		reply := &example.Reply{}
+		err := xclient.Call(context.Background(), "Mul", args, reply)
+		if err != nil {
+			log.Fatalf("failed to call: %v", err)
+		}
+
+		log.Printf("%d * %d = %d", args.A, args.B, reply.C)
+
+		time.Sleep(time.Second)
+	}
+
+}
+```
+
+go 实现一致性哈希
+
+```go
+
+```
+
+## 地理位置优先
+
+如果我们希望的是客户端会优先选择离它最新的节点， 比如在同一个机房。 如果客户端在北京， 服务在上海和美国硅谷，那么我们优先选择上海的机房。
+
+它要求服务在注册的时候要设置它所在的地理经纬度。
+
+如果两个服务的节点的经纬度是一样的， rpcx 会随机选择一个。
+
+```go
+func (c *xClient) ConfigGeoSelector(latitude, longitude float64)
+```
+
+## 定制路由规则
+
+如果上面内置的路由规则不满足你的需求，你可以参考上面的路由器自定义你自己的路由规则。
+
+曾经有一个网友提到， 如果调用参数的某个字段的值是特殊的值的话，他们会把请求路由到一个指定的机房。这样的需求就要求你自己定义一个路由器，只需实现实现下面的接口：
+
+```go
+type Selector interface {
+    Select(ctx context.Context, servicePath, serviceMethod string, args interface{}) string
+    UpdateServer(servers map[string]string)
+}
+```
