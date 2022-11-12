@@ -238,15 +238,10 @@ ubuntu              bionic              329ed837d508        3 days ago          
 ```
 
 ##### 列出特定的某个镜像，也就是说指定仓库名和标签
-
-```shell
-docker image ls ubuntu:18.04
-```
-
 ##### 列出指定格式
 
 ```
-$ docker image ls --format "{{.ID}}: {{.Repository}}"
+$ docker image ls --format "ID: Repository"
 5f515359c7f8: redis
 05a60462f8ba: nginx
 fe9198c04d62: mongo
