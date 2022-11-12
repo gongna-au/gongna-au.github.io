@@ -2,8 +2,9 @@
 layout: post
 title: 什么是 Docker
 subtitle: Docker虚拟化
-tags: [docker  ]
+tags: [docker]
 ---
+
 ## 什么是 Docker
 
 > **Docker** 使用 `Google` 公司推出的 [Go 语言](https://golang.google.cn/) 进行开发实现，基于 `Linux` 内核的 [cgroup](https://zh.wikipedia.org/wiki/Cgroups)，[namespace](https://en.wikipedia.org/wiki/Linux_namespaces)，以及 [OverlayFS](https://docs.docker.com/storage/storagedriver/overlayfs-driver/) 类的 [Union FS](https://en.wikipedia.org/wiki/Union_mount) 等技术，对进程进行封装隔离，属于 [操作系统层面的虚拟化技术](https://en.wikipedia.org/wiki/Operating-system-level_virtualization)。由于隔离的进程独立于宿主和其它的隔离的进程，因此也称其为容器。最初实现是基于 [LXC](https://linuxcontainers.org/lxc/introduction/)，从 `0.7` 版本以后开始去除 `LXC`，转而使用自行开发的 [libcontainer](https://github.com/docker/libcontainer)，从 `1.11` 版本开始，则进一步演进为使用 [runC](https://github.com/opencontainers/runc) 和 [containerd](https://github.com/containerd/containerd)。
@@ -12,7 +13,7 @@ tags: [docker  ]
 
 ![img](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/media/docker-on-linux.png)
 
-- `runc` 是一个 Linux 命令行工具，用于根据 [OCI容器运行时规范](https://github.com/opencontainers/runtime-spec) 创建和运行容器。
+- `runc` 是一个 Linux 命令行工具，用于根据 [OCI 容器运行时规范](https://github.com/opencontainers/runtime-spec) 创建和运行容器。
 - `containerd` 是一个守护程序，它管理容器生命周期，提供了在一个节点上执行容器和管理镜像的最小功能集。
 
 **Docker** 在容器的基础上，进行了进一步的封装，从文件系统、网络互联到进程隔离等等，极大的简化了容器的创建和维护。使得 `Docker` 技术比虚拟机技术更为轻便、快捷
@@ -25,9 +26,9 @@ tags: [docker  ]
 
 ![img](https://3503645665-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-M5xTVjmK7ax94c8ZQcm%2Fuploads%2Fgit-blob-5c1a41d44b8602c8f746e8929f484a701869ca25%2Fdocker.png?alt=media)
 
-Docker虚拟化
+Docker 虚拟化
 
-### 1.Docker的优点
+### 1.Docker 的优点
 
 - **相比虚拟机技术，一个相同配置的主机，往往可以运行更多数量的应用**。
 
@@ -35,7 +36,7 @@ Docker虚拟化
 
 - **一致的运行环境**
 
-  开发过程中一个常见的问题是环境一致性问题。由于开发环境、测试环境、生产环境不一致，导致有些 bug 并未在开发过程中被发现。而 `Docker` 的镜像提供了除内核外完整的运行时环境，确保了应用运行环境一致性，从而不会再出现 *「这段代码在我机器上没问题啊」* 这类问题。
+  开发过程中一个常见的问题是环境一致性问题。由于开发环境、测试环境、生产环境不一致，导致有些 bug 并未在开发过程中被发现。而 `Docker` 的镜像提供了除内核外完整的运行时环境，确保了应用运行环境一致性，从而不会再出现 _「这段代码在我机器上没问题啊」_ 这类问题。
 
 - 定制镜像
 
@@ -53,8 +54,6 @@ Docker虚拟化
 
   `Docker` 团队同各个开源项目团队一起维护了一大批高质量的 [官方镜像](https://hub.docker.com/search/?type=image&image_filter=official)，
 
-  
-
 ### 2.**镜像**（`Image`）
 
 > 我们都知道，操作系统分为 **内核** 和 **用户空间**。对于 `Linux` 而言，内核启动后，会挂载 `root` 文件系统为其提供用户空间支持。而 **Docker 镜像**（`Image`），就相当于是一个 `root` 文件系统
@@ -69,7 +68,7 @@ Docker虚拟化
 
 分层存储的特征还使得镜像的复用、定制变的更为容易。甚至可以用之前构建好的镜像作为基础层，然后进一步添加新的层，以定制自己所需的内容，构建新的镜像。
 
-> 总结：root文件系统又被分成多层文件系统。
+> 总结：root 文件系统又被分成多层文件系统。
 
 ### 3.**容器**（`Container`）
 
@@ -91,13 +90,13 @@ Docker虚拟化
 
 ### 4.**仓库**（`Repository`）
 
-#### Docker Registry  集中的存储、分发镜像的服务
+#### Docker Registry 集中的存储、分发镜像的服务
 
 镜像构建完成后，可以很容易的在当前宿主机上运行，但是，如果需要在其它服务器上使用这个镜像，我们就需要一个集中的存储、分发镜像的服务，[Docker Registry]() 就是这样的服务。一个 **Docker Registry** 中可以包含多个 **仓库**（`Repository`）；每个仓库可以包含多个 **标签**（`Tag`）；每个标签对应一个镜像。
 
-仓库 属于 [Docker Registry]() 服务，一个仓库可以包含多个 Tag ，一个tag 标志 一个镜像。
+仓库 属于 [Docker Registry]() 服务，一个仓库可以包含多个 Tag ，一个 tag 标志 一个镜像。
 
-通常，一个仓库会包含同一个软件不同版本的镜像，而标签就常用于对应该软件的各个版本。我们可以通过 **`<仓库名>:<标签>` 的格式来指定具体是这个软件哪个版本的镜像**。如果不给出标签，将以 `latest` 作为默认标签。 仓库名经常以 *两段式路径* 形式出现，比如 `jwilder/nginx-proxy`，前者往往意味着 Docker Registry 多用户环境下的用户名，后者则往往是对应的软件名。但这并非绝对，取决于所使用的具体 Docker Registry 的软件或服务。
+通常，一个仓库会包含同一个软件不同版本的镜像，而标签就常用于对应该软件的各个版本。我们可以通过 **`<仓库名>:<标签>` 的格式来指定具体是这个软件哪个版本的镜像**。如果不给出标签，将以 `latest` 作为默认标签。 仓库名经常以 _两段式路径_ 形式出现，比如 `jwilder/nginx-proxy`，前者往往意味着 Docker Registry 多用户环境下的用户名，后者则往往是对应的软件名。但这并非绝对，取决于所使用的具体 Docker Registry 的软件或服务。
 
 #### Docker Registry 公开服务
 
@@ -143,7 +142,7 @@ $ sudo chown gongna:docker /var/run/docker.sock
 
 $ docker pull ubuntu:18.04
 18.04: Pulling from library/ubuntu
-22c5ef60a68e: Pull complete 
+22c5ef60a68e: Pull complete
 Digest: sha256:eb1392bbdde63147bc2b4ff1a4053dcfe6d15e4dfd3cce29e9b9f52a4f88bc74
 Status: Downloaded newer image for ubuntu:18.04
 docker.io/library/ubuntu:18.04
@@ -169,7 +168,7 @@ root@14acce5f0a73:/# go env
 bash: go: command not found
 root@14acce5f0a73:/# ^C
 root@14acce5f0a73:/# ^C
-root@14acce5f0a73:/# 
+root@14acce5f0a73:/#
 
 
 
@@ -219,8 +218,8 @@ Build Cache     0         0         0B        0B
 
 为了加速镜像构建、重复利用资源，Docker 会利用 **中间层镜像**。所以在使用一段时间后，可能会看到一些依赖的中间层镜像。默认的 `docker image ls` 列表中只会显示顶层镜像，如果希望显示包括中间层镜像在内的所有镜像的话，需要加 `-a` 参数
 
-```
-$ docker image ls -a
+```shell
+ docker image ls -a
 ```
 
 ##### 列出部分镜像
@@ -229,8 +228,8 @@ $ docker image ls -a
 
 根据仓库名列出镜像
 
-```
-$ docker image ls ubuntu
+```shell
+docker image ls ubuntu
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
 
 ubuntu              18.04               329ed837d508        3 days ago          63.3MB
@@ -241,7 +240,7 @@ ubuntu              bionic              329ed837d508        3 days ago          
 ##### 列出特定的某个镜像，也就是说指定仓库名和标签
 
 ```shell
-$ docker image ls ubuntu:18.04
+docker image ls ubuntu:18.04
 ```
 
 ##### 列出指定格式
@@ -268,7 +267,7 @@ REPOSITORY                  TAG                 IMAGE ID            CREATED     
 centos                      latest              0584b3d2cf6d        3 weeks ago         196.5 MB
 redis                       alpine              501ad78535f0        3 weeks ago         21.03 MB
 docker                      latest              cf693ec9b5c7        3 weeks ago         105.1 MB
-nginx   
+nginx
 ```
 
 ```
@@ -283,7 +282,7 @@ Deleted: sha256:1333ecc582459bac54e1437335c0816bc17634e131ea0cc48daa27d32c75eab3
 Deleted: sha256:4fc455b921edf9c4aea207c51ab39b10b06540c8b4825ba57b3feed1668fa7c7
 ```
 
-- 我们可以用镜像的完整 ID，也称为 `长 ID`，来删除镜像。使用脚本的时候可能会用长 ID，但是人工输入就太累了，所以更多的时候是用 `短 ID` 来删除镜像。`docker image ls` 默认列出的就已经是短 ID 了，一般取前3个字符以上，只要足够区分于别的镜像就可以了
+- 我们可以用镜像的完整 ID，也称为 `长 ID`，来删除镜像。使用脚本的时候可能会用长 ID，但是人工输入就太累了，所以更多的时候是用 `短 ID` 来删除镜像。`docker image ls` 默认列出的就已经是短 ID 了，一般取前 3 个字符以上，只要足够区分于别的镜像就可以了
 - 我们也可以用`镜像名`，也就是 `<仓库名>:<标签>`，来删除镜像。
 
 ```
@@ -330,4 +329,3 @@ $ docker image rm $(docker image ls -q redis)
 ```
 $ docker image rm $(docker image ls -q -f before=mongo:3.2)
 ```
-
