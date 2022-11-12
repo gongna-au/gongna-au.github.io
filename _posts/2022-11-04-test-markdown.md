@@ -1,8 +1,8 @@
 ---
 layout: post
-title: RPC vs RESTful 以及 rpcx微服务实战（2）
+title: rpcx微服务实战（2）
 subtitle:
-tags: [golang]
+tags: [Microservices rpc]
 ---
 
 # Part2

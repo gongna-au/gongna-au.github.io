@@ -2,7 +2,7 @@
 layout: post
 title: rpcx 微服务实战（3）
 subtitle:
-tags: [golang]
+tags: [Microservices rpc]
 ---
 
 # Part3 Transport

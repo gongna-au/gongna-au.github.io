@@ -2,7 +2,7 @@
 layout: post
 title: rpcx微服务实战（4）
 subtitle:
-tags: [Microservices]
+tags: [Microservices rpc]
 ---
 
 # Part 5 失败模式

@@ -2,7 +2,7 @@
 layout: post
 title: rpcx微服务实战（5）
 subtitle:
-tags: [golang]
+tags: [Microservices rpc]
 ---
 
 # Part 8 路由

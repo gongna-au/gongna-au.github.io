@@ -1,11 +1,10 @@
 ---
 layout: post
-title: 进程？线程？
-subtitle: RPC vs RESTful 以及 rpcx微服务实战（1）
-tags: [golang]
----
-
+title: RPC vs RESTful 以及 rpcx微服务实战（1）
+subtitle: 
 1.RESTful 是通过 http 方法操作资源 Rpc 操作的是方法和过程，要操作的是方法对象 2. RESTful 的客户端和服务端是解耦的。Rpc 的客户端是紧密耦合的。 3. Resful 执行的是对资源的操作 CURD 如果是张三的成绩加 3。这个特定目地的操作在 Resful 下不直观，但是在 RPC 下是 Student.Increment(Name,Score)的方法供给客户端口调用。4 .RESTful 的 Request -Response 模型是阻塞。(http1.0 和 http1.1, http 2.0 没这个问题)，发送一个请求后只有等到 response 返回才能发送第二个请求 (有些 http server 实现了 pipeling 的功能，但不是标配)， RPC 的实现没有这个限制。
+tags: [Microservices rpc]
+---
 
 # Part 1
 
