@@ -36,7 +36,10 @@ var (
 func main() {
     flag.Parse()
 
-    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{
+            {Key: *addr1},
+            {Key: *addr2},
+         })
     xclient := client.NewXClient("Arith", client.Failtry, client.RandomSelect, d, client.DefaultOption)
     defer xclient.Close()
 
@@ -82,7 +85,10 @@ var (
 func main() {
     flag.Parse()
 
-    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{
+            {Key: *addr1},
+            {Key: *addr2},
+        })
     xclient := client.NewXClient("Arith", client.Failtry, client.RoundRobin, d, client.DefaultOption)
     defer xclient.Close()
 
@@ -129,7 +135,10 @@ var (
 func main() {
     flag.Parse()
 
-    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: "weight=7"}, {Key: *addr2, Value: "weight=3"}})
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{
+        {Key: *addr1, Value: "weight=7"},
+        {Key: *addr2, Value: "weight=3"},
+        })
     xclient := client.NewXClient("Arith", client.Failtry, client.WeightedRoundRobin, d, client.DefaultOption)
     defer xclient.Close()
 
@@ -292,7 +301,10 @@ var (
 func main() {
     flag.Parse()
 
-    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1}, {Key: *addr2}})
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{
+        {Key: *addr1},
+        {Key: *addr2},
+        })
     xclient := client.NewXClient("Arith", client.Failtry, client.WeightedICMP, d, client.DefaultOption)
     defer xclient.Close()
 
@@ -341,8 +353,10 @@ var (
 func main() {
     flag.Parse()
 
-    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{{Key: *addr1, Value: ""},
-        {Key: *addr2, Value: ""}})
+    d, _ := client.NewMultipleServersDiscovery([]*client.KVPair{
+        {Key: *addr1, Value: ""},
+        {Key: *addr2, Value: ""},
+        })
     xclient := client.NewXClient("Arith", client.Failtry, client.ConsistentHash, d, client.DefaultOption)
     defer xclient.Close()
 
