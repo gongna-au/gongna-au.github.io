@@ -1,6 +1,6 @@
 ---
 layout: post
-title: rpcx 学习（1）
+title: rpcx 学习
 subtitle: RPC vs RESTful
 tags: [Microservices rpc]
 ---
