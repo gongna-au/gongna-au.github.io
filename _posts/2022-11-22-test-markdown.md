@@ -68,8 +68,6 @@ show variables like '%max_connections%'
 
 #### 分库与分表的两种方式（水平）或者（纵向）？
 
-[!]("https://mmbiz.qpic.cn/mmbiz_png/0OzaL5uW2aMzBtytGgvE1derMNyqseInvcZoP6NdMzl9wr7icXnqYu0VOAD8XKvNJyic36OEC9DfsNgfJkLS5K3w/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1")
-
 #### 垂直分库和垂直分表？
 
 垂直分库：**不同的业务数据在不同的数据库里。（用户数据库）（商品数据库）（订单数据库）（卖家数据库）**
@@ -101,7 +99,7 @@ db_orde_1、db_order_2 两个数据库内有完全相同的 t_order 表访问某
 提问：一个 Orders 表，1 垂直分表怎么做？2 垂直分库怎么做？3 怎么做？ 1.垂直分表就是这个表的字段拆成好多部分，然后在这个数据库下面搞出这几个表：Orders OrdersExpansion1 、OrdersExpansion2、OrdersExpansion3、OrdersExpansion4.... 2.垂直分库就是把在这个 Orders 这个表所在的数据库里，只能存放 Orders 这一个表，其他的表就只能放在其他的数据库。
 
 综合来看：一个 Order 表应该这么拆分：
-[!]("https://mmbiz.qpic.cn/mmbiz_png/0OzaL5uW2aMzBtytGgvE1derMNyqseInUm6sQ78O1p1K0wMDYnv8wLsOucdiaiaTicQic7HK9cp5ZF0ehUKXfYqibzw/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1")
+
 第一层： DB1 DB2 DB3
 第二层：DB1_Order1 DB2_Order2 DB3_Order3
 第三层：DB1_Order1_table1 DB2_Order2_table2 DB3_Order3_table2
