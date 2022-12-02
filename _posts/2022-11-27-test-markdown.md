@@ -1,10 +1,3 @@
----
-layout: post
-title: 人工智能？
-subtitle:
-tags: [Artificial Intelligence AI]
----
-
 # 专业英语
 
 Artificial Intelligence (AI) is the mantra of the current era. The phrase is intoned by technologists, academicians, journalists and venture capitalists alike. As with many phrases that cross over from technical academic fields into general circulation, there is significant misunderstanding accompanying the use of the phrase. The idea that our era is somehow seeing the emergence of an intelligence in silicon that rivals our own entertains all of us — enthralling us and frightening us in equal measure.
