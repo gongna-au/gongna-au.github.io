@@ -1,7 +1,7 @@
 ---
 layout: page
 title: 生活杂记
-subtitle: Why you'd want to go on a date with me
+subtitle: 发疯文学实录
 ---
 
 2022.12.5

@@ -21,8 +21,7 @@ author: GongNa
 
 navbar-links:
   About Me: "aboutme"
-  Tags:
-    - Life: "life"
+  Life: "life"
   Author's home: "https://github.com/gongna-au"
 
 ################
