@@ -57,7 +57,7 @@ git add newfile.go
 ```
 
 ```shell
-git commit -m"fix:455"
+git commit -m"fix:555"
 ```
 
 ```shell
