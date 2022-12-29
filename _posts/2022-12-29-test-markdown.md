@@ -62,7 +62,7 @@ Raft 有两个超时设置来控制选举。
 
 3.大多数的 Follower 服务器把日志写入磁盘文件确认追加成功，发出`Commited Ok`
 
-4. 在下一个心跳 heartbeat 中，Leader 会通知所有 Follwer 更新 commited 项目。
+4.在下一个心跳 heartbeat 中，Leader 会通知所有 Follwer 更新 commited 项目。
 
 如果发生故障？
 
