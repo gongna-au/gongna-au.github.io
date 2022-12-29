@@ -221,9 +221,7 @@ SELECT t1.\* FROM t1 JOIN t2 on t1.id = t2.id
 - 不在索引上做任何操作 `where id =1 ` 而不是 `where id +1 = 0 ` 计算会使得索引失效
 - 索引是 varchar 但是查询的时候没有加''，只有加上才能使得索引生效。 -`！=` `>= ` `<= ` `not in  ` `not exists ` `not like ` `is null ` `is not null `都会使得索引失效导致全表扫描。
 - `%like%`的操作会使得索引失效。最好使用`like%`
-- or 的语句左右，如果只有一个语句对应的列是索引列，那么无法使用索引
-- 如果不需要 ORDER BY，进⾏ GROUP BY 时加 ORDER BY NULL，MySQL 不会再进⾏⽂件排序。
--
+- or 的语句左右，如果只有一个语句对应的列是索引列，那么无法使用索引.如果不需要 ORDER BY，进⾏ GROUP BY 时加 ORDER BY NULL，MySQL 不会再进⾏⽂件排序。
 
 ### 10. 优化⼦查询的⽅法
 
