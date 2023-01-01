@@ -32,7 +32,18 @@ Tips:
 
 ## 第三就是同步本地仓库的其他分支和本地仓库的 master 分支
 
-然后在本地切换到 master 分支后
+然后在本地切换到 master 分支后,（在记得切换到 master 分支后，先要在其他的分支保存自己的更改）
+在 my-feature7 分支执行：
+
+```shell
+git add .
+```
+
+在 my-feature7 分支执行：
+
+```shell
+git commit -m"fix:"
+```
 
 ```shell
 git pull
