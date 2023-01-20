@@ -286,14 +286,16 @@ plugins:
 
 params:
   giscus:
+    src: "https://giscus.app/client.js"
     data_repo: "gongna-au/gongna-au.github.io"
     data_repo_id: "R_kgDOHp9bKw"
     data_category: "Announcements"
     data_category_id: "DIC_kwDOHp9bK84CTsjR"
-    data-mapping: "pathname"
+    data-mapping: "url"
     data-term: "0"
-    data-reactions-enabled: "1"
-    data-emit-metadata: "0"
+    data-reactions-enabled: "0"
+    data-emit-metadata: "1"
+    data-input-position: "top"
     data-theme: "light"
     data-lang: "zh-CN"
-    data-loading: "lazy"
+    data-loading: "anonymous"
