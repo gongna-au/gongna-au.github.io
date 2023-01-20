@@ -408,18 +408,4 @@ TCC 是一种服务层的事务模式，因此在业务中就需要充分考虑�
 
 针对系统之间的一致性问题，老生常谈的方案就是分布式事务。如果业务场景对一致性要求很高，如支付、库存，这种场景的确需要分布式事务——通常会采用 2PC 的变种或者 TCC 来实现。分布式事务的确对于提高一致性的强度有很大帮助，但是开发难度和复杂度会比较高，对于一些普通的业务场景来说性价比不高。参考 BASE 定理，更多的场景适合用可靠消息或者重试模式来实现一致性。
 
-<script src="https://giscus.app/client.js"
-        data-repo="gongna-au/gongna-au.github.io"
-        data-repo-id="R_kgDOHp9bKw"
-        data-category="Announcements"
-        data-category-id="DIC_kwDOHp9bK84CTsjR"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="1"
-        data-input-position="top"
-        data-theme="light"
-        data-lang="zh-CN"
-        crossorigin="anonymous"
-        async>
-</script>
+

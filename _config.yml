@@ -284,3 +284,17 @@ plugins:
 # Beautiful Jekyll / Dean Attali
 # 2fc73a3a967e97599c9763d05e564189
 
+params:
+  giscus:
+    data_repo: "gongna-au/gongna-au.github.io"
+    data_repo_id: "R_kgDOHp9bKw"
+    data_category: "Announcements"
+    data_category_id: "DIC_kwDOHp9bK84CTsjR"
+    data_mapping: "pathname"
+    data-strict: "0"
+    data_reactions_enabled: "1"
+    data_emit_metadata: "1"
+    data-input-position: "top"
+    data_theme: "light"
+    data_lang: "zh-CN"
+    crossorigin: "anonymous"
