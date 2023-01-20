@@ -291,7 +291,7 @@ params:
     data_category: "Announcements"
     data_category_id: "DIC_kwDOHp9bK84CTsjR"
     data-mapping: "title"
-    data-strict: "0"
+    data-strict: "1"
     data-reactions-enabled: "1"
     data-emit-metadata: "1"
     data-input-position: "top"
