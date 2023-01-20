@@ -292,7 +292,7 @@ params:
     data_category_id: "DIC_kwDOHp9bK84CTsjR"
     data-mapping: "specific"
     data-term: "test-markdown.md"
-    data-strict: "0"
+    data-strict: "1"
     data_reactions_enabled: "1"
     data_emit_metadata: "1"
     data-input-position: "top"
