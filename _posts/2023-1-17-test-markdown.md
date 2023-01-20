@@ -3,6 +3,7 @@ layout: post
 title: 结构体内嵌？
 subtitle:
 tags: [interface]
+comments: true
 ---
 
 > 很基础的知识总结

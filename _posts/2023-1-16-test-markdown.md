@@ -3,6 +3,7 @@ layout: post
 title: gRPC RPC Thrift HTTP的区别？
 subtitle:
 tags: [gRPC RPC Thrift HTTP]
+comments: true
 ---
 
 ### 什么是 RPC ?

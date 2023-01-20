@@ -3,6 +3,7 @@ layout: post
 title: MySQL和Redis如何保证数据一致？
 subtitle:
 tags: [Redis]
+comments: true
 ---
 
 ### 重点结论：
