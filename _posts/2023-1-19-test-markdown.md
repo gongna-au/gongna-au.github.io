@@ -101,10 +101,6 @@ mysql> select * from tbl_user where id =10;
 mysql> update tbl_user set name="AnNa" where id =10;
 ```
 
-『连接器』做了什么？
-
->
-
 『分析器』做了什么？
 
 > 词法分析和语法分析解析知道这个是一个更新语句
@@ -359,7 +355,7 @@ DB
 
 Try:负责资源的检查，同时必须要预留资源，而且预留的资源要支持提交和回滚。
 Confirm:负责使用 Try 预留的资源真正的完成业务动作。
-Canceel:负责释放 Try 预留的资源。
+Cancel:负责释放 Try 预留的资源。
 
 举个栗子：
 
