@@ -4,7 +4,7 @@ title: About me
 subtitle: Why you'd want to go on a date with me
 ---
 
-My name is GongNa. I have the following qualities:
+I have the following qualities:
 
 - I like fitness
 - I am currently learning backend development
