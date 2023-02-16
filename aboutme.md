@@ -17,4 +17,3 @@ What else do you need?
 
 In short, it is a story of a little rookie who keeps upgrading and fighting monsters .
 If you want to know my story or share technical knowledge, please add my WeChat to communicate.
-Wechat-Ustinian200110
