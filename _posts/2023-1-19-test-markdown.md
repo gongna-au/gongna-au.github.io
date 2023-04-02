@@ -226,9 +226,11 @@ set [global|session] transaction isolation level {read uncommitted|...
 read-viewA 读视图看到的是 1->2
 read-viewB 读视图看到的是 2->3
 read-viewC 读视图看到的是 3->4
+
 （因为不同时刻启动的事务看到的视图不同）如果是事务 A 想回滚得到 1，必须依次执行图中所有的回滚操作得到。即便有另外一个事务正在把 4->5，那么这个事务跟 read-viewA、read-viewB、read-viewC 是不会冲突的。
 
 InnoDB 的实现
+
 隔离性由锁机制实现，原子性、一致性、持久性都是通过数据库的 redo 日志和 undo 日志来完成。
 redo 日志：重做日志，它记录了事务的行为；
 undo 日志：对数据库进行修改时会产生 undo 日志，也会产生 redo 日志，使用 rollback 请求回滚时通过 undo 日志将数据回滚到修改前的样子。
