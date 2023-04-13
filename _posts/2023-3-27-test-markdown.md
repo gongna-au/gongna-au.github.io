@@ -164,3 +164,123 @@ func optionDelete(temp []int ,k int) []int{
     return res
 }
 ```
+
+#### 3.标准输出是 1，2，3，4 最后 append 到 result 却是 1 2 3 5
+
+> 输入 5，4
+
+> 期待输出
+
+```text
+[[1,2,3,4],[1,2,3,5],[1,2,4,5],[1,3,4,5],[2,3,4,5]]
+```
+
+> 实际输出
+
+```text
+[[1,2,3,5],[1,2,3,5],[1,2,4,5],[1,3,4,5],[2,3,4,5]]
+```
+
+> 测试不通过代码
+
+```go
+var result [][]int
+var length int
+func combine(n int, k int) [][]int {
+    result = [][]int{}
+    length = k
+    Travserse( getOption(1,n),[]int{})
+    return result
+}
+
+func Travserse(option []int ,track []int){
+    if len(track)==length {
+        // 真就离谱
+        // 在这里标准输出是 1，2，3 4 最后输出结果就是 1 2 3 5
+        result = append(result,track)
+        return
+    }
+    for i:=0;i<len(option);i++{
+        tempOpt:= make([]int,len( option[i+1:]))
+        copy(tempOpt,option[i+1:])
+        tempTra:= trackAdd(track,option[i])
+        // fmt.Println(tempTra)
+        //fmt.Println(tempOpt)
+        Travserse(tempOpt,tempTra)
+    }
+}
+
+func getOption (start int,end int)[]int{
+    result := make([]int,end-start+1)
+    p:=0
+    val:=start
+    for i:=start;i<= end;i++{
+        result[p]= val
+        p++
+        val++
+    }
+    return result
+}
+
+func optionDelete(array []int,k int)[]int{
+    return append(array[:k],array[k+1:]...)
+}
+
+func trackAdd(track []int,k int)[]int{
+    return append(track,k)
+}
+
+```
+
+> 测试通过代码
+
+```go
+var result [][]int
+var length int
+func combine(n int, k int) [][]int {
+    result = [][]int{}
+    length = k
+    Travserse( getOption(1,n),[]int{})
+    return result
+}
+
+func Travserse(option []int ,track []int){
+    if len(track)==length {
+        // 真就离谱
+        // 在这里标准输出是 1，2，3 4 最后输出结果就是 1 2 3 5
+        temp:=make([]int,length)
+        copy(temp,track)
+        result = append(result,temp)
+        return
+    }
+    for i:=0;i<len(option);i++{
+        tempOpt:= make([]int,len( option[i+1:]))
+        copy(tempOpt,option[i+1:])
+        tempTra:= trackAdd(track,option[i])
+        // fmt.Println(tempTra)
+        //fmt.Println(tempOpt)
+        Travserse(tempOpt,tempTra)
+    }
+}
+
+func getOption (start int,end int)[]int{
+    result := make([]int,end-start+1)
+    p:=0
+    val:=start
+    for i:=start;i<= end;i++{
+        result[p]= val
+        p++
+        val++
+    }
+    return result
+}
+
+func optionDelete(array []int,k int)[]int{
+    return append(array[:k],array[k+1:]...)
+}
+
+func trackAdd(track []int,k int)[]int{
+    return append(track,k)
+}
+
+```
