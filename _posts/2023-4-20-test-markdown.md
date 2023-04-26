@@ -142,12 +142,445 @@ func PostorderTraversal(root *Node) []int {
 
 > 解决最短路径问题
 
+BFS 在无权图中可以求出两个节点之间的最短路径。因为 BFS 遍历的顺序是按照层数递增的顺序进行的，所以当找到目标节点时，该路径就是从起始点到目标节点的最短路径。
+
+> 解决按层遍历问题
+
+> 解决迷宫问题
+
+> 解决最小生成树问题
+
+> 解决连通快问题
+
+> 解决连通性问题
+
+连通性问题：BFS 可以用于确定两个节点是否连通。如果两个节点在同一个连通子图中，则它们之间存在一条路径，可以通过 BFS 找到该路径。
+
+> 解决拓扑排序问题
+
+拓扑排序问题：BFS 可以用于对有向无环图（DAG）进行拓扑排序，得到 DAG 中节点的一个线性序列，该序列满足若存在一条从节点 A 到节点 B 的路径，则在序列中节点 A 出现在节点 B 之前。
+
+在一个有向无环图 (Directed Acyclic Graph，DAG) 中，如果存在一条从节点 A 到节点 B 的路径，那么节点 A 必须排在节点 B 的前面。这是因为 DAG 要求图中的边必须是有向的，并且不能形成环路，也就是说每个节点都必须能够通过指向其他节点来到达终点，而不会回到原来的位置。
+
+拓扑排序算法可以得到有向无环图中节点的一个线性序列，使得对于任意一条有向边 (A, B)，节点 A 在序列中都排在节点 B 的前面。这个序列称作拓扑序列 (Topological Order)。
+
+在拓扑排序算法中，如果有环存在，那么环上的节点入度不为 0，它们不会被添加到队列中进行访问，也就不会被标记为已访问状态。因此，在 BFS 函数末尾，我们需要检查是否有任何未访问的节点，如果有，则说明图中存在环，返回 false。
+
+> 关键点是一方面统计儿子节点的入度，另外一方面是构建图，遍于可以通过父节点访问到子节点，改变子节点的入度，把节点入度为 0 的放入队列。如果存在环，环不会被放在队列，因此就不会被访问。
+
+```go
+// [207. 课程表](https://leetcode.cn/problems/course-schedule/)
+// 统计节点的入度
+var nodeInDegree map[int]int
+// 有向无环图的判断
+var graph map[int][]int
+var visited map[int]bool
+func canFinish(numCourses int, prerequisites [][]int) bool {
+    nodeInDegree = make(map[int]int,numCourses)
+    visited = make(map[int]bool,numCourses)
+    for i:=0;i<numCourses;i++{
+        nodeInDegree[i]=0
+        visited[i] = false
+    }
+    graph = map[int][]int{}
+    // [0, 1] 1->0
+    // 向根节点（入度）
+    for _,v := range prerequisites{
+        // 统计儿子节点的入度
+        nodeInDegree[ v[0] ] =  nodeInDegree[ v[0] ]+1
+        // 构造图遍于找到儿子节点，改变儿子节点的入度
+        graph[ v[1] ]= append(graph[ v[1] ],v[0])
+    }
+    return BFS()
+}
+
+func BFS() bool{
+    queue:= []int{}
+    for k,v := range nodeInDegree{
+        if v==0{
+            queue = append(queue,k)
+        }
+    }
+
+    for len(queue)>0{
+        size:= len(queue)
+        for i:=0;i<size;i++{
+            cur := queue[0]
+            queue = queue[1:]
+            if visited[cur]{
+                return false
+            }
+            visited[cur]= true
+            for _,v := range graph[cur]{
+                nodeInDegree[v]--
+                if nodeInDegree[v]==0{
+                    queue =append(queue,v)
+                }
+            }
+        }
+    }
+    // 检查是否有没有没有被访问到的节点
+    // 1-> 2->3
+    //     ^---|
+    for _,v:= range visited{
+        if !v{
+            return false
+        }
+    }
+    return true
+}
+```
+
+```go
+// [210. 课程表 II](https://leetcode.cn/problems/course-schedule-ii/)
+     /* 0
+       /\
+       1 2
+        \/
+        3
+    */
+
+// 统计节点的入度
+var nodeInDegree map[int]int
+// 有向无环图的判断
+var graph map[int][]int
+var visited map[int]bool
+
+func findOrder(numCourses int, prerequisites [][]int) []int {
+    nodeInDegree = make(map[int]int,numCourses)
+    visited = make(map[int]bool,numCourses)
+    for i:=0;i<numCourses;i++{
+        nodeInDegree[i]=0
+        visited[i] = false
+    }
+    graph = map[int][]int{}
+    // [0, 1] 1->0
+    // 向根节点（入度）
+    for _,v := range prerequisites{
+        // 统计儿子节点的入度
+        nodeInDegree[ v[0] ] =  nodeInDegree[ v[0] ]+1
+        // 构造图遍于找到儿子节点，改变儿子节点的入度
+        graph[ v[1] ]= append(graph[ v[1] ],v[0])
+    }
+    return BFS()
+}
+
+type node struct{
+    Val int
+    Path []int
+}
+
+func BFS() []int{
+    queue:= []*node{}
+    for k,v := range nodeInDegree{
+        if v==0{
+            queue = append(queue,&node{
+                Val:k,
+                Path:[]int{k},
+            })
+        }
+    }
+    ans:= []int{}
+    for len(queue)>0{
+        size:= len(queue)
+        for i:=0;i<size;i++{
+            cur := queue[0]
+            queue = queue[1:]
+            ans = append(ans,cur.Val)
+            if visited[cur.Val]{
+                return []int{}
+            }
+            visited[cur.Val]= true
+            for _,v := range graph[cur.Val]{
+                nodeInDegree[v]--
+                if nodeInDegree[v]==0{
+                    queue =append(queue,&node{
+                        Val:v,
+                        Path: append(cur.Path,v),
+                    })
+                }
+            }
+        }
+    }
+
+    for _,v:= range visited{
+        if !v{
+            return []int{}
+        }
+    }
+
+    return ans
+}
+```
+
+```go
+
+
+var graph [][]Item
+var nodeInDegree []int
+var visited []bool
+func sortItems(n int, m int, group []int, beforeItems [][]int) []int {
+    graph = make([][]int,n+m)
+    //
+    for i := 0; i < n; i++ {
+        if group[i] != -1 {
+            // 1号点属于第0组
+            graph[i] = append(graph[i], n+group[i])
+            // 第0组包含1号点
+            graph[n+group[i]] = append(graph[n+group[i]], i)
+        }
+    }
+
+    // 0
+    // 1
+    // 2
+    // 3
+    // 0--实际是4
+    // 1--实际是5
+    // 上面前0123代表点，下面的01代表组
+
+    nodeInDegree = make([]int,n)
+    visited = make([]bool,n)
+    queue :=[]*node{}
+    for son,fatherSilce := range beforeItems{
+        if len(fatherSilce) ==0{
+            // 根部节点
+            visited[son]= true
+            queue = append(queue,&node{group:group[son],val:son})
+        }
+
+        for _,father:= range fatherSilce{
+            if group[father] == -1 && group[son] == -1{
+                graph[father] = append(graph[father],son)
+            }else if group[son] == -1{
+                // 父节点分组
+                // 对于分组的，让该父亲节点和组之间建立关系,同时组也要和父亲节点建立关系
+                graph[father] = append(graph[father],son)
+                graph[n+group[father]] = append(graph[n+group[father]],son)
+                // 子节点分组
+            }else if group[father] == -1{
+                graph[father] = append(graph[father],son)
+                graph[n+group[son]] = append(graph[n+group[son]],father)
+            }else if group[father] == group[son]{
+                graph[n+group[father]] = append(graph[n+group[father]], n+group[son])
+            }
+
+        }
+
+    }
+    // 拓扑排序
+    nodeInDegree = make([]int,n+m)
+    for i:=0;i<n+m;i++{
+        for _,j:= range graph[i]
+            // 和组之间建立
+            nodeInDegree[j]++
+    }
+    queue := []*node{}
+    for i:=0;i<n+m;i++{
+        if nodeInDegree[i]==0{
+            queue = append(queue,i)
+        }
+    }
+
+    return BFS(queue,group)
+}
+
+type node struct{
+    group int
+    val int
+}
+
+func BFS(queue []*node,group []int)[]int{
+    sortedNodes := make([]int, 0)
+    for len(queue)>0{
+        size:= len(queue)
+        for i:=0;i<size;i++{
+            cur:= queue[0]
+            queue= queue[1:]
+            sortedNodes = append(sortedNodes,cur.val)
+            for _,v := range graph[cur.val]{
+                nodeInDegree[v]--
+                if nodeInDegree[v]== 0{
+                    queue = append(queue,&node{val:v,group:group[v]})
+                    visited[v] = true
+                }
+
+            }
+        }
+    }
+    if len(sortedNodes) != n+m {
+        return []int{}
+    }
+
+    // 按照分组依赖关系进行子拓扑排序
+    for _, nodes := range group2nodes {
+        nodeInDegree = make([]int, n)
+        for _, i := range nodes {
+            for _, j := range beforeItems[i] {
+                if group[j] == group[nodes[0]] {
+                    nodeInDegree[i]++
+                }
+            }
+        }
+
+        queue = make([]int, 0)
+        for _, i := range nodes {
+            if nodeInDegree[i] == 0 {
+                queue = append(queue, i)
+            }
+        }
+
+        for len(queue) > 0 {
+            cur := queue[0]
+            queue = queue[1:]
+            res = append(res, cur)
+
+            for _, nxt := range beforeItems[cur] {
+                // 注意：这里要判断是否属于当前小组
+                if group[nxt] == group[nodes[0]] {
+                    nodeInDegree[nxt]--
+                    if nodeInDegree[nxt] == 0 {
+                        queue = append(queue, nxt)
+                    }
+                }
+            }
+        }
+
+        if len(res) != len(nodes) {
+            return []int{}
+        }
+    }
+    // 组装答案
+    for i := 0; i < len(sortedNodes); i++ {
+        if sortedNodes[i] < n {
+            res = append(res, sortedNodes[i])
+        }
+    }
+    return res
+}
+
+```
+
+```go
+type Node struct {
+	PreCount int
+	NextIDs  []int
+}
+
+func sortItems(n int, m int, group []int, beforeItems [][]int) []int {
+	groupItems := make([][]int, m+n) // groupItems[i] 表示第i个组负责的所有项目，用于加速组内排序
+	maxGroupID := m - 1
+	for i := 0; i < n; i++ {
+		if group[i] == -1 { //-1这个group编码为m，m+1, m+2 等不同组，便于处理
+			maxGroupID++
+			group[i] = maxGroupID
+		}
+		groupItems[group[i]] = append(groupItems[group[i]], i)
+	}
+
+	// 项目拓扑图
+    // 如果索
+	gItem := make([]Node, n)
+	for i := 0; i < n; i++ {
+		for _, preID := range beforeItems[i] {
+			gItem[i].PreCount++
+			gItem[preID].NextIDs = append(gItem[preID].NextIDs, i)
+		}
+	}
+
+	// 小组拓扑图
+    // 记录每个组对应的包含的节点
+	gGroup := make([]Node, maxGroupID+1)
+	for i := 0; i < n; i++ {
+		curID := group[i]
+		for _, preID := range beforeItems[i] {
+			preID := group[preID]
+			// 跳过自己组依赖自己组
+			if curID == preID {
+				continue
+			}
+			// 对于固定的两个组，依赖次数可以累加，后续搜索时，PreCount也会减这么多次
+			gGroup[curID].PreCount++
+			gGroup[preID].NextIDs = append(gGroup[preID].NextIDs, curID)
+		}
+	}
+
+	// 先确定小组拓扑顺序
+	q := make([]int, 0)
+	for i, v := range gGroup {
+		if v.PreCount == 0 {
+			q = append(q, i)
+		}
+	}
+	retGroup := make([]int, 0)
+	for len(q) > 0 {
+		k := len(q)
+		for k > 0 {
+			k--
+			curID := q[0]
+			q = q[1:]
+			retGroup = append(retGroup, curID)
+			for _, nextID := range gGroup[curID].NextIDs {
+				gGroup[nextID].PreCount--
+				if gGroup[nextID].PreCount == 0 {
+					q = append(q, nextID)
+				}
+			}
+		}
+	}
+	if len(retGroup) != maxGroupID+1 {
+		return []int{}
+	}
+
+	// 再确定项目的拓扑顺序
+	ret := make([]int, 0)
+	for j := 0; j <= maxGroupID; j++ { //根据小组拓扑顺序进行处理
+		q = make([]int, 0)
+		for _, id := range groupItems[retGroup[j]] { //加速，只检查组内项目，而不是检查所有项目
+			if gItem[id].PreCount == 0 {
+                 fmt.Println("id1",v)
+				q = append(q, id)
+			}
+		}
+
+		for len(q) > 0 {
+			k := len(q)
+			for k > 0 {
+				k--
+				curID := q[0]
+				q = q[1:]
+				ret = append(ret, curID)
+				for _, nextID := range gItem[curID].NextIDs {
+					gItem[nextID].PreCount--
+					if gItem[nextID].PreCount == 0 && group[nextID] == retGroup[j] {
+                        fmt.Println("id2",v)
+						q = append(q, nextID)
+					}
+				}
+			}
+		}
+	}
+
+	if len(ret) != n {
+		return []int{}。
+	}
+	return ret
+}
+
+```
+
+> 解决状态转化问题
+
+状态转换问题：BFS 可以用于状态转换问题，例如八数码等。每个状态可以看作图中的一个节点，状态之间的转换可以看作节点之间的边。采用 BFS 可以找出从初始状态到目标状态的最短路径。
+
 ```go
 /* 1129. 颜色交替的最短路径 */
+
 type node struct {
     Val int
     Color int
 }
+
 var graphRed [][]node
 var graphBlue [][]node
 
@@ -242,14 +675,6 @@ func min(a int ,b int)int{
     return b
 }
 ```
-
-> 解决按层遍历问题
-
-> 解决迷宫问题
-
-> 解决最小生成树问题
-
-> 解决连通快问题
 
 ```go
 // 127
