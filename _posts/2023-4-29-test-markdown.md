@@ -1,8 +1,8 @@
 ---
 layout: post
-title: 数据结构和算法
+title: Part1-数据结构和算法
 subtitle:
-tags: []
+tags: [数据结构和算法]
 comments: true
 ---
 
@@ -662,6 +662,11 @@ Bellman-Ford 算法是一种用于求解带权有向图的最短路径的动态�
 > 743 Network Delay Time
 > 1579 Remove Max Number of Edges to Keep Graph Fully Traversable
 
+BFS算法
+BFS算法在带权最短路径中的使用的一种最短路径问题的变种，这个时候队列中间加入的是状态。BFS可以实现记录一个状态到另外一个状态的转变
+```go
+
+```
 ```go
 
 // 把图转化为（起点，终点，权重）
@@ -715,7 +720,7 @@ Floyd-Warshall 算法
 Floyd-Warshall 算法是一种用于求解所有节点对之间最短路径的动态规划算法。该算法维护一个 n * n 的矩阵，表示任意两个节点之间的最短路径。Floyd-Warshall 算法的时间复杂度为 O(N^3)，因此适用于 n 不是很大的情况。
 
 ```go
-func Floyd(graph [][]int) [][]int{
+func FloydWarshall(graph [][]int) [][]int{
     minDis:= make([][]int,len(graph))
     for i := range dist {
         minDis = make([]int, n)
@@ -987,3 +992,56 @@ func isPrime(n int)bool {
 }
 
 ```
+
+## 贪心
+
+1- 定义状态及状态转移条件。
+2- 按照“贪心策略”定义代价。且该贪心策略要可以得到合法分解
+3- 按照代价排序，然后从排序结果中间选择最优。
+4- 对于无法进行完整的排序需要计算反悔损失，用heap实现一个最大堆或最小堆，通过优先队列决定决策顺序。“这里特别指的是：背包问题，”如果仅使用贪心思想来解决背包问题，我们需要找到一个单调的优先级，每次选择当前最好的项，直到所有项都考虑过。由于背包问题的特殊性质（一个物品只能选或不选），非常难以找到这样的单调优先级，因此贪心算法并不适用于背包问题。需要使用别的算法。”
+
+```go
+type Item struct{
+    w int
+    v int
+}
+type items []item
+
+func (itms items) Len() int { return len(itms)}
+func (itms items) Less(i, j int) bool { return itms[i].value*itms[j].weight > itms[j].value*itms[i].weight }
+func (itms items) Swap(i, j int) { itms[i], itms[j] = itms[j], itms[i] }
+
+func getMaxValue(items []Item, capacity int)float64{
+    sort.Sort(items)
+    ans:=0.0
+    for _,item := range items{
+        if capacity >= item.w{
+            capacity = capacity-item.w
+            ans = ans+ item.v
+        }else{
+            //  ans += float64(capacity)/float64(item.weight)*item.value
+            // 即当剩余背包空间不足以放下一个完整的物品时，我们需要考虑部分装入该物品的方案是否可行。
+            ans += float64(capacity)/float64(item.w)*item.v
+            break
+        }
+    }
+}
+```
+### 区间调度问题
+
+已知道多个区间的开始时间和结束时间，如何安排时间使得尽可能多的区间不重合，贪心的策略：根据结束时间对所有的区间进行排序，每次选择最早结束的区间加入结果集，然后把与该区间重叠的其他区间从候选列表中删除。
+
+### 分配饼干问题
+M个孩子N个饼干，每个孩子需要的饼干大小不同。每个饼干块的大小也不同，只有饼干的大小等于孩子需要的大小，孩子才能得到满足，如何分配饼干，使得满足条件的孩子的最多。按照需要的饼干大小排序号，从需求最小的孩子开始和饼干配对，直到没有剩余的饼干或者孩子。
+
+### 跳跃游戏问题
+给定非负数组，每个元素代表这个位置可以跳跃的最大长度，初始位置在第一个位置，问最少需要几步才能跳到最后一个位置？贪心策略是不断更新该位置可以到达的最远距离，如果能到达某个位置，则更新最远的距离，直到最远距离到达末尾。
+
+- 将问题分解为子问题。
+- 确定局部最优解。
+- 利用局部最优解得到全局最优解。
+
+
+### 加油站问题
+已知一个环型公路，沿路有多个加油站，从其中的一个站台出发，希望走完整个环形山路，每次可以加满油或者加一定量的油，问能不能选择一个出发点，走完整个环形公路。贪心策略：计算两个相邻加油站之间的距离和油耗需求，找到一个起点，使得从该加油站出发可似的剩余的油量始终保持正数。
+

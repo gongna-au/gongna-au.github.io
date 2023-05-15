@@ -1177,17 +1177,990 @@ WorkProduct <|.. URLWorkProduct
 
 5.考虑一个包含一个数据库客户和两个元余的数据库服务器。两个数据库服务器都是 一样的:第一个用做主服务器，第二个用做备份以防主服务器不能工作时使用。数据库客户通过一个称为“网关” 的构件访问主服务器，因此客户无法知道是对哪一个服务 器进行的访问。一个单独的称为“看门狗” 监控客户的请求和主服务器的反应，然后 告诉网关是否应该将请求发送给后备服务器。你想把这个设计模式称做什么?画一个 UML 图证明你的选择是正确的。
 
+答：在中介者模式中，对象之间的通信通过一个中介者对象进行协调。在这个场景中，DatabaseClient、MasterDatabaseServer、BackupServer、Watchdog 和 Gateway 都是同等重要的对象，而 Watchdog 担任中介者角色，协调它们之间的通信。
+
 
 6.在8.4. 1 节，我们使用 一个Btidge 模式来降低ARENA 中联盟店LcagueStore 子系统与 它接又之问的男合度，这能让我们提供由于不同的测试目标而产生的不同实现。理想 地说，应该在我们系统的每个子系统中使用Br idge 模式来方便测试。不幸的是，这不 是在所有的情况下都是可行的。试给出 一个不能在系统中使用Bridge模式的例子
 
+- 如果只有一个实现：如果您已经确定您的系统中只需要一种实现，则没有必要使用桥接模式。在这种情况下，应该考虑使用简单的类继承结构而不是额外引入桥接模式。
+- 抽象和实现都稳定：如果您确定抽象和实现都很稳定，则不需要使用桥接模式。因为如果它们不太可能改变，那么拆分它们的成本可能会超过获得的好处。
+- 即实现类或模块依赖于抽象类或接口，但是抽象类或接口不依赖于实现类。这种情况下，如果我们想要将实现与抽象分离开来，使它们可以独立变化和扩展，就可以使用桥接模式
 
 7.考虑 下面的设计目标。对它们中的每一个，指出你觉得可以达到每一个目标的候选 模式:
-• 给定一个可继承的应行程序，封装己有的业务逻辑构件。
-• 给 定 一 个 国 际 象 棋 程 序 ， 能 够 方 便 将 来 开 发 者 用 更 好 的 决 定 怎 样 走 下一 步 的 算 法 替换掉现在的。
-• 给定 一个国际象棋程序，确保 一个监控构件能够在运行时选用其他的规划算法， 根据对手的情况和反应时间。
-• 有一个模仿耗子走迷宫的程序，确保路径选择算法构件来评价耗子考虑到每一种 不同的路径。
 
+- 给定一个可继承的应行程序，封装己有的业务逻辑构件。
+候选模式: 模板方法模式
+通过定义一个抽象类和一套算法骨架，模板方法模式可以将可继承的应用程序封装起来。子类可以通过重写各个步骤的具体实现来完成自己的业务逻辑，从而达到封装己有的业务逻辑构件的目标。
+
+
+
+- 给定一个国际象棋程序 ， 能够方便将来开发者用更好的决 定怎样走下一步的算法替换掉现在的
+候选模式: 策略模式
+
+通过定义一个抽象算法接口和一系列具体算法实现类，策略模式可以方便地将算法替换成其他更好的决策算法。国际象棋程序可以将当前的算法作为一个策略对象，在运行时能够轻松地选择其他算法。
+
+- 给定 一个国际象棋程序，确保 一个监控构件能够在运行时选用其他的规划算法， 根据对手的情况和反应时间。
+候选模式: 策略模式
+
+同样，国际象棋程序可以将规划算法作为策略对象，并在运行时根据对手的情况和反应时间来动态选择相应的算法。
+
+- 有一个模仿耗子走迷宫的程序，确保路径选择算法构件来评价耗子考虑到每一种 不同的路径。
+
+候选模式: 策略模式
+
+与前两个例子类似，路径选择算法构件可以定义为策略对象，以便在运行时根据不同的路径选择算法来评价耗子的路径选择。
 
 
 8.考虑 一个必须动态的选择基于保密性要求和计算时间约束的加密算法的应用程序。你 将 会选 择 哪 一 个 设 计模 式 ?画 一 个 U M 类图 描 述 模 式中 用 到 的 类 并判 断 你 的 选择 的 正确性。
+
+我将选择策略模式来设计这个动态选择加密算法的应用程序。
+
+在策略模式中，我们可以定义一组算法接口并为每个算法实现一个具体类。然后，在运行时，我们可以根据保密性要求和计算时间约束来动态地选取合适的算法，而无需修改客户端代码。
+
+## Part9
+
+
+1.考虑在java.util 包中的用来对对象排好序的集合进行操作的List 接又。使用OCL 为 下列操作编写前置条件和后置条件:
+int size0返回队列中的元素数目。
+- `int size() 返回队列中的元素数目`
+- `void add(object e)` 在队列的尾部加入一个对象 。
+- `void remove(object e)`从队列的尾部移除一个对象。
+- `boolean contains(object e)`的作用是判断对象e是否在队列中，如果在队列中，返回值为真。
+- `Object get(int idx)`返回在队列中的位置为idx的对象，。0表示队列的头一个位置。
+
+
+```
+context List
+pre:
+-- 前置条件
+self->notEmpty() -- 队列不为空
+
+post:
+-- 后置条件 1：操作 add
+self->includes(e) -- 在队列中加入一个对象e，该对象已经存在于队列之中
+and size = size@pre + 1 -- 队列大小增加1
+
+-- 后置条件 2：操作 remove
+not self->includes(e) -- 从队列中移除一个对象e，该对象不存在于队列之中
+and size = size@pre - 1 -- 队列大小减少1
+
+-- 后置条件 3：操作 contains
+result = true or result = false -- 方法返回值为真或假
+
+-- 后置条件 4：操作 get
+result <> null and result = self->at(idx) -- 返回在队列中的位置为idx的对象，该对象不为空且与队列指定位置一致
+
+```
+
+2.考虑在java.util包中的Set 按又。使用OCL为下列操作编写前置条件和后置条件。
+• int size()返回在集合中的元素数目。
+• void add(object e)往集合中加入一个对象。如果该元素己经在队列中，则不加。
+• void remove(objecte)从集合中移除 一个对象。
+• Boolean contains(object e)的作用是判断对象e 是否在集合中，如在集合中，则返回值为真。
+
+
+`size():`
+前置条件: 无。
+后置条件: 返回集合大小的非负数。
+
+`add(object e):`
+前置条件: e 不为 null。
+后置条件: 如果 e 不在集合中，则将 e 添加到集合中。
+后置条件: 如果 e 已经在集合中，那么不会添加元素。
+
+`remove(object e):`
+前置条件: e 不为 null。
+后置条件: 如果 e 在集合中，则从集合中移除 e。
+后置条件: 如果 e 不在集合中，则集合保持不变。
+
+`contains(object e):`
+前置条件: e 不为 null。
+后置条件: 如果 e 在集合中，则返回 true。
+后置条件: 如果 e 不在集合中，则返回 false。
+
+
+3.考虑在java.util 包中的Collection 接又，它是List 和Set 的父类。为下列的操作编写前 置 条 件 和 后 置条 件 并 且在 知 道 契 约 是 可 以 的 情 况 下对 你 在练 习 9- 1 和 练 习9- 2 中 的 编 写的约束进行改进，注意要确保你所做的符合Liskov 替换准则。
+- int size0返回在Collection 中的元素数目。
+- void add(object e)往Collection 中加入一个新的对象。
+
+- voidremove(obiecte)从Collection中移除 一个对象。
+- Boolean contains(object e)判断对象e 是否在
+- Collection 中，如在Collection 中，则返回值为真。
+
+
+前置条件和后置条件
+int size()
+前置条件：
+
+无
+
+后置条件：
+
+返回的整数值等于Collection中包含的所有元素的数量。
+
+void add(Object e)
+前置条件：
+
+e必须是非空对象
+后置条件：
+
+新的元素已经添加到Collection中。
+Collection中至少有一个更多的元素，除非此时该元素已存在于集合中。 否则不做任何操作。
+void remove(Object e)
+前置条件：
+
+e必须是非空对象
+
+后置条件：
+
+如果Collection中存在Object e，则它被删除并返回true
+如果Collection中不存在Object e，则返回false并且Collection没有被修改
+boolean contains(Object e)
+前置条件：
+
+e必须是非空对象
+
+后置条件：
+
+如果Collection中包含Object e，则返回true。否则返回false
+
+Liskov 替换原则( LSP )是子类型关系的特定定义，称为强行为子类型，最初由Barbara Liskov在 1987 年题为数据抽象和层次结构的会议主题演讲中引入。它基于“可替换性”的概念——面向对象编程中的一个原则，指出一个对象（例如一个类）可以被一个子对象（例如一个扩展第一类的类）替换而不破坏程序。
+如果 S 是 T 的子类型，则适用于 T 对象的情况也适用于 S 对象
+
+4.有一个Rectangle 类和从Rectangle 类继承的Square 类:
+- 根据 Rectangle.getWidth:int 和 Rectangle.getHeight:int 操作为 Rectangle.set- Width(w:int)和Rectangle.setHeightth:int 操作编写后置条件。
+
+后置条件
+对于 Rectangle 类的 setWidth(w:int) 操作，其后置条件为：矩形的宽度应该设置为w。
+对于 Rectangle 类的 setHeight(h:int) 操作，其后置条件为：矩形的高度应该设置为h。
+
+
+- 为Square编写一个不变式说明 一个Square的宽和高应该是一样的。
+
+一个Square的宽和高应该相等。
+
+- 对Square.setWidth（） 和Square.setHeightQ（）操作考虑第9.4.5 节中表述的继承契约的规则，它们是不是都符合了?为什么没有?应该在模型中对什么做改变?
+
+Square 子类应该**满足其父类 Rectangle 的前置条件**，并可以**弱化其后置条件**。也就是说，对于 Square 类中的 setWidth() 和 setHeight() 操作，其前置条件应该与 Rectangle 类中对应操作的前置条件相同或更弱，且后置条件应该与 Rectangle 类中对应操作的后置条件相同或更弱。
+
+```java
+class Square extends Rectangle {
+    // 省略其他属性和方法
+
+    /**
+     * 为Square.setWidth() 添加继承契约规则
+     * 前置条件：width 应该是大于0的整数，且等于原始正方形的宽或高。
+     * 后置条件：正方形的宽与高都应该设置为 width.
+     */
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+        this.height = width;
+    }
+
+    /**
+     * 为Square.setHeight() 添加继承契约规则
+     * 前置条件：height 应该是大于0的整数，且等于原始正方形的宽或高。
+     * 后置条件：正方形的宽与高都应该设置为 height.
+     */
+    @Override
+    public void setHeight(int height) {
+        this.width = height;
+        this.height = height;
+    }
+}
+
+```
+
+5.考態一 个排好序的队列 。用 OCL 编写不变式来表示队列中的元素己经排好序
+```
+context Queue
+inv: self.elements->sorted() = self.elements
+```
+
+6.考虑一个用来保存整型数的排好序的二叉树数据结构。用OCL 编写不变式表示下列情况:
+- 所有结点的左子树保存的整型数都小于或是等于当前结点所 保存的整型数 ， 要么它的子树为空 。
+```
+context TreeNode
+inv: self.left = null or self.left.value <= self.value
+```
+
+- 所有结点的在右子树保存的整型数都大于当前结点所保存的整型数，要么它的右子树为空。
+```
+context TreeNode
+inv: self.right = null or self.right.value > self.value
+```
+
+- 该子树是平衡的 
+
+它的左子树和右子树的高度差不能超过1
+```
+context TreeNode
+inv: abs(self.left.height - self.right.height) <= 1
+```
+
+7.考患两条交叉的道路和四个交通灯。假设一个简单的转换交通灯的算法，这样一条路 上的交通灯工作的时候另一条路上的交通灯就停止工作。每 一个交通灯可以看作是 TrafficLight 类的一个实例，TrafficLight 类中有一个state属性，它可以是red、yellow 或是green。用OCL对TrafficLight 类的state属性编写 一个不变式，来确保两条路上 的traftic 不会同时停止。如果有必要的话，就在该模型上增加关联。注意OCL 约束 是对类而言的 (不是针对实例的)。
+
+TrafficLight应该具有以下属性和关系：
+
+属性:
+state：用于表示红色、黄色或绿色的状态。
+关联：
+与OneRoad关联：指向当前TrafficLight所在的那条路。
+与AnotherRoad关联：指向另一条路上的TrafficLight。
+```
+context TrafficLight 
+inv TrafficLightsCannotStopSimultaneously:
+  (self.state = 'red' and self.OneRoad.trafficActive = true) implies (self.AnotherRoad.trafficActive = false)
+  and 
+  (self.state = 'red' and self.AnotherRoad.trafficActive = true) implies (self.OneRoad.trafficActive = false)
+```
+
+该OCL约束条件使用了TrafficLight的state属性以及与两条路之间的关联。在当前TrafficLight状态为red且OneRoad上交通灯仍在工作时，则AnotherRoad上的交通灯必须被禁止。反之亦然。这样就可以确保两条道路上的TrafficLight状态不会同时变为red。
+
+
+8.在读了第9.6.2节和第9.6.3 节后，为实现Tournamentstyle 和Round 接又，对 RoundRobinstyle 类和RoundRobinRound 类编写约束。假设RoundRobinStyle 可以筹 划一连串的Round，使得每个Player 在Tournament 中都能和其他的Player 仅配对一 次。注意，Round 的数目是由Tournament 中的Player 的数目是奇数还是偶数所决定 的，并且一个Player 在一个给定的Round 中只能参加一次。
+```
+context RoundRobinStyle
+inv UniquePlayerPairs:
+  self.Rounds.games->forAll(game1, game2 |
+    not (game1.players->includesAll(game2.players) and game1 <> game2)
+  )
+```
+```
+context RoundRobinRound
+inv UniquePlayerPerMatch:
+  self.games.matches.players->forAll(player1, player2 |
+    not (player1 = player2 and self.games.matches.players->count(player1) > 1)
+  )
+
+```
+RoundRobinStyle类的约束条件使用Rounds关联访问游戏，并检查每个游戏是否具有唯一的Player对。这是通过检查每个游戏之间是否存在重叠来完成的，以及通过比较不同游戏之间的差异来完成的。
+
+RoundRobinRound类的约束条件使用Games关联访问Matches，并确保每个match中的players都是唯一的。这是通过检查Players集合中未重复的元素数量是否等于集合大小来完成的。
+
+
+
+## Part10
+1.在Web 页中，表由行组成，而行又由单元组成。每一个单元的实际宽度和高度有些 是通过对内容的计算而得到 〈 如，单元中文本的数量，行的高度是行中所有单元的 高度的最大值。因此，wcb 中表的最终位置只有在每一个单元的内容已经从Internet 返回后才可计算得到。使用代理proxy 模式描述图10-7，描述一个对象模型和算法， 可使得Web浏览器可以在知道所有单元大小之前显示一个表，并在每个单元的内容下载后可重画这个表。
+
+
+定义一个Table接口，包括方法getRowCount()、getColumnCount()和getCellContents(row, col)。
+
+创建一个RealTable类，实现Table接口并代表实际的表格。这个类可以有一个名为cells的二维数组，表示表格中的所有单元格和它们的内容。
+
+创建一个ProxyTable类，也实现Table接口。这个类存储了RealTable的引用，并在必要时使用它来检索单元格的内容。ProxyTable还将实现一些辅助功能，例如在加载单元格内容期间向用户显示加载指示符。
+
+在Web浏览器中，当需要显示Table时，使用ProxyTable替换RealTable。当用户导航到表格页面时，仅下载表格的元数据（如行数和列数），然后立即显示一个具有正确大小但没有内容的空白表格。这使得用户能够看到表格的框架，并允许他们开始选择或操作表格的其他部分。
+
+当用户开始浏览表格时，ProxyTable将逐个检索每个单元格的内容，并为每个单元格填充正确的内容。在这个过程中，ProxyTable可以在表格周围显示加载进度指示符，以让用户知道表格内容正在被载入。
+
+2.对下面的关联应用图描述的适当转换 。 假设所有关联都是双向的 ， 并且在每个对象的生命期中可以改变。写出管理这个关联所需要的源代码，包括类、 宇段和方法声明、方法体和可见性。
+
+MailBox 和 folder 双向聚合，folder 和 message 双向聚合， message 和 View 双向关联
+
+```java
+public class MailBox {
+    private List<Folder> folders = new ArrayList<>();
+
+    public void addFolder(Folder folder) {
+        if (!folders.contains(folder)) {
+            folders.add(folder);
+            folder.setMailbox(this);
+        }
+    }
+
+    public void removeFolder(Folder folder) {
+        if (folders.remove(folder)) {
+            folder.setMailbox(null);
+        }
+    }
+
+    public List<Folder> getFolders() {
+        return Collections.unmodifiableList(folders);
+    }
+}
+
+
+public class Folder {
+    private MailBox mailbox;
+    private List<Message> messages = new ArrayList<>();
+
+    public void setMailbox(MailBox mailbox) {
+        this.mailbox = mailbox;
+    }
+
+    public MailBox getMailbox() {
+        return mailbox;
+    }
+
+    public void addMessage(Message message) {
+        if (!messages.contains(message)) {
+            messages.add(message);
+            message.setFolder(this);
+        }
+    }
+
+    public void removeMessage(Message message) {
+        if (messages.remove(message)) {
+            message.setFolder(null);
+        }
+    }
+
+    public List<Message> getMessages() {
+        return Collections.unmodifiableList(messages);
+    }
+}
+
+
+public class Message {
+    private Folder folder;
+    private List<View> views = new ArrayList<>();
+
+    public void setFolder(Folder folder) {
+        this.folder = folder;
+        folder.addMessage(this);
+    }
+
+    public Folder getFolder() {
+        return folder;
+    }
+
+    public void addView(View view) {
+        if (!views.contains(view)) {
+            views.add(view);
+            view.setMessage(this);
+        }
+    }
+
+    public void removeView(View view) {
+        if (views.remove(view)) {
+            view.setMessage(null);
+        }
+    }
+
+    public List<View> getViews() {
+        return Collections.unmodifiableList(views);
+    }
+}
+
+
+public class View {
+    private Message message;
+
+    public void setMessage(Message message) {
+        this.message = message;
+        message.addView(this);
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+}
+
+
+```
+
+3.对下面的关联应用10.4.2 节中描述的适当的转换。假设所有的关联都是双向的，但聚集关联在每个对象创建后就不会发生改变。换句话说，每个类的创建者一个应该 修改，因而聚集在每个对象创建期问初始化。写出管理这个关联所需要的源代码， 包括类、字段和方法声明、方法体和可见性。
+
+League 和 Tournament 双向聚合，Tournament 和 Round 双向聚合， Tournament 和 Player双向关联
+
+```java
+public class League {
+    private List<Tournament> tournaments;
+
+    public League() {
+        tournaments = new ArrayList<>();
+    }
+
+    public void addTournament(Tournament tournament) {
+        if (!tournaments.contains(tournament)) {
+            tournaments.add(tournament);
+            tournament.setLeague(this);
+        }
+    }
+
+    public void removeTournament(Tournament tournament) {
+        if (tournaments.remove(tournament)) {
+            tournament.setLeague(null);
+        }
+    }
+
+    public List<Tournament> getTournaments() {
+        return Collections.unmodifiableList(tournaments);
+    }
+}
+
+
+public class Tournament {
+    private League league;
+    private List<Round> rounds;
+    private List<Player> players;
+
+    public Tournament() {
+        rounds = new ArrayList<>();
+        players = new ArrayList<>();
+    }
+
+    public void setLeague(League league) {
+        this.league = league;
+    }
+
+    public League getLeague() {
+        return league;
+    }
+
+    public void addRound(Round round) {
+        if (!rounds.contains(round)) {
+            rounds.add(round);
+            round.setTournament(this);
+        }
+    }
+
+    public void removeRound(Round round) {
+        if (rounds.remove(round)) {
+            round.setTournament(null);
+        }
+    }
+
+    public List<Round> getRounds() {
+        return Collections.unmodifiableList(rounds);
+    }
+
+    public void addPlayer(Player player) {
+        if (!players.contains(player)) {
+            players.add(player);
+            player.setTournament(this);
+        }
+    }
+
+    public void removePlayer(Player player) {
+        if (players.remove(player)) {
+            player.setTournament(null);
+        }
+    }
+
+    public List<Player> getPlayers() {
+        return Collections.unmodifiableList(players);
+    }
+}
+
+
+public class Round {
+    private Tournament tournament;
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+}
+
+
+public class Player {
+    private Tournament tournament;
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+}
+
+```
+
+4.图10-15描述了系列赛Tournament 中addPlayer0方法的检测代码。写出图9-16中描 述的与系列赛Tournar ent 关联的另 一个约束的检测代码。
+
+5.写出9. 6.2 节描述的比赛风格 Tournamentstyle 和Round 的契约的检测代码。写出前 置条件、后置条件和不变量的检测代码。
+
+6.为图 10-30 中的对象模型设计 一个关系数据库模式。假设联盟 League、系列赛 Tournament、选手Player 和Round 有一个name 屆性和 一个唯一的标识符。另外，系列赛 Tournament 和Round 有start 和end 日期属性。当不同的转换可使用时，解释 包 含的 折 中 
+
+7.画出表示 下面的应用领域实际情况的类图，并将它映射到 一个关系模式
+（在数据库设计中，将一个类图转换为一张或多张关系表的过程称为“映射到关系模式”）
+- 一个包含许多参与者的项目。
+- 参与者在一个项目中扮演项目经理、团队领导或开发者中的 一个角色。
+- 在一个项目中，每一个开发者和困队领导至少属 于一个团队。
+- 一个参与者可以参加几个项目，并可以扮演不同的角色。例奶，一个参与者可以 是项日A 中 一个开发者，项目B 的团队领导，同时是项目C 的经理。然而，一个参与者在 一个项目中的角色不可以发生改变
+
+```
+@startuml
+class Project {
+  - id: int
+  - name: String
+  - participants: Set<Participant>
+}
+
+class Participant {
+  - id: int
+  - name: String
+  - projects: Set<Project>
+  - roles: Map<Project, Role>
+}
+
+enum Role {
+  MANAGER, TEAM_LEADER, DEVELOPER
+}
+
+class Team {
+  - id: int
+  - name: String
+  - leader: Participant
+  - developers: Set<Participant>
+}
+
+Project "1" *-- "*" Participant : contains
+Participant "0..*" -- "1..*" Project : belongs to
+Participant "0..*" -- "0..*" Team : belongs to
+Team "1" -- "0..*" Participant : comprises
+
+@enduml
+
+```
+Project表包含以下属性：id（主键）、name。
+Participant表包含以下属性：id（主键）、name、team_id（外键参考Team表的id列），以及一个关系映射表project_participant，它有project_id和role两个列。
+Team表包含以下属性：id（主键）、name、leader_id（外键
+
+8.有两种通用的方法可以将关联映射到集合集合。在 10. 6. 2 节中，我们将 N 元关联统 计Statistics映射到两个类，一个简单的统计类Statistics用于存储关联的属性， 一个 StatisticsVault 类用于存储关联链接中的链接状态。在10.4.2节中，我描述了一种交 替的方法，在改进的方法中，关联链接存储 于关联两端的其中一 个或两个类中。在 存储 于两个类中的事件链接中，我们增加相同的递归方法以确保两个数据结构保持 一致。使用第二个方法將N 元统计Statistics 关联映射到集合。讨论你遇到的权衡问 题和每 一个方法的相对优势。
+
+
+
+## Part-11
+
+
+
+1.改正在图11-12中isleapYear0方法和getNumDaysInMonthO方法中的错误，并使用 路径测试方法来产生测试用例，你发现的测试用例是否与表11-4 和图11- 13 的有所 不同?为什 么?你发现的测试用例是否揭示你修改的错误?
+
+2.对 2 B w a t c h 的 用 例 (图 1 1 - 1 4 ) ， 根 据 S e t T i m e 状 态 图 导 出 等 效 J a v a 代 码 ， 根 据 你 产 生的代码使用等价测试 、边界测试和路径测试来产生测试用例。这些测试用例与基 于状态得到的测试用例相比较结果如何?
+
+3.对图11-24 中的购买票用例PurchaseTicket，构建其状态图序列。使用基于状态测试 技术产生基 于状态图的测试用例。讨论测试用例的数量和比较同图 11- 25 测试用例 的差异。
+
+4.给 出 如 下子 系 统 分 解 ， 要 做 出 的 决 定 做 什 么 ? 测 试 计 划 的 优 点 和 缺 点 是 什 么 ?
+layer1:User Interface
+layer2:Billing EventService Learning
+layer3: Database NetWork Neural NetWork
+这是一个三层的系统架构，其中最上层是用户界面，第二层是计费、事件服务和学习，第三层是数据库、网络和神经网络。为了做出决策，需要考虑系统的功能要求、性能需求、安全需求、可用性和可维护性等因素，并根据这些因素选择合适的技术方案。
+
+对于测试计划，其优点包括：
+
+帮助发现并解决软件缺陷，提高软件质量
+可与开发流程紧密结合，支持快速迭代和敏捷开发
+提升测试效率，节省时间和成本
+其缺点包括：
+
+无法完全覆盖所有可能性，测试结果具有局限性
+测试过程需要投入人力、物力、时间等资源成本
+测试结果可能存在误报或漏报的情况，需要人工审查和修复
+
+5.你负责一个网络加密传输系统的集成测试。这个系统包括 一个用于随机数的序列号产生器子系统。在集成测试期间，你使用关键产生桩程序产生一个可预知的结果， 然而，对于己经发布的系统版本，你用桩程序执行代替随机产生，以便序列号不可以被外人预见。使用一种设计模式使得这两个序列号生成器实现在运行时能够交换执行。确认你的选择。
+
+随机数的序列号产生器子系统是一个算法或行为，在集成测试期间需要使用关键产生桩程序产生可预知的结果，而在已发布的系统版本中则需要用桩程序执行代替随机产生以保证安全性。因此，我们可以把随机数的序列号产生器子系统看做一个策略族，在不同的环境下选择不同的实现。
+
+可以定义一个序列号生成器接口和两个实现类：随机数序列号生成器和产生桩程序序列号生成器。另外，还需要一个环境类，负责在运行时动态地切换序列号生成器的实现。当需要生成序列号时，环境类内部调用当前序列号生成器的方法即可。
+
+另一个可以考虑的设计模式是模板方法模式。
+
+模板方法模式定义了一个算法的框架，将算法的多个步骤封装在不同的方法中，并且允许子类重写某些步骤以实现特定的行为。在模板方法模式中，通常有一个抽象基类定义算法框架，具体子类实现算法的各个步骤。
+
+在本例中，我们可以定义一个序列号生成器基类，其中包括一个生成序列号的算法框架。具体实现类随机数序列号生成器和产生桩程序序列号生成器分别继承这个基类并重写部分步骤以实现不同的行为。
+
+在运行时，我们可以根据需要选择生成哪种类型的序列号。对于已发布的系统版本，我们通过调用产生桩程序序列号生成器的子类来代替随机产生序列号的子类，从而使得序列号不可以被外人预见。
+
+通过使用模板方法模式，我们可以尽量避免代码重复，提高代码复用性和可维护性，同时也降低了客户端代码的耦合性。
+
+6.对于在图11-15和图8-11中出现的NetworkConnection 类的全部方法，使用路径测 试产生测试用例。扩充源代码，以移去任何多态。使用路径测试产生多少测试用例? 当源代码不扩充时，产生多少测试用例?
+
+7.当源代码不扩充时，产生多少测试用例? 从本章里，运用软件工程和测试术语，对在Feynman 的文章里使用的术语进行介绍: 
+- 什么是“裂缝”?
+在软件工程中，“裂缝”通常指软件系统设计或实现中的问题点或缺陷，类似于建筑中的裂缝。
+
+
+- 什么是“开始产生裂缝”?
+
+“开始产生裂缝”指的是软件系统出现问题或缺陷的时间点，这可能由于设计、实现或测试等方面的原因
+
+- 什么是“高度引擎可靠性”?
+
+高度引擎可靠性”指的是在特定环境下运行的引擎或软件具有非常高的稳定性和鲁棒性。
+
+- 什么是“设计目标”?
+
+设计目标”指的是在进行软件设计时要达到的特定目标或要求，例如性能、可维护性、可扩展性等。
+
+- 什么是“等价任务” ?
+
+“等价任务”与“等效类划分”相关，是将输入、输出、状态空间等分成不同的等价类（即将具有相似特征的测试数据归为一类），以便从每个等价类中选择一组最具代表性的测试数据来执行测试。
+
+- “初始规格说明的10%” 的含义是什么?
+
+“初始规格说明的10%”是指在软件开发过程中，最初的规格说明文档可能只覆盖了软件系统所需功能的10%，需要通过迭代和反馈来不断完善和修改。
+
+- 当Feynman 说“由于注意到了缺点和设计错误，在进 一步的测试中就能够进行修 正和验证”，如何使用术语“验证” ?
+
+在软件测试中，“验证”指的是确认软件是否满足指定的需求和规格说明、是否符合预期的行为或结果，包括功能性验证、性能验证、安全验证等。在Feynman文章中，他指的是通过进一步的测试来修正设计错误和缺陷并验证软件是否满足要求。
+
+
+## Part-12
+
+1.分析在CTC 系统中，与访问控制和通知有关的问题。选择一个在CTC 开发过程中可能出现的类似的问题，问题由相关的提议，标准和讨论，和解 决方案的合理解释。这种问题的实例包括:
+• 怎样维护主服务器和热备份之间的一致性?
+• 应该怎样检测到主服务器的失败，以及怎样实现随后热备份的切换?
+
+如何确保数据备份的完整性？如何保证备份数据的及时性？如果主服务器发生故障，应该如何快速地从备份中恢复数据？
+
+如何确保数据备份的完整性？
+- 比较备份数据和原始数据：使用专门的比较工具（如Beyond Compare、WinMerge等）来比较备份数据和原始数据，并检查它们是否一致。如果发现不同，需要找出原因并及时采取措施。
+- 定期检查硬盘：对备份数据所在的硬盘进行定期检查，查找坏道等问题，并修复或更换有问题的硬盘，以确保备份数据的完整性
+- 使用 RAID 技术：RAID 技术可以让多个硬盘组合成一个逻辑驱动器，提高数据备份的可靠性和恢复能力。例如，RAID 5 可以在一定程度上抵御单个硬盘故障而不导致数据丢失。
+- 使用加密技术：将备份数据进行加密处理，可以防止未经授权的人访问备份数据，从而保证了数据备份的安全性和完整性。常用的加密算法包括 AES、RSA 等。
+- 建立备份策略和紧急恢复计划：建立详细的备份策略和紧急恢复计划，包括备份频率、备份存储位置、紧急恢复过程等信息。例如，可以定期备份数据到本地硬盘和云存储，并定期进行测试恢复以确保备份数据的完整性。
+
+如何保证备份数据的及时性？
+- 自动化备份计划：使用自动化工具来定期备份数据可以保证数据的及时性。例如，您可以设置一个每天或每周在不同时间备份数据的计划。
+- 实时备份：实时备份会持续监控新数据的产生并将其备份到相应的位置。这种备份方式可以实现数据备份的实时性，并减少数据丢失的可能性。
+- 增量备份：增量备份只备份发生更改的数据，而不是整个系统或硬盘，因此它们比完全备份更快和更简单。这种方式可在较短的时间内完成备份，并保证了备份数据的及时性。
+- 备份到云端：将数据备份到云存储服务中，可以在任何地方都能够及时访问和恢复数据，即使本地硬件故障或遭受攻击，仍然可以通过云端备份进行数据恢复。
+- 监视备份状态：需要定期检查备份数据的状态，以确保数据已经按预期备份。可以建立警报机制来提醒备份管理员有关备份失败、未备份等信息。
+- 测试备份的恢复能力：定期测试备份数据的恢复能力，这样可以验证备份是否有效，并查看备份类型、位置、时间和可用性等方面是否满足要求。
+
+怎样维护主服务器和热备份之间的一致性
+
+实时同步：使用实时同步技术可以确保主服务器和备份服务器上的数据始终保持一致。这种方式可以在主服务器上进行任何更改时及时反映在备份服务器上，从而避免了数据不一致的问题。
+
+定期校验：定期对主服务器和备份服务器上的数据进行校验，以确保它们的内容、格式和结构都是相同的。例如，可以比较文件大小、修改日期、创建日期、文件夹结构等来确定数据是否一致。
+
+避免损坏：使用高质量的硬件和软件组件来避免数据损坏。如果出现任何硬件或软件故障，则应立即将其纠正并重新启动备份服务器。
+
+应急处理：准备好应急处理计划，以便在必要时立即启用。这可以包括原始数据的备份、可用热备份的紧急部署等操作，以确保系统尽快地重新恢复正常运行。
+
+进行测试：定期对主服务器和备份服务器进行测试，以确保它们正常工作并且可以正确进行数据同步。这种测试可以模拟各种故障和应急场景，测试系统的恢复能力和数据一致性。
+
+应该怎样检测到主服务器的失败，以及怎样实现随后热备份的切换?
+应该怎样检测到主服务器的失败，以及怎样实现随后热备份的切换?
+心跳监测：使用心跳监测技术来定期检查主服务器是否处于运行状态。例如，可以使用一个专门的心跳程序或组件来定期向主服务器发送请求，并根据响应时间和结果来确定服务是否可用。
+
+网络监控：使用网络监控工具来实时监视主服务器和备份服务器之间的连接，并在网络故障或宕机时立即通知管理员。
+
+日志分析：定期分析主服务器的系统日志和应用程序日志，以识别可能导致服务器故障的原因。例如，可以检查磁盘空间、CPU 利用率、内存占用率等指标，以便快速发现潜在问题并进行修复。
+
+2.你正在开发一个UML 建模工具。你考虑将基本原理集成进到工具中。描述开发者怎样能够将问题附加到不同的模型元素中 去。画一 个问题模型的类图和与它 关联的模 型元素。
+
+创建问题（Issue）类：该类应包含问题标题、描述、状态等属性。问题状态可以设为“已解决”、“待解决”等。此外，可以根据需求添加其他属性。
+
+将问题类与模型元素相关联：可以通过创建关联或依赖关系来将问题类与不同的模型元素相关联。例如，可以创建一种关联关系，将问题类与活动图中的活动节点相关联。这样，当用户在活动节点上单击时，就可以显示相应的问题和解决方案。
+```
+@startuml
+class Issue {
+  + title : String
+  + description : String
+  + status : String
+}
+
+class Class
+class SequenceDiagram
+class ActivityDiagram
+class UseCaseDiagram
+
+Class --> "*" Issue
+SequenceDiagram --> "*" Issue
+ActivityDiagram --> "*" Issue
+UseCaseDiagram --> "*" Issue
+@enduml
+```
+
+
+我们创建了一个名为Issue的类来表示问题，其中包含了标题、描述和状态等属性。然后，我们将Class、SequenceDiagram、ActivityDiagram和UseCaseDiagram这四个模型元素与Issue类相关联。
+
+通过这样的设计，每个模型元素都包含了一个问题列表，其中包含了与该元素相关的所有问题。当用户浏览或编辑模型时，可以很方便地查看并处理与该模型元素相关的所有问题。
+
+3.下面的是 事故管理系统的一个系统设计文档的摘录。是永久存储的关系型数据库的 基本原理自然语言描述。用在12. 3节中定义的问题、提议、争论、标准和解决方案 来为这个基本原理建模
+
+基本原理：永久存储的关系型数据库
+
+问题：如何确保系统中所有数据都能够得到永久存储，以便在发生事故时进行溯源和分析？
+
+提议：使用一种关系型数据库来存储系统中的所有数据，并通过备份和灾备措施来确保数据的永久性保存。
+
+争论：可能会有其他类型的数据库能够更好地满足系统要求，例如文档型数据库或图形数据库。此外，备份和灾备方案的实现可能会影响系统性能。
+
+标准：必须使用支持事务和ACID特性的关系型数据库来存储数据，以确保 数据的一致性和可靠性。备份和灾备方案必须能够及时有效地恢复数据。
+
+解决方案：为数据设计合适的表结构和关系，并使用SQL语言对数据库进行操作。使用定期备份和异地备份等灾备措施来保证数据不会因为硬件、软件或自然灾害而丢失，同时兼顾系统性能。同时，监控数据库运行状态，及时发现并修复潜在的故障。
+
+4.考虑在12.3. 7 节中描述的NFR框架。画一个等价于在图12- 12中描述的目标图的QOC 模型。讨论在需求过程中用QOC和NFR 框架表示基本原理时，各自的优缺点。 
+
+5.你正将 一个错误报告系统和 一个配置管理工具集成起来，以追踪错误报告、错误修 复、特性要求和升级。你正考虑 一个问题模型来集成这些 工具。画一个问题模型的 类图、相应的讨论、配置管理和错误报告元素。
+```
+@startuml
+class Report {
+    -ID: int
+    -description: string
+    -severity: string
+    -status: string
+    -reportedDate: Date
+    +getDescription(): string
+    +getSeverity(): string
+    +getStatus(): string
+}
+
+class Fix {
+    -ID: int
+    -description: string
+    -codeChanges: string[]
+    -status: string
+    -fixedDate: Date
+    +getDescription(): string
+    +getCodeChanges(): string[]
+    +getStatus(): string
+}
+
+class FeatureRequest {
+    -ID: int
+    -description: string
+    -priority: string
+    -status: string
+    -requestedDate: Date
+    +getDescription(): string
+    +getPriority(): string
+    +getStatus(): string
+}
+
+class Discussion {
+    -ID: int
+    -sender: string
+    -recipient: string
+    -message: string
+    -timestamp: Date
+    +getSender(): string
+    +getRecipient(): string
+    +getMessage(): string
+}
+
+class Configuration {
+    -version: string
+    -buildDate: Date
+    -options: map<string, string>
+    +getVersion(): string
+    +getBuildDate(): Date
+    +getOption(key: string): string
+    +addOption(key: string, value: string): void
+    +removeOption(key: string): void
+}
+
+Report -> Fix
+Report -> Discussion
+Fix -> Discussion
+FeatureRequest -> Discussion
+Configuration -- Report
+Configuration -- Fix
+Configuration -- FeatureRequest
+@enduml
+
+```
+
+错误报告、错误修复、特性要求和讨论，以及一个辅助元素：配置。每个类包含有关其相应元素的信息和操作。
+
+报告和修复之间具有一对多的关系，因为一个报告可能需要多次修复才能解决。讨论元素被所有其他元素共享，因为用户可以在这些元素之间进行交流和协作。配置元素与每个主要元素都有关联，因为每个主要元素都需要跟踪软件的不同版本或构建，并带有特定的设置和选项。
+
+
+## Part-13
+
+1.RCS采用一种反向的delta方法来存储一个文件的多个版本。例如，假定一个文件有 三个版本——1. 1，1. 2，1. 3。RCS 存储版本1. 3作为文件，然后是1.2 和1.3 之间的 差 异 ， 最 后 是 1 . 1 和 1 . 2 之 间 的 差 异 。 当 创 建 一个 新 版 本 时 ， 奶 1 . 4 ， 在 1 . 3 和 1 . 4 之 间的差异就被计算和存储，且删除版本1. 3，由1.4来替代。试解释为什么RCS 不是 简 单 地 存 储 最 初 的 版 本 (本 例 中 是 1 . 1 ) 和 每 个 连 续 的 版 本 之 间 的 差 异 。
+
+RCS采用反向delta方法存储文件的多个版本，而不是简单地存储初始版本和每个连续版本之间的差异，是因为这种方法可以节省存储空间并提高处理效率。当一个文件被修改时，只需要存储与前一版本不同的部分，而不是整个文件以及与之前每个版本不同的所有部分。这意味着随着版本数量的增加，需要存储和处理的数据量更小，因此操作速度更快，同时还减少了存储成本。另外，如果对于某个版本可能有多个修改，那么这些修改也可以通过计算差异来合并到一个新版本中，从而进一步减少存储空间。因此，反向delta方法是RCS能够有效管理大量版本并保持数据一致性的关键。
+
+2.CVS 使用简单的基于文本的规则去标识合并之问的重叠:如果在要合并的两个版本 中，变化同样的行，就有重登存在。如果没有这样的行存在，那么CVS 确定没有冲 突且版本自动地合并。例如，假定一个文件包含有 三个方法的类-
+0 、60和c0。 两 个 开 发 者 独 立 地 在 文 件 上 工 作 。 如 果 它 们 都 改 变 了 代 码 的 同 一 行 ， 比 如 方 法 日0 的 第 一行 ， 那 么 C V S 就 确 定 这 里 有 一个 冲 突 。 试 解 释 为 什 么 这 种 方 法 不 能 检 测 某 类 冲 突。提供你答案的 一个实例。
+
+CVS使用基于文本的规则标识合并冲突，但是这种方法不能检测出所有类型的冲突。例如，在一个类中添加一个新方法和修改另一个方法的同一行不会被视为冲突，因为它们是不同的更改。然而，当尝试将两个版本合并时，新方法和已修改方法的更改可能会相互冲突，导致代码无法编译或产生错误结果。 因此，即使在没有重叠变化的情况下，也可能存在潜在的逻辑冲突。例如，假设一个开发人员添加了一个新方法，该方法与另一个开发人员在相同文件中修改的另一个方法产生了冲突，因为两个方法都需要访问相同的全局变量。 由于这种方法不能检测到所有类型的冲突，因此最好仔细审查代码，并确保在合并之前进行适当的测试来减少任何潜在的问题。
+
+3.配置管理系统，如RVS、CVS 和Perforce 使用文件名和它们的路径去标识配置项。 试解释为什么这个特性阻止了CM聚集的配置管理，即使是存在标签的情况下
+
+配置管理系统使用文件名和路径来标识配置项，这种方法有一个限制，即如果文件名或路径发生更改，则无法准确地识别以前的版本与新版本之间的差异。因此，即使在应用了标签的情况下，也可能会存在聚集的配置管理问题。
+
+例如，假设在一个项目中有一个文件夹A中包含一个名为file1的文件。然后，该文件被标记为v1.0，并在其他文件中使用了它。随后，开发人员将文件夹A中的文件移动到文件夹B中，并重命名file1为file2。如果使用相同的标签v1.0检出代码，则文件file2将不在预期的位置上，代码无法编译，因为引用了不存在的文件。
+
+由此可见，虽然使用标签可以减轻一些聚集性配置管理方面的问题，但它不能完全解决这个问题。为防止此类问题, 配置管理系统需要确保能够跟踪文件的历史记录、版本信息和更改，而不只是基于文件名和路径。
+
+4.试解释配置管理如何对开发者有好处，即使没有变化控制或审计过程。列出两个场 景说明你的解释。
+
+项目合作 - 如果有多个开发人员共同参与一个项目，每个人都需要访问相同的代码库并能够快速找到他们所需的文件或模块。配置管理系统可以提供这种访问，并确保所有开发人员使用相同的版本控制规则和目录结构。这样的话，开发人员可以更加高效地协作开发，并减少与代码管理相关的错误和混乱。
+
+版本发布 - 在软件开发中，版本控制和管理是非常重要的一环。如果一个开发人员想要发布他们的软件产品，他们需要能够确定他们发布的版本与他们使用的代码和依赖项相匹配。配置管理系统可以确保所有开发人员都使用相同的代码基础，并且能够跟踪版本历史记录，因此开发人员可以很容易地确定哪些组件已被包含在特定版本中，并从而更容易地进行发布。
+
+5.我们描述了基本原理信息如何由问题模型来表示。为问题追踪系统画 一个UML 类图，这个系统使用一个问题模型来描述并讨论变化，以及它们与版本的 关 系。将注意力只集中在 系统的领域对象中。
+
+```
+class Issue {
+  + id: string
+  + title: string
+  + description: string
+  + priority: string
+  + severity: string
+  + assignee: string
+  + status: string
+  + version: Version
+  + relatedIssues: List<Issue>
+  + addComment(comment: Comment): void
+}
+
+class Version {
+  + number: string
+  + releaseDate: date
+}
+
+class Product {
+  + name: string
+  + modules: List<Module>
+  + versions: List<Version>
+  + createIssue(title: string, description: string, priority: string, severity: string, assignee: string): Issue
+}
+
+class Module {
+  + name: string
+  + issues: List<Issue>
+}
+
+class User {
+  + name: string
+  + email: string
+  + createIssue(product: Product, module: Module, title: string, description: string, priority: string, severity: string): Issue
+  + addComment(issue: Issue, comment: Comment): void
+}
+
+class Comment {
+  + text: string
+  + author: User
+  + createdDate: date
+}
+
+Issue *- Version : uses
+Product o- Module : has
+Product o- Version : has
+User o- Issue : creates
+User o- Comment : writes
+Issue o- "*" Issue : relates to
+Issue "0..*" - Comment : has
+
+```
+
+6.我 们 描 述 了质 量 控 制 系 统 如 何 发 现 由 子 系 统 创 建 的 升 级 版 中 的 错 误 。 画一个UML 行为图，包括变化过程活动并测试多个团队项目的活动。
+
+
+
+   
+```
+@startuml
+title Quality Control System
+
+actor Developer
+participant UpgradeSubsystem
+participant QualityControlSystem
+participant TestSubsystem
+participant MultipleTeamsProject
+
+== Change Process Activity ==
+
+Developer -> UpgradeSubsystem : Create upgrade package
+UpgradeSubsystem -> QualityControlSystem : Send upgrade package
+QualityControlSystem -> UpgradeSubsystem : Verify upgrade package
+UpgradeSubsystem -> QualityControlSystem : Respond verified
+QualityControlSystem -> TestSubsystem : Send upgrade package
+TestSubsystem -> QualityControlSystem : Test upgrade package
+QualityControlSystem -> TestSubsystem : Respond passed/failed test
+TestSubsystem -> UpgradeSubsystem : Report test result
+
+== Multiple Teams Project Activity ==
+
+QualityControlSystem -> MultipleTeamsProject : Request testing
+MultipleTeamsProject -> QualityControlSystem : Respond availability
+QualityControlSystem -> MultipleTeamsProject : Send test package
+MultipleTeamsProject -> QualityControlSystem : Test system
+QualityControlSystem -> MultipleTeamsProject : Collect test results
+MultipleTeamsProject -> QualityControlSystem : Return test package and results
+QualityControlSystem -> Developer : Send package for fixing issues
+@enduml
+
+```
+
+
+## Part14-项目管理
+
+1.在图14-1 中，我们用状态图对项目的阶段建模。通过把每个阶段看成 一个不同的类来使用状态图。用这一章介绍的项目管理活动来设置这些类的公开操作。我们假定 这是 一个基于团队的项目组织。
+
+
+2.周 定 人 员 相 对 于渐 进 人 员 而 言 ， 优 点 是 什 么 ?
+
+3.在会议中报告状态和作出决定有什么区别?
+
+报告状态意味着向相关人员或团队提供当前项目的进展情况，其中可能包括已完成的工作、正在进行的工作、迄今为止所花费的时间和资源以及项目的风险和障碍。报告状态通常是一个信息分享的过程，目的是确保各方都了解项目的当前状态，并且能够对项目的预期进展有一个清晰的认识。这样可以帮助所有相关人员协调行动，增强透明度和沟通效率。
+
+另一方面，做出决策涉及到从多种选择中选出最佳的方案或路径，以实现既定的目标。在一个会议上做出决策通常需要收集和评估各种选项，对其进行分析和比较，并考虑预期结果和潜在风险。最终，该会议将制定一个计划或行动方案，以实现既定的目标。
+
+4.为什么要将软件架构师和项目领导的角色分配给不同的人?
+
+
+5.为ARENA 项目中的每个主要阶段 (例如概念、定义、开始、稳定状态、终止)，画 出因队组织的 UML 模型。
+
+6.描述的MyTrip 系统的系统设计任务模型。
+
+7.估算完成练习14-6 中每个任务模型的时间并决定关键路径。
+
+8.对在第6 章中描述的MyTrip 系统的5个最高风险进行标识、设置优先级和计划。
+
+9.对第12章中描述的CTC 子系统的用户界面的5个最高风险进行标识、设置优先级 和计划。
+
+10.用松散型模型开发的Linux 比很多在Intel PC 上运行的操作系统更可靠和响应更快。 举例说明为什么松散型模型可以被或不可以被用于航天 飞机控制软件开发上。
+
+11.把项目开发者组织成四人团队。每个团队有以 下资源:2 个蛋，一卷TES A 胶卷，1 卷卫生纸，1 个有水的杯子，1 个装有2 升沙的桶，20 个泡沫球 每个的直径大约 是1厘米，!张大约1米高的桌子。每个团队有25分钟去建造和测试 一个物品， 使鸡蛋能在高于桌子75 厘米的地方摔到桌子上而不被打碎。每个团队另外有5 分 钟时间，以向项日管理者演示这个作品。
+
+12.把 项 目 开 发 者 组 织 成 四 人 团 队 。 每 个 团 队 有 以 下资 源 : 2 桶 D U P L O 纸 ， 2 张 相 距 1.5米的桌子。每个团队有25分钟去建造和测试 一座只用DUPLO纸做成的桥，这 座桥能在两张桌子之间架设至少1 分钟。每个团队另外有5 分钟时间，以向项目管 理者演示他们的作品。
+
+13.定义练习14-11中描述的破冰船项目的所有管理模型。
+
+14.写出练习 14-12 中描述的破冰船项目的SPMP。
+
+15.在 灭 火 表 中 的 平 底 框 架 是 何 意 ( 例 如 在 图 1 4 - 1 5 中 的 3 天 和 6 天 之 间 的 平 底 框 架 )
+
+
+## Part-15
+
+1.将建模作为图15-2 中活动和图15-4 工作产品的分类，并画出一个UML 类图表示活动 和 工作产品之间 的 关 系 。
+
+2.假设在活动生命周期建模期间，图 15-8 所示的瀑布模型已经从图 15- 7 中的 IEEE 标 准模型中导出。在此瀑布模型中，所忽略的过程和活动是什么?
+
+3.将图15- 10 中的Boehm 螺旋模型重画为一个UML 活动图。将活动图的可读性与原 图的可读性进行对比。
+
+4.画出一个UML活动图以描述在生命周期中的需求、设计、实现、测试和维护同时发 生时的活动之间的依赖。 (这一生命周期称为进化生命周期。)
+
+5.在 实 现 活 动 之 前， 描 述 测 试 活 动 怎 样 更 好 地 启 动 。
+
+6.在项目管理中，两个任务之间的关系通常被解释成 一种前序关系;即一个任务必须
+在 另 一 个 任 务 启 动 时 完 成 。 在 软 件 生 命 周 期 中 ， 两 个 活 动 之 间 的 关 系是 有 依 赖 关 系 的:即一个活动使用另一个活动产生的工作产品作为输入。讨论这之间的不同。在 V - 模 型 的 情 况 下 举 一个 例 子 。
+
+
+7.假设你是IEEE委员会的委员，要修订IEEE1074标准。你被分到的任务是将沟通建 模成一个明确的整体过程。试制作一个属于这个过程的活动例子。
+
+
+## Part-16
+
+
+1.软件生命周期和方法学有什么区别？
+
+2.改进一个遗留系统，需要为项目定义软件生命周期，需要做哪些活动，按照什么顺序来做？
+
+3.Ro yce 使用一种管理标准来计算离开项目或加入项目参与者的数目。如果你正在管 理一个包含多个 工作团队的项目，并且你注意到组内人员交流 十分频繁。试想哪些 原因可以导致这种状况，并对每种原因给出解决方案。
+
+4.在 16. 5. 4 中描述的启发式方法指出，在分布式组织中对模型的需要更高。 开源项目 是一种高分布式项目，它遵循基于实体的生命周期，并且通常没有需求或系统设计 文档。请举例说明在这种情况下，如何使建模知识明确化，并在参与者之间传递
+
+5.在 为 某 一 具 体 项 目 修 改 一 个 过 程 时 (第 1 6 . 4 . 1 节 )， R o y c e 的 方 法 论 考 惠 六 个 项 目 因 素 (规模、风险承担者的凝聚力、过程的灵活性、过程的成熟度、体系结构风险和 领域经验)。利用这些因素来描述那些类型的项目能够把叉P 作为合适的方法学来使 用 。并证明你对 每种因素的选择的正确性 。
+
+6.1928 年，在Alexander Fleming 先生致力于葡萄状球菌的研究时，不小心将一些面包 屑掉到了其中一 个盘子中。一 个多星期后，发现那个有面包屑的盘子中的细菌并没 有按照预期的速度增长。Fleming注意到了在霉的周围有 一个无菌环，它正是污染葡 萄 状 球 菌 的 培 养 物 。 于 是 他 放 弃 了 计 划 中 的 实 验 ， 开 始 了一 个 新 的 实 验 ， 他 把 霉 隔 离了出来， 让它在一种液体媒介中生长，从而发现了一种特殊物质，即使这种物质 被稀释800 倍，它也能阻止细菌的生长。这就是青霉素。利用本章中介绍的术语和 问题，讨论青壽素的发现。
+
+7.基于地球是圆形的假设，Columbus 的目标是通过从西出发，而不是从东出发，找到 一条去印度的更短的路。而他最后遇到是美国而不是印度。 利用本章中介绍的术语 和问题， 讨论这个问题。
+
+8.选择一个你曾参加的项目。按照本章定义的方法学问题进行归类，并说明项目中出 现的方法学的折中问题。
 
