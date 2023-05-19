@@ -452,6 +452,282 @@ func main() {
 归并排序最好：NlogN
 归并排序最坏：NlogN
 
+53.Huffman 编码
+基本思想：使用更短的二进制码来代表出现频率较高的字符，而使用更长的二进制码来代表出现频率较低的字符。
+
+统计出每个字符在文本中出现的频率，并根据频率构建最小堆（即次数最少的元素在前面）。
+
+54.ARP协议/RARP
+
+ARP，即地址解析协议（Address Resolution Protocol），是一种用于将网络层地址（如 IP 地址）解析为链路层地址（如 MAC 地址）的协议。
+
+在一个 IP 网络中，当主机 A 的网络层需要发送数据到另一个主机 B 时，它需要知道目标主机 B 的 MAC 地址以便构建出帧来正确地把数据包发往目标。由于 ARP 协议可以查询目标主机的 MAC 地址，所以在发送数据前通常会先向局域网内广播一个 ARP 请求，该请求同时包含源主机的 IP 和 MAC 地址以及目标主机的 IP 地址。其他主机收到该请求后会检查自己的 IP 地址是否与请求中的目标地址匹配，如果匹配则会返回自己的 MAC 地址给请求方；否则就忽略该请求。
+
+当请求方接收到 ARP 响应时，它将把返回的 MAC 地址缓存起来，以后再向该目标主机发送数据时就可以直接使用该 MAC 地址，无需再进行 ARP 查询。缓存的 ARP 条目有一个存活时间，过期后需要重新查询。
+
+RARP 协议则是将一个 MAC 地址解析为相应的 IP 地址。在某些局域网环境下，由于没有 DHCP 服务器或者其他原因，某些主机可能无法获得自己的 IP 地址。这时候，RARP 就可以帮助它们了。主机会广播一个 RARP 请求消息，请求其它主机帮助它获取自己的 IP 地址。收到请求的主机会根据 MAC 地址查找相应的 IP 地址，并将其返回给请求主机。
+
+55.路由协议
+
+> 是指在计算机网络中，用于维护路由表和决策数据包传输路径的一组规则与协议。
+> 静态路由协议：由网络管理员手动配置路由器上的路由表，适用于小型网络或者稳定的网络环境，因为对网络拓扑结构的变化会造成管理上的困难。
+> RIP（Routing Information Protocol）：是一种基于距离向量的路由协议。RIP 协议通过交换整个路由表或部分路由表来实现路由信息的传播，同时每隔一段时间会向邻居发送路由通告，并请求邻居发送其相邻路由表，最后选取最优路径作为路由信息。
+> BGP（Border Gateway Protocol）：是一种路由协议，主要运用在互联网中的边缘路由器之间，用来交换路由信息，以便于实现路由的选择和控制。BGP 采用了基于路径、自治系统号等多种因素的决策过程，是一种高级的路由协议。
+> OSPF（Open Shortest Path First）：是一种链路状态路由协议。OSPF 通过不断地广播链路状态信息来更新本地的链路状态数据库，使用 Dijkstra 算法计算得出全网中各节点之间的最短路径，并维护路由表。
+
+工作原理：
+
+路由协议通过在路由器之间共享路由信息来支持可路由协议，路由信息在相邻路由器之间传递，路由协议创建了路由表，描述了网络的拓扑结构。
+
+56.对称加密/非对称加密
+
+非对称加密：RAS/ECC
+对称加密：DES 3DES AES
+消息摘要算法：SHA/MD5
+
+57.SQL注入
+
+把SQL语句加入，获取到数据库的访问权限。
+
+58.四层网络模型
+
+链路层：PP2P链路层，为链路加密
+网络层：IPSec工作在网络层，为数据报文加密
+传输层：Https SSL为传输层以上的数据加密
+应用层：TLS为两个通信应用程序之间提供保密性和数据完整性
+
+59.软件详细设计阶段
+
+每个模块进行详细的算法分析，代码设计，输入，输出设计，用户界面设计。
+
+60.软件的概要设计阶段
+软件体系结构设计，系统划分模块，确定每个模块的功能，确定每个模块的调用关系，确定模块间的接口。模块间传递的信息。
+
+61.软件可靠性/可维护性/可用性
+软件可靠性
+```
+MTTF/（MTTF+1）
+```
+可维护性
+```
+MTTR/（1+MTTR）
+```
+可用性
+```
+MTBF/（1+MTBF）
+```
+
+
+63.维护类型
+
+改正性维护：修复错误。
+适应性维护：因为外部环境的改变，修改软件
+完善性维护：新的功能，新的要求。
+预防性维护：预先修改，满足未来。
 
 
 
+64.面向对象分析
+识别对象-组织对象-描述对象间的关系-确定对象的操作-定义对象的内部信息。
+
+
+
+65.稀疏矩阵的十字链表压缩
+
+在节点中除了存储元素值外，还会存储该元素在行列方向上的前驱节点和后继节点。具体来说，每个节点包含以下字段：
+```
+row：该元素所在的行号。
+col：该元素所在的列号。
+value：该元素的值。
+down：下一个在该元素同一列的节点。
+right：下一个在该元素同一行的节点。
+rhead：该元素所在行的头节点。
+chead：该元素所在列的头节点。
+```
+
+66.稀疏矩阵的三元顺序表压缩
+
+稀疏矩阵的三元组表是一种常用的压缩存储方式，可以用于节省稀疏矩阵所需的存储空间。它将矩阵中非零元素的行列坐标和数值存储在一个三元组中，通常采用如下格式表示：
+
+```
+(i, j, v)
+```
+
+67.排序算法
+
+```go
+func InsertSort(arr []int){
+    for i:=1;i<len(arr);i++{
+        // 找到大于的数字，那么前面的位置就是该数字
+        for j:=i-1;i<i;j++{
+            if arr[j]>arr[j]{
+                arr[j-1],arr[i] = arr[i],arr[j-1]
+            }
+        }
+    }
+}
+
+```
+
+```go
+func BubbleSort(arr []int){
+    for i:=0;i<len(arr)-1;i++{
+        // 找到大于的数字，那么前面的位置就是该数字
+        for j:=1;j<=len(arr)-1-i;j++{
+            if arr[j]<arr[j-1]{
+                arr[j-1],arr[i] = arr[i],arr[j-1]
+            }
+        }
+    }
+}
+
+```
+
+```go
+func SelectSort(arr []int){
+    for i:=0;i<len(arr)-1;i++{
+        minIndex:=i
+        // 找到大于的数字，那么前面的位置就是该数字
+        for j:=i+1;j<len(arr);j++{
+            if arr[j]<arr[minIndex]{
+                minIndex = j
+            }
+        }
+        arr[i] ,arr[minIndex]= arr[minIndex],arr[i]
+    }
+}
+
+// 堆排序
+func heapSort(arr []int) {
+    n := len(arr)
+
+    // 构建大根堆
+    for i := n/2 - 1; i >= 0; i-- {
+        adjustHeap(arr, i, n)
+    }
+
+    // 取出堆顶元素，与末尾元素交换位置
+    for i := n - 1; i > 0; i-- {
+        arr[0], arr[i] = arr[i], arr[0]
+        adjustHeap(arr, 0, i)
+    }
+}
+
+// 调整大根堆
+func adjustHeap(arr []int, start, end int) {
+    temp := arr[start]
+    for k := start*2 + 1; k < end; k = k*2 + 1 {
+        if k+1 < end && arr[k+1] > arr[k] {
+            k++
+        }
+        if arr[k] > temp {
+            arr[start] = arr[k]
+            start = k
+        } else {
+            break
+        }
+    }
+    arr[start] = temp
+}
+
+// 快速排序
+func quickSort(arr []int, left, right int) {
+    if left < right {
+        pivotIndex := partition(arr, left, right)
+        quickSort(arr, left, pivotIndex-1)
+        quickSort(arr, pivotIndex+1, right)
+    }
+}
+
+// 分区操作
+func partition(arr []int, left, right int) int {
+    pivot := arr[left]
+    for left < right {
+        for left < right && arr[right] >= pivot {
+            right--
+        }
+        arr[left] = arr[right]
+        for left < right && arr[left] <= pivot {
+            left++
+        }
+        arr[right] = arr[left]
+    }
+    arr[left] = pivot
+    return left
+}
+
+// 归并排序
+func mergeSort(arr []int) []int {
+    length := len(arr)
+    if length <= 1 {
+        return arr
+    }
+
+    mid := length / 2
+    left := mergeSort(arr[:mid])
+    right := mergeSort(arr[mid:])
+
+    return merge(left, right)
+}
+
+// 合并两个有序数组
+func merge(left []int, right []int) []int {
+    result := make([]int, 0)
+
+    for len(left) > 0 && len(right) > 0 {
+        if left[0] < right[0] {
+            result = append(result, left[0])
+            left = left[1:]
+        } else {
+            result = append(result, right[0])
+            right = right[1:]
+        }
+    }
+
+    result = append(result, left...)
+    result = append(result, right...)
+
+    return result
+}
+
+```
+
+
+77.FTP SFTP TFTP ICMP 
+
+FTP：文件传输协议（File Transfer Protocol），它是为在网络上进行文件传输而开发的一种标准协议。
+SFTP：安全文件传输协议（Secure File Transfer Protocol），是基于SSH协议之上的一种加密传输文件的协议。SFTP是一种与FTP不同的完全独立的协议。
+TFTP：简单文件传输协议（Trivial File Transfer Protocol），TFTP是一个小巧、简单易用的文件传输协议，主要用于无需认证和登录的场景，如在内网中分发软件镜像。
+ICMP：Internet控制消息协议（Internet Control Message Protocol），是TCP/IP协议族的一个子协议，它用于在IP网络上发送控制信息。ICMP通常用于网络设备间交换状态信息，比如路由器、交换机等设备所发生的故障以及转发表更改等情况。
+
+78.四层网络模型各层的协议
+
+应用层：HTTP、FTP、SMTP、DNS
+
+HTTP（HyperText Transfer Protocol）：万维网上块数据的传输协议，用于浏览器与Web服务器之间的通信。
+FTP（File Transfer Protocol）：用于在网络上进行文件传输的协议。
+SMTP（Simple Mail Transfer Protocol）：用于电子邮件的发送和接收协议。
+DNS（Domain Name System）：将域名转换为 IP 地址的系统。
+
+传输层：TCP、UDP
+TCP（Transmission Control Protocol）：提供端到端的可靠数据传输服务和协议，包括流量控制和错误纠正等机制。
+UDP（User Datagram Protocol）：简单的无连接的传输协议，不保证可靠性，但具有较低的延迟和更好地支持广播和多播。
+
+网络层：IP、ICMP、ARP：
+IP（Internet Protocol）：负责实现数据包的传输和路由选择。
+ICMP（Internet Control Message Protocol）：用于在网络中传递控制消息，例如ping命令使用的“回显请求”和“回显应答”就是基于ICMP的。
+
+ARP（Address Resolution Protocol）：将IP地址转换成MAC地址的协议。
+数据链路层：Ethernet、PPP
+Ethernet（以太网）：最常见的有线局域网络传输协议。
+PPP（Point-to-Point Protocol）：用于在两个计算机之间进行点对点的数据通信。
+
+
+79.DDOS
+DDoS攻击（Distributed Denial-of-Service Attacks）是指攻击者通过利用网络上的大量计算机或网络设备，向目标服务器或网络资源发起大量伪造的请求，以使得正常用户无法访问服务器或网络资源。攻击者会使用包括僵尸网络、木马程序等手段将自己控制的设备进行扫描、感染，并发起DDoS攻击。这种攻击方式具有流量大、占用带宽多、难以防御等特点，严重影响了网站的可用性和稳定性。
+
+80.ACL/SNAT
+
+ACL是Access Control List（访问控制列表）的缩写，它是一种用于网络安全的技术手段。通过在设备上设置ACL规则，可以限制网络数据包在网络中的流动，防止恶意攻击、保障网络安全等。
+
+而SNAT是Source Network Address Translation（源网络地址转换）的缩写，是一种网络地址转换技术。在一个网络中，当**多个主机需要共享同一个公网IP地址时，就需要使用SNAT技术。**
