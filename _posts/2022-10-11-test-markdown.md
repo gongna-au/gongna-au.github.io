@@ -1,10 +1,8 @@
 ---
 layout: post
-
 title: Golang http.ListenAndServe()中的nil背后
 subtitle: http.ListenAndServe(":8000", nil)
-
-tags: [golang http]
+tags: [golang]
 ---
 
 # DefaultServeMux

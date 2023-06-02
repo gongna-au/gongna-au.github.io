@@ -2,7 +2,7 @@
 layout: post
 title: Go 并发应用于数据管道
 subtitle: Go concurrency applied to data pipelines
-tags: [ Backend development]
+tags: [golang]
 ---
 # Go concurrency applied to data pipelines
 

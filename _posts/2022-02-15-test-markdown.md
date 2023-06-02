@@ -2,7 +2,7 @@
 layout: post
 title: 什么是 REST API？
 subtitle: RESTful API 设计规范
-tags: [Backend development]
+tags: [架构]
 ---
 ## RESTful API 设计规范
 

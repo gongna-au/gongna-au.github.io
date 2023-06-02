@@ -2,7 +2,7 @@
 layout: post
 title: 迭代器模式与提供复杂数据结构查询的API
 subtitle: 迭代器模式主要用在访问对象集合的场景，能够向客户端隐藏集合的实现细节
-tags: [Design Patterns]
+tags: [设计模式]
 ---
 
 ## 迭代器模式与提供复杂数据结构查询的API

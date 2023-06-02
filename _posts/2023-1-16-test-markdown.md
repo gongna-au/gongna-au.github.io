@@ -2,7 +2,7 @@
 layout: post
 title: gRPC RPC Thrift HTTP的区别？
 subtitle:
-tags: [gRPC RPC Thrift HTTP]
+tags: [RPC]
 comments: true
 ---
 

@@ -2,7 +2,7 @@
 layout: post
 title: 基础数据结构复习
 subtitle:
-tags: [List Queue]
+tags: [数据结构]
 comments: true
 ---
 

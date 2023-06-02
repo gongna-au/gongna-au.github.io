@@ -2,7 +2,7 @@
 layout: post
 title: 外观模式
 subtitle: 亦称： Facade
-tags: [Design Patterns]
+tags: [设计模式]
 ---
 # 外观模式
 

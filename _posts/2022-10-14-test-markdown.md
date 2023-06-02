@@ -1,9 +1,7 @@
 ---
 layout: post
-
 title: 安装 zookeeper （ubuntu 20.04）
 subtitle: 并运行单机的实例进行验证
-
 tags: [ubuntu zookeeper]
 ---
 

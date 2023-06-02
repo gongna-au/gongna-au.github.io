@@ -2,7 +2,7 @@
 layout: post
 title:  What 's OK log?
 subtitle: 一个用于大型集群的分布式且无协调的日志管理系统https://github.com/oklog/oklog
-tags: [log, blog study]
+tags: [log]
 ---
 
 # What 's OK log?

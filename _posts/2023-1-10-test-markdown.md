@@ -2,7 +2,7 @@
 layout: post
 title: 限流场景大乱炖？
 subtitle:
-tags: [limit]
+tags: [限流]
 ---
 
 ### 计数器

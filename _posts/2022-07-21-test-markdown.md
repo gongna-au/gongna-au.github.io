@@ -2,7 +2,7 @@
 layout: post
 title: 通过Exporter收集指标
 subtitle: 自定义Exporter收集指标
-tags: [Microservices gateway ]
+tags: [Microservices gateway]
 ---
 
 # 通过Exporter收集指标

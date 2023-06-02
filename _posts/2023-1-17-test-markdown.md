@@ -2,7 +2,7 @@
 layout: post
 title: 结构体内嵌？
 subtitle:
-tags: [interface]
+tags: [golang]
 comments: true
 ---
 

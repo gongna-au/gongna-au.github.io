@@ -2,7 +2,7 @@
 layout: post
 title: 原型模式（Prototype Pattern）与对象成员变量复制的问题
 subtitle: 核心就是`clone()`方法，返回`Prototype`对象的复制品。
-tags: [Design Patterns]
+tags: [设计模式]
 ---
 
 ## 原型模式（Prototype Pattern）与对象成员变量复制的问题

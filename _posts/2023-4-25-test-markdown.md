@@ -4,7 +4,7 @@ title: 分布式
 subtitle:
 tags:
   [
-    服务注册 服务监控 负载均衡 Zookeeper memcache etcd 消息队列 共识算法 Paxos Raft 分布式 UUID 生成算法,
+   分布式
   ]
 comments: true
 ---

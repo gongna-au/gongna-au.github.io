@@ -2,7 +2,7 @@
 layout: post
 title: 网络安全
 subtitle:
-tags: [XSS CSRF CORS OAuth2.0]
+tags: [网络安全]
 comments: true
 ---
 

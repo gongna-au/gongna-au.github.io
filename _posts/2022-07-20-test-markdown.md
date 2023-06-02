@@ -2,7 +2,7 @@
 layout: post
 title: 从Mosn 源码到dubbo-go-pixiu 源码
 subtitle: 七层负载均衡
-tags: [Microservices gateway ]
+tags: [开源]
 ---
 
 # 从Mosn 源码到dubbo-go-pixiu 源码

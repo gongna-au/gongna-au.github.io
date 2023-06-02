@@ -2,7 +2,7 @@
 layout: post
 title: 浅谈MVC、MVP、MVVM架构模式
 subtitle: MVC、MVP、MVVM这些模式是为了解决开发过程中的实际问题而提出来的，目前作为主流的几种架构模式而被广泛使用.
-tags: [Backend development]
+tags: [架构]
 ---
 # 浅谈MVC、MVP、MVVM架构模式
 

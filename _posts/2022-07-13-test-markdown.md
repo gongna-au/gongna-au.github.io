@@ -2,7 +2,7 @@
 layout: post
 title: RPC应用
 subtitle: RPC 代指远程过程调用（Remote Procedure Call），它的调用包含了传输协议和编码（对象序列）协议等等，允许运行于一台计算机的程序调用另一台计算机的子程序，而开发人员无需额外地为这个交互作用编程，因此我们也常常称 RPC 调用，就像在进行本地函数调用一样方便。
-tags: [books, test]
+tags: [RPC]
 ---
 # RPC应用
 

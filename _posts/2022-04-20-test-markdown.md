@@ -2,7 +2,7 @@
 layout: post
 title: 传统网站的请求响应过程
 subtitle: 引入CDN之后 用户访问经历
-tags: [ Backend development]
+tags: [网络]
 ---
 ## 传统网站的请求响应过程
 

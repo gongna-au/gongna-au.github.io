@@ -2,7 +2,7 @@
 layout: post
 title: CQRS 架构模式
 subtitle: 使用 CQRS 架构模式优化数据访问
-tags: [books, Backend development]
+tags: [架构]
 ---
 
 # CQRS 架构模式

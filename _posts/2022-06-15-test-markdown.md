@@ -2,7 +2,7 @@
 layout: post
 title: Fork开源项目并提交PR
 subtitle: 以及关于 提交的pr `go fmt`  check 不通过的问题:`Your branch is ahead of 'origin/master' by 1 commit.`
-tags: [Microservices gateway github ]
+tags: [开源]
 ---
 # Fork开源项目并提交PR
 

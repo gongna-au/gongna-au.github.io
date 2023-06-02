@@ -2,7 +2,7 @@
 layout: post
 title: DUBBO中的设计模式?
 subtitle:
-tags: [Design Pattern]
+tags: [设计模式]
 ---
 
 # DUBBO 中的设计模式

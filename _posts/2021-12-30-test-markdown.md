@@ -2,9 +2,8 @@
 layout: post
 title:  并发工作者池模式
 subtitle: 并不是要讨论并发，而是我们要实现一组作业如何让他并发的执行
-tags: [Backend development]
+tags: [并发]
 ---
-
 # Go Concurrency Worker Pool PatternGo 并发工作者池模式![img](https://miro.medium.com/max/1400/1*Ya3fa36roBBhZlMl-kChXw.png)
 
 > 并不是要讨论并发，而是我们要实现一组作业如何让他并发的执行![当前显示WorkerPools](https://lh6.googleusercontent.com/qthujqtb_E83HSccmy0lCrRysXlaO6oX31R8gZ0WIgEdbbF8U6VHhpJ5AqRGrgKMPOxP1RXKyGfzuNXNgqLxWw=w1040-h1240-rw)

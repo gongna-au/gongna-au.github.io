@@ -2,7 +2,7 @@
 layout: post
 title: Linux环境变量设置文件
 subtitle: 
-tags: [books, Backend development]
+tags: [linux]
 ---
 Linux环境变量设置文件
 /etc/profile 全局用户，应用于所有的Shell。

@@ -2,7 +2,7 @@
 layout: post
 title: 数据库分库分表？
 subtitle:
-tags: [Mysql ShardingSphere]
+tags: [数据库]
 ---
 
 # 数据库分库分表？

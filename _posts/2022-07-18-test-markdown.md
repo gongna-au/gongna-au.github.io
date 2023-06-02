@@ -2,7 +2,7 @@
 layout: post
 title: 责任链模式
 subtitle: 亦称： 职责链模式、命令链、CoR、Chain of Command、Chain of Responsibility
-tags: [Design Patterns]
+tags: [设计模式]
 ---
 
 # 责任链模式

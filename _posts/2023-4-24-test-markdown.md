@@ -2,7 +2,7 @@
 layout: post
 title: 每日一题
 subtitle:
-tags: [RPC  B+树 外部排序 缓存 LRU]
+tags: [interview]
 comments: true
 ---
 

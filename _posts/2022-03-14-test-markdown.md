@@ -2,7 +2,7 @@
 layout: post
 title: Goroutines以及通道在 Golang 中的应用
 subtitle: Go 使用通道在 goroutine 之间共享数据。它就像一个发送和接收数据的管道。通道是并发安全的。因此，您不需要处理锁定。线程使用共享内存。这是与流程最重要的区别。但是，你必须使用互斥锁、信号量等来避免与 goroutines 相反的任何问题。
-tags: [Backend development]
+tags: [golang]
 ---
 # Goroutines以及通道在 Golang 中的应用
 

@@ -1,10 +1,8 @@
 ---
 layout: post
-
 title: 什么是 分布式？
 subtitle: 垂直伸缩和水平伸缩
-
-tags: [分布式？]
+tags: [分布式]
 ---
 
 ## 1.分布式

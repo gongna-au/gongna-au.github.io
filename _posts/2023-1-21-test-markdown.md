@@ -2,7 +2,7 @@
 layout: post
 title: 主流分布式缓存？
 subtitle:
-tags: [Redis, Memcached, Tair]
+tags: [分布式]
 comments: true
 ---
 

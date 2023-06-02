@@ -1,12 +1,8 @@
 ---
 layout: post
-
 title: 什么是 Sidecar 模式，为什么它在微服务中被大量使用？
-
 subtitle: Sidecar 模式是一种架构模式，其中位于同一个主机的两个或者多个进程可以相互通信。他们是环回本地主机，本质是 启动进程间通讯。
-
-tags: [books, test]
-
+tags: [架构]
 ---
 
 # 什么是 Sidecar 模式，为什么它在微服务中被大量使用？

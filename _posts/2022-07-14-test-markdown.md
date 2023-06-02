@@ -2,7 +2,7 @@
 layout: post
 title: 适配器模式
 subtitle: 亦称 封装器模式、Wrapper、Adapter
-tags: [books, test]
+tags: [设计模式]
 ---
 
 # 适配器模式

@@ -1,12 +1,8 @@
 ---
 layout: post
-
 title: Go和Web
-
 subtitle: 迭代器模式主要用在访问对象集合的场景，能够向客户端隐藏集合的实现细节
-
-tags: [go web]
-
+tags: [设计模式]
 ---
 
 # go和Web

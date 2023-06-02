@@ -1,11 +1,8 @@
 ---
-layout: post
-
+layout: post=
 title: Service Mesh， What & Why ? 
-
 subtitle: 正在构建基于服务的架构，无论是micro services微服务还是纳米服务nano services  的service meshes 需要了解服务到服务通信的基本知识。
-
-tags: [books, test]
+tags: [架构]
 
 ---
 # Service Mesh: What & Why ? 

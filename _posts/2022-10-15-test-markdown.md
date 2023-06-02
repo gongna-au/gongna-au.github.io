@@ -1,9 +1,8 @@
 ---
 layout: post
-
 title: 分布式系统中的一致性问题
 subtitle: Zookeeper关于一致性问题的解决方案
-tags: [distributed cluster]
+tags: [分布式]
 ---
 
 # 分布式系统数据同步

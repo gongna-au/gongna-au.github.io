@@ -2,7 +2,7 @@
 layout: post
 title: 总结实现带有 callback 的迭代器模式的几个关键点：
 subtitle: 声明 callback 函数类型，以 Record 作为入参。
-tags: [Design Patterns]
+tags: [设计模式]
 ---
 
 ## 总结实现带有 callback 的迭代器模式的几个关键点：

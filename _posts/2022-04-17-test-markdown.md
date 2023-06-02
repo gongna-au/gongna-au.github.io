@@ -2,7 +2,7 @@
 layout: post
 title: Go的推迟、恐慌和恢复
 subtitle: 一个defer语句推动一个函数调用到列表中。保存的调用列表在周围函数返回后执行。
-tags: [Backend development]
+tags: [golang]
 ---
 ## go的推迟、恐慌和恢复
 

@@ -2,7 +2,7 @@
 layout: post
 title: 分布式缓存？分布式锁？分布式消息队列？
 subtitle:
-tags: [Redis, Zookeeper, Kafka]
+tags: [分布式]
 comments: true
 ---
 

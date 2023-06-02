@@ -2,7 +2,7 @@
 layout: post
 title: Important Factor For APP 软件开发人员要了解的十二个要素
 subtitle: 这套理论适用于任意语言和后端服务（数据库、消息队列、缓存等）开发的应用程序
-tags: [APP]
+tags: [开发]
 ---
 
 # 简介

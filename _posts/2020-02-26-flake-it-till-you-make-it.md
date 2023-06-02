@@ -2,7 +2,7 @@
 layout: post
 title: 中介者模式
 subtitle: 调解人、控制器、Intermediary、Controller、Mediator
-tags: [books, test]
+tags: [设计模式]
 ---
 
 # 中介者模式

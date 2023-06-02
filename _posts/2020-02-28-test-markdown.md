@@ -2,7 +2,7 @@
 layout: post
 title: Go中单例模式的安全性
 subtitle: golang
-tags: [test]
+tags: [设计模式]
 comments: true
 ---
 

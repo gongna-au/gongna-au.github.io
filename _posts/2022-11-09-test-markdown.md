@@ -2,7 +2,7 @@
 layout: post
 title: Gin 中的设计模式？
 subtitle: 设计模式
-tags: [golang]
+tags: [设计模式]
 ---
 
 # Gin 中的设计模式

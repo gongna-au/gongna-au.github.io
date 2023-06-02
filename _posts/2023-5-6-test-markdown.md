@@ -189,7 +189,7 @@ func FloydWarshall(graph [][]int) [][]int{
 }
 ```
 
-### Kruskal
+### Kruskal模版
 
 ```go
 type Edge struct{
@@ -198,7 +198,7 @@ type Edge struct{
     weight int
 }
 
-func kruskal (n int,edges []Edge) []Edge{
+func Kruskal (n int,edges []Edge) []Edge{
     //边要按照从小到大排序
     sort.Slice(edges ,func (i int,j int)bool{
         return edges[i].weight < edges[j].weight
@@ -231,6 +231,117 @@ func find(unionSet map[int]int, x int)int{
 }
 ```
 
+### Prim模版
+
+Prim算法是一种用于找到加权图的最小生成树的算法。其关键思路是从**一个初始节点**开始，**选择与当前节点相邻的权值最小的边**，并将其添加到生成树中。然后，重复该过程，直到生成树中包含所有节点。
+解决什么问题：一个无向图中，连接所有节点所需要的最小权重的连通子图。
+- 先把0到每个点的权重放入最小堆
+- 弹出元素，增加权重
+- 不断判断遍历所有的节点。（跳过被访问的节点）
+- 把权重更新放入堆
+```go
+import (
+    "container/heap"
+    "math"
+)
+
+func Prim(graph [][]int) int {
+    n := len(graph)
+    visited := make([]bool, n)
+    h := &edgeHeap{}
+    heap.Init(h)
+
+    startVertex := 0
+    visited[startVertex] = true
+    // 先把0到每个点的权重放入最小堆
+    for i := 0; i < n; i++ {
+        if i != startVertex {
+            heap.Push(h, &edge{startVertex, i, graph[startVertex][i]})
+        }
+    }
+
+    weight := 0
+    for h.Len() > 0 {
+        e := heap.Pop(h).(*edge)
+        if visited[e.vertex2] {
+            continue
+        }
+        
+        weight += e.weight
+        visited[e.vertex2] = true
+        for i := 0; i < n; i++ {
+            if !visited[i] {
+                heap.Push(h, &edge{e.vertex2, i, graph[e.vertex2][i]})
+            }
+        }
+    }
+
+    return weight
+}
+
+type edge struct {
+    vertex1 int
+    vertex2 int
+    weight  int
+}
+
+type edgeHeap []*edge
+
+func (h edgeHeap)Len() int           { return len(h) }
+func (h edgeHeap) Less(i, j int) bool { return h[i].weight < h[j].weight }
+func (h edgeHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *edgeHeap) Push(x interface{}) {
+    *h = append(*h, x.(*edge))
+}
+
+func (h *edgeHeap) Pop() interface{} {
+    old := *h
+    n := len(old)
+    x := old[n-1]
+    *h = old[0 : n-1]
+    return x
+}
+```
+### 拓扑排序
+
+```go
+func BFS() bool{
+    queue:= []int{}
+    for k,v := range nodeInDegree{
+        if v==0{
+            queue = append(queue,k)
+        }
+    }
+
+    for len(queue)>0{
+        size:= len(queue)
+        for i:=0;i<size;i++{
+            cur := queue[0]
+            queue = queue[1:]
+            if visited[cur]{
+                return false
+            }
+            visited[cur]= true
+            for _,v := range graph[cur]{
+                nodeInDegree[v]--
+                if nodeInDegree[v]==0{
+                    queue =append(queue,v)
+                }
+            }
+        }
+    }
+    // 检查是否有没有没有被访问到的节点
+    // 1-> 2->3
+    //     ^---|
+    for _,v:= range visited{
+        if !v{
+            return false
+        }
+    }
+    return true
+}
+```
 ### 动规
 
 >1.定义状态

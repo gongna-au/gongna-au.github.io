@@ -2,7 +2,7 @@
 layout: post
 title: 分布式一致性协议Gossip和Redis 集群原理解析
 subtitle: Gossip-分布式协议、Redis Cluster 原理、Codis 分布式方案
-tags: [Gossip]
+tags: [分布式]
 comments: true
 ---
 

@@ -2,7 +2,7 @@
 layout: post
 title: 背包问题
 subtitle:
-tags: [0-1背包问题，完全背包问题]
+tags: [背包问题]
 comments: true
 ---
 

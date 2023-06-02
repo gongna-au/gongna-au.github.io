@@ -2,7 +2,7 @@
 layout: post
 title: 观察者模式在网络 Socket 、Http 的应用
 subtitle: 观察者模式
-tags: [Design Patterns]
+tags: [设计模式]
 ---
 # 观察者模式在网络 Socket 、Http 的应用
 

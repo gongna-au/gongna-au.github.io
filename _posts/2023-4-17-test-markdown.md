@@ -548,7 +548,6 @@ distance(1, 2) + distance(1, 3) + distance(1, 4) + distance(1, 5) + distance(1, 
   4   5   6
      / \
     7   8
-
     请你向这样画图让我理解
      nodeNum[root] += nodeNum[v] + 1
     distSum[root] += distSum[v] + nodeNum[v] + 1

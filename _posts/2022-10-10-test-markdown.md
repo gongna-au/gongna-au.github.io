@@ -1,9 +1,7 @@
 ---
 layout: post
-
 title: 哈佛的6堂独立思考课
 subtitle: 独立思考
-
 tags: [哈佛课程]
 ---
 

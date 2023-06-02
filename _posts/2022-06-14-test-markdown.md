@@ -2,7 +2,7 @@
 layout: post
 title: 关于TCP滑动窗口和拥塞控制
 subtitle: 四次握手
-tags: [books, test]
+tags: [网络]
 ---
 
 # 关于TCP滑动窗口和拥塞控制

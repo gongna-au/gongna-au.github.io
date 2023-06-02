@@ -2,7 +2,7 @@
 layout: post
 title: Kubernetes
 subtitle:
-tags: [kuberctl kuberlet]
+tags: [Kubernetes]
 comments: true
 ---
 

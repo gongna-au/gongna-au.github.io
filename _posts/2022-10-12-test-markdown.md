@@ -1,10 +1,8 @@
 ---
 layout: post
-
 title: 什么是 CDN？
 subtitle: 地理分布的服务器组
-
-tags: [golang http]
+tags: [  CDN]
 ---
 
 ## 什么是 CDN？（核心:将带宽从源服务器卸载到 CDN 服务器）

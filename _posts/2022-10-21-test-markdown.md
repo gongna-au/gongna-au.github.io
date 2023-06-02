@@ -1,9 +1,7 @@
 ---
 layout: post
-
 title: Lifestyle
 subtitle: fifestyle
-
 tags: [life]
 ---
 

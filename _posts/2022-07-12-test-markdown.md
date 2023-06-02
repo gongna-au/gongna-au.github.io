@@ -2,7 +2,7 @@
 layout: post
 title: 什么是分布式跟踪和 OpenTracing？
 subtitle: 分布式跟踪是一种建立在微服务架构上的监控和分析系统的技术
-tags: [books, test]
+tags: [分布式]
 ---
 # 什么是分布式跟踪和 OpenTracing？
 

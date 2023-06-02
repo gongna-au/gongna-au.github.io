@@ -2,11 +2,9 @@
 layout: post
 title: Go值拷贝的理解
 subtitle: In a function call, the function value and arguments are evaluated in  the usual order. After they are evaluated, the parameters of the call are passed by value to the function and the called function begins execution.
-tags: [books, test]
+tags: [golang]
 ---
 # Go值拷贝的理解
-
-
 
 > In a function call, the function value and arguments are evaluated in the usual order. After they are evaluated, the parameters of the call are passed by value to the function and the called function begins execution.
 
