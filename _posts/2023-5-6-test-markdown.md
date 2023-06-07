@@ -303,6 +303,7 @@ func (h *edgeHeap) Pop() interface{} {
     return x
 }
 ```
+
 ### 拓扑排序
 
 ```go
@@ -342,6 +343,185 @@ func BFS() bool{
     return true
 }
 ```
+
+### 回溯
+
+```go
+func DFS(i int，j int){
+    visited[i][j]=true
+    // defer func() { visited[i][j] = false }() 的作用是在当前函数返回之前执行这段代码，无论函数是正常返回还是异常返回。这保证了在 DFS 函数返回时，visited 标记一定会被重置为 false，避免了在递归回溯过程中出现 visited 标记不正确的问题。
+    defer func(){visited[i][j]=false}
+    // 做一些事情判断该状态是否符合要求
+    DoSomeThing()
+    for (可以到达的状态){
+        if  visited[x][y]==false && Array[x][y]== Target[x][y]{
+            DFS(x,y)
+        }
+    }
+    // 撤销做的
+    Undo()
+
+}
+```
+
+### 组合问题的模版
+
+```go
+var res [][]int
+var Nums []int
+func subsets(nums []int) [][]int {
+    res= [][]int{}
+    Nums = nums
+    choose(0,[]int{})
+    return res
+}
+
+func choose(start int, path []int){
+    if start > len(Nums){
+        return 
+    }
+    temp:= make([]int,len(path))
+    copy(temp,path)
+    res = append(res,temp)
+    for i:=start;i<len(Nums);i++{
+        choose(i+1,append(path,Nums[i]))
+    }
+}
+```
+### N皇后问题(回溯)
+1-两个皇后不能同行或者同列或者同对角线
+2-国际象棋的规则当中，皇后是最强大的。既可以横着走，也可以竖着走，还能斜着走。
+3-每一个n对应的解有没有规律呢？
+建模过程：1-由于皇后之间不能同行也不能同列，那么每一行和每一列只能摆放一个皇后。我们不能同时枚举一个皇后摆放的行和列，我们优先考虑其中的行。不如做一个假设，由于皇后之间没有差别，我们可以假设每一行摆放的皇后是固定的。第一个皇后就摆放在第一行，第二个皇后就摆放在第二行。2-每行固定一个皇后之后可以保证皇后之间不会同行发生冲突，但是不能保证不同列以及不同对角线。所以我们必须设计一个机制，来保证这一点。我们需要枚举皇后所有摆放的情况，所以不能再固定皇后摆放的列，既然不能固定，但是可以记录。由于我们已经确定了每一个皇后摆放的行，只要记录下它们摆放的列，就可以判断是否会构成同列以及同对角线。3-于皇后已经固定了行号，我们可以用数组当中的下标代替皇后。下标0存储的位置就是皇后0摆放的列号，0就是皇后0的行号，那么我们用一个一维数组就存储了皇后摆放的二维信息。
+
+```go
+
+// 同一行不可以
+// 同一列不可以
+// 对角线不可以
+func DFS(row int,cols map[int]bool,leftDiagonal map[int]bool,rightDiagonal map[int]bool){
+    if row == n{
+        return 
+    }
+    for col:=0;col<n;col++{
+        if cols[col]==true || leftDiagonal[col-row] || rightDiagonal[col+row]{
+          continue
+        }
+        cols[col]= true
+        leftDiagonal[col-row]=true
+        rightDiagonal[col+row]=true
+        DFS(row,cols,leftDiagonal, rightDiagonal)
+        cols[col]= false
+        leftDiagonal[col-row]=false
+        rightDiagonal[col+row]=false
+    }
+}
+
+
+```
+### 固定长滑动窗口
+
+```go
+var res int
+func SlidingWindow(nums []int,length int)int{
+    left:=0
+    sum:=0
+    res:=0
+    for right:=0;right<len(nums);right++{
+        sum = sum+nums[right]
+        if right-left+1>length{
+            sum = sum-nums[ left]
+            left++
+        }
+        if right-left+1==length{
+            res= max(res,sum)
+            sum= sum-nums[left]
+            left++
+        }
+       
+    }
+    return res
+}
+
+```
+
+### 变长滑动窗口
+
+```go
+var res int
+func SlidingWindow(nums []int,target int)int{
+    left:=0
+    sum:=0
+    res:=0
+    for right:=0;right<len(nums);right++{
+        sum = sum+nums[right]
+        // 这里必须是for 而不是 if 
+        for sum > target{
+            sum=sum-nums[left]
+            left++
+        }
+        res= max(res,right-left+1)
+    }
+    return res
+}
+```
+
+### 滑动窗口变种-K个不同整数的子数组+差分
+
+```go
+func Problem(nums []int,k int)int{
+    return SlidingWindow(nums,k) -  SlidingWindow(nums,k-1)
+}
+
+// 维护最多k种元素的窗口
+func SlidingWindow(nums []int,k int)int{
+    left:=0
+    window:= map[int]int{}
+    for right:=0;right<len(nums);right++{
+        window[nums[right]]++
+        // 这里必须是for 而不是 if 
+        for len(window)>k{
+            if _,ok:= window[nums[left]] ;ok && window[nums[left]]>0{
+                window[nums[left]]--
+            }
+            if _,ok:= window[nums[left]] ;ok && window[nums[left]]== 0{
+                delete(window,nums[left])
+            }
+            left++
+        }
+        count= count+right-left+1
+    }
+    return count
+}
+```
+
+### 位运算-基础版
+
+```go
+func singleNumber(nums []int) int {
+    single:=0
+    for i:=0;i<len(nums);i++{
+        single = single ^nums[i]
+    }
+    return single
+}
+```
+### 位运算-变种
+
+
+```go
+func missingNumber(nums []int) int {
+    mising:=0
+    // 0 1 3
+    // 填充集合得到 1 2 3 0 1 3 
+    for i:=0;i<len(nums);i++{
+        mising= mising ^ ((i+1)^nums[i])
+    }
+    // 0 1 2 3 
+    return mising
+}
+```
+
 ### 动规
 
 >1.定义状态
