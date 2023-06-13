@@ -1021,3 +1021,541 @@ func DFS(start, end string, g Graph, visited map[string]bool) float64 {
 
 
 
+
+## 平衡二叉树
+
+
+
+> 平衡二叉树指的是：一个二叉树每个节点的左右两个子树的高度差的绝对值不超过1。如果需要让你判断一个树是否是平衡二叉树，只需要死扣定义，然后用递归即可轻松解决。
+
+> 如果需要你将一个数组或者链表 （逻辑上都是线性的数据结构）转化为平衡二叉树，只需要随便选一个节点，并分配一半到左子树，另一半到右子树即可。同时，如果要求你转化为平衡二叉搜索树，则可以选择排序数组或链表的中点，左边的元素为左子树， 右边的元素为右子树即可。
+> 1：如果不需要是二叉搜索树则不需要排序，否则需要排序。
+> 2：你也可以不选择中点，算法需要相应调整，感兴趣的同学可以试试。
+> 3：链表的操作需要特别注意环的存在。
+
+
+## 蓄水池抽样
+
+
+这个算法叫蓄水池抽样算法 (reservoid sampling)。
+其基本思路是：
+-构建一个大小为k 的数组，将数据流的前k 个元素放入数组中。
+-对数据流的前k 个数先不进行任何处理。
+-从数据流的第k＋1个数开始，在1~i之间选一个数rand，其中i表示当前是第几个数。
+- 如果rand 大于等于k什么都不做
+- 如果rand 小于k，将rand 和i 交换，也就是说选择当前的数代替已经被选中的数（备胎）。
+- 最终返回幸存的备胎即可
+
+
+
+```go
+//模版1
+type Solution struct {
+    indices map[int][]int
+}
+
+func Constructor(nums []int) Solution {
+    indices := make(map[int][]int)
+    // 按照值分类
+    for k, v := range nums {
+        if _, ok := indices[v]; !ok {
+            indices[v] = make([]int, 0)
+        }
+        indices[v] = append(indices[v], k)
+    }
+    return Solution{indices}
+}
+
+func (this *Solution) Pick(target int) int {
+    indexList := this.indices[target]
+    return indexList[rand.Intn(len(indexList))]
+}
+```
+
+> 类 ReservoirSampling 维护了一个大小为 k 的蓄水池，初始时为空。在每次调用 Sample 方法时，将一个新元素 x 插入到蓄水池中，并随机选择一个位置 i，如果 i 小于 k，则用 x 替换蓄水池中的第 i 个元素。最终，返回蓄水池中的 k 个元素。
+
+
+```go
+//模版2
+type ReservoirSampling struct {
+    k         int
+    reservoir []int
+}
+
+func NewReservoirSampling(k int) *ReservoirSampling {
+    return &ReservoirSampling{k: k, reservoir: make([]int, 0)}
+}
+
+func (rs *ReservoirSampling) Sample(x int) []int {
+    n := len(rs.reservoir)
+    if n < rs.k {
+        rs.reservoir = append(rs.reservoir, x)
+    } else {
+        i := rand.Intn(n + 1)
+        if i < rs.k {
+            rs.reservoir[i] = x
+        }
+    }
+    return rs.reservoir
+}
+```
+
+
+## 单调栈
+
+### 单调栈变种-1
+```go
+func removeDuplicateLetters(s string) string {
+    var stack []byte
+    var lastOccurred = map[byte]int{}
+    var inStack = map[byte]bool{}
+    // 记录每个字母最后一次出现的位置
+    for i := 0; i < len(s); i++ {
+        lastOccurred[s[i]] = i
+    }
+
+    for i := 0; i < len(s); i++ {
+        // 1，判断栈中状态
+        if inStack[s[i]] == true{
+            continue
+        }
+        // 2.维持栈的特性
+        for len(stack) > 0 && s[i] < stack[len(stack)-1] {
+            if  i < lastOccurred[stack[len(stack)-1]]{
+                inStack[stack[len(stack)-1]] = false
+                stack = stack[:len(stack)-1]
+            } else {
+                // 如果不存在就停下
+                break
+            }
+        }
+        // 往栈添加元素
+        stack = append(stack, s[i])
+        inStack[s[i]] = true
+    }
+
+    return string(stack)
+}
+```
+### 单调栈变种-2
+```go
+func removeKdigits(num string, k int) string {
+    stack :=[]byte{}
+    count:=k
+    for i:=0;i<len(num);i++{
+        for count >0 && len(stack)>0 && stack[len(stack)-1] > num[i]{
+            stack = stack[:len(stack)-1]
+            count--
+        }
+        stack = append(stack,num[i])
+    }
+    //这段代码的作用是从栈顶（也就是切片的末尾）移除 `count` 个元素。
+    stack = stack[:len(stack)-count]
+    ans := strings.TrimLeft(string(stack), "0")
+    if len(ans) == 0 {
+        return "0"
+    }
+    return ans
+
+}
+```
+
+
+### 单调栈变种-3
+> 记录长度。
+```go
+type StockSpanner struct {
+	stk []pair
+}
+
+func Constructor() StockSpanner {
+	return StockSpanner{[]pair{}}
+}
+
+func (this *StockSpanner) Next(price int) int {
+	cnt := 1
+	for len(this.stk) > 0 && this.stk[len(this.stk)-1].price <= price {
+		cnt += this.stk[len(this.stk)-1].cnt
+		this.stk = this.stk[:len(this.stk)-1]
+	}
+	this.stk = append(this.stk, pair{price, cnt})
+	return cnt
+}
+
+type pair struct{ price, cnt int }
+```
+
+
+## 母题
+> 给你两个**有序**的非空数组nums1 和nums2，让你从每个数组中分别挑一个，使得二者差的绝对值最小。/ 给你两个有序的非空数组 nums1 和nums2，让你将两个数组合并，使得新的数组有序。
+```go
+func Solve(nums1 []int,nums2 []int){
+    ans:=1<<9
+    first:=0
+    second:=0
+    for first <len(nums1) &&  second <len(nums2) {
+        if nums1[first] <  nums2[second]{
+            ans = min(ans+abs(nums2[second],nums1[first]))
+            first++
+        }esle{
+            ans = min(ans+abs(nums2[second],nums1[first]))
+            second++
+        }
+    }
+    return ans
+}
+
+func min(a int,b int)int{
+    if a<b {
+        return a
+    }
+    return b
+}
+
+func abs(a int)int{
+    if a>0{
+        return a
+    }
+    return -a
+}
+```
+
+
+> 给你两个非空数组nums1 和nums2，让你从每个数组中分别挑一个，使得二者差的绝对值最小。
+
+```go
+func Solve(nums1 []int,nums2 []int){
+    sort.Slice(nums1,func(i int,j int)bool{
+        return nums1[i]<nums1[j]
+    })
+    sort.Slice(nums2,func(i int,j int)bool{
+        return nums2[i]<nums2[j]
+    })
+    ans:=1<<9
+    first:=0
+    second:=0
+    for first <len(nums1) &&  second <len(nums2) {
+        if nums1[first] <  nums2[second]{
+            ans = min(ans+abs(nums2[second],nums1[first]))
+            first++
+        }esle{
+            ans = min(ans+abs(nums2[second],nums1[first]))
+            second++
+        }
+    }
+    return ans
+}
+
+func min(a int,b int)int{
+    if a<b {
+        return a
+    }
+    return b
+}
+
+func abs(a int)int{
+    if a>0{
+        return a
+    }
+    return -a
+}
+```
+
+
+> 给你K个非空有序一维数组，让你从每个一维数组中分别挑一个，使得K者差的绝对值最小。
+
+
+```go
+
+type Item struct{
+    value int // 元素的值
+    index int // 元素在数组中的下标
+    array int // 元素所在的数组编号
+}
+
+
+type PriorityQueue []*Item
+
+func (pq PriorityQueue) Len() int {
+    return len(pq)
+}
+
+func (pq PriorityQueue) Less() int {
+    return pq[i].value < pq[j].value 
+}
+
+func (pq PriorityQueue) Swap() int {
+    pq[i],pq[j] = pq[j],pq[i]
+}
+
+func (pq *PriorityQueue) Push(x interface{}) {
+    item := x.(*Item)
+    *pq = append(*pq, item)
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+    length := len(*pq)
+    item := (*pq)[length-1]
+    *pq = (*pq)[:length-1]
+    return item
+}
+
+func Solve(nums [][]int){
+    k:= len(nums)
+    pq := []*Item{}
+    maxNum := -1<<9
+    minNum := 1<<9
+    ans:=1<<9
+    for i := 0; i < k; i++ {
+        ans=ans+ abs(nums[i][0],ans)
+        item := &Item{
+            value: nums[i][0],
+            array: i,
+            index: 0,
+        }
+        pq = append(pq,item)
+        if arr[0] > maxNum {
+		    maxNum = arr[0]
+	    }
+        if arr[0]< minNum{
+            minNum = arr[0]
+        }
+    }
+    for len(pq)>= k{
+        minItem:=heap.Pop(&pq).(*Item)
+        if minItem.index+1< len(nums[minItem.array]){
+            v:=nums[minItem.arry][minItem.index+1]
+             heap.Push(&pq,&Item{
+                value : v
+                index :minItem.index+1,
+                array: minItem.array,
+            })
+            if v<minNum{
+                nimNum = v
+            }
+            if v>maxNum{
+                maxNum = v
+            }
+           ans = min(ans,maxNum -minNim)
+        }else{
+            return ans
+        }
+    }
+
+    return ans
+}
+
+
+func min(a int,b int)int{
+    if a<b {
+        return a
+    }
+    return b
+}
+
+func abs(a int)int{
+    if a>0{
+        return a
+    }
+    return -a
+}
+```
+
+
+
+
+> 给你K个非空无序一维数组，让你从每个一维数组中分别挑一个，使得K者差的绝对值最小。
+> 先排序，转化为3
+
+> 给你k个有序的非空数组nums让你将k 个数组合并，使得新的数组有序。
+
+
+```go
+
+type Item struct{
+    value int // 元素的值
+    index int // 元素在数组中的下标
+    array int // 元素所在的数组编号
+}
+
+type PriorityQueue []*Item
+
+func (pq PriorityQueue) Len() int {
+    return len(pq)
+}
+
+func (pq PriorityQueue) Less() int {
+    return pq[i].value < pq[j].value 
+}
+
+func (pq PriorityQueue) Swap() int {
+    pq[i],pq[j] = pq[j],pq[i]
+}
+
+func (pq *PriorityQueue) Push(x interface{}) {
+    item := x.(*Item)
+    *pq = append(*pq, item)
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+    length := len(*pq)
+    item := (*pq)[length-1]
+    *pq = (*pq)[:length-1]
+    return item
+}
+
+func Solve(nums [][]int)[]int{
+    k:= len(nums)
+    pq := []*Item{}
+    for i := 0; i < k; i++ {
+        ans=ans+ abs(nums[i][0],ans)
+        item := &Item{
+            value: nums[i][0],
+            array: i,
+            index: 0,
+        }
+        pq = append(pq,item)
+        
+    }
+    ans:=[]int{}
+    for len(pq)>0{
+        size:= len(pq)
+        for i:=0;i<size;i++{    
+            minItem:=heap.Pop(&pq)(*Item)
+            ans= append(ans,minItem.value)
+            if  minItem,Index +1 < len(nums[minItem.array]){
+                heap.Push(&pq,&Item{
+                    value: nums[minItem.array][minItem,Index +1 ],
+                    index: minItem,Index +1 ,
+                    array: minItem.array,
+                })  
+            }
+        }
+    }
+    return ans
+}
+
+
+
+func min(a int,b int)int{
+    if a<b {
+        return a
+    }
+    return b
+}
+
+func abs(a int)int{
+    if a>0{
+        return a
+    }
+    return -a
+}
+
+```
+
+## 动态规划
+
+### 动态规划 - 最长子序列问题
+
+
+> 都是动规+递归+备忘录
+```go
+var memo [][]int
+func minimumDeleteSum(s1 string, s2 string) int {
+   memo = make([][]int,len(s1))
+    for k,_ := range memo{
+        memo[k] = make([]int,len(s2))
+        for j:=0;j<len(s2);j++{
+            memo[k][j]=-1
+        }
+    }
+    return dp(s1,0,s2,0)
+}
+
+func dp(s1 string, i int, s2 string, j int) int {
+    if i == len(s1) {
+        return 
+    }
+    if j == len(s2) {
+        return sum(s1, i)
+    }
+    if memo[i][j] != -1 {
+        return memo[i][j]
+    }
+    if s1[i] == s2[j] {
+        memo[i][j] = dp(s1, i+1, s2, j+1)
+    } else {
+        // 要么是删除int(s1[i])
+        // 要么是删除int(s2[j])
+        memo[i][j] = min( dp(s1, i+1, s2, j)+int(s1[i]), dp(s1, i, s2, j+1)+int(s2[j]))
+    }
+    return memo[i][j]
+}
+
+func sum(s string, i int) int {
+    total := 0
+    for ; i < len(s); i++ {
+        total += int(s[i])
+    }
+    return total
+}
+
+func min(a int, b int)int{
+    if a<b {
+        return a
+    }
+    return b
+}
+```
+
+### 动态规划 - 回文串问题
+
+```go
+var memo [][]int
+func minInsertions(s string) int {
+    memo= make([][]int,len(s))
+    for i,_ := range memo{
+        memo[i] = make([]int,len(s))
+        for j,_:= range memo[i]{
+            memo[i][j] = -1
+        }
+    }
+    return dp(s,0,len(s)-1)
+}
+
+func dp(s string,i int,j int) int{
+    if i>j {
+        return 0
+    }
+    if i == j{
+        return 0
+    }
+    if i>=len(s) || i<0 || j>=len(s) || j<0{
+        return 0
+    }
+    if memo[i][j] != -1{
+        return memo[i][j]
+    }
+    if s[i] == s[j]{
+        memo[i][j] = dp(s,i+1,j-1)
+    }else{
+        // 在j所指的位置插入
+       memo[i][j]  = min(dp(s,i+1,j)+1, dp(s,i,j-1)+1)
+    }
+    return memo[i][j]
+}
+
+func min(a int, b int) int{
+    if a<b {
+        return a
+    }
+    return b
+}
+```
+
+
+### 动态规划 -编辑距离问题
+
+```go
+
+```
