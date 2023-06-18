@@ -1555,7 +1555,510 @@ func min(a int, b int) int{
 
 
 ### 动态规划 -编辑距离问题
+```text
+dp[i][j] 与 dp[i-1][j-1] ,dp[i-1][j],dp[i][j-1]有关分别代表
+dp[i-1][j-1]——替换/跳过
+dp[i][j-1]——插入
+dp[i-1][j]——删除
+```
 
 ```go
+var memo [][]int
+func minDistance(word1 string, word2 string) int {
+    memo = make([][]int,len(word1))
+    for i,_:= range memo{
+        memo[i] = make([]int,len(word2))
+        for j,_:= range memo[i]{
+            memo[i][j] = -1
+        }
+    }
+    return dp(word1,len(word1)-1,word2,len(word2)-1)
+}
 
+
+func dp(s1 string ,i int,s2 string,j int)int{
+    if i< 0{
+        // 如果S1 遍历完了，那么需要插入S2的对应个字符
+        return j+1
+    }
+    if j< 0{
+        // 如果S2遍历完了，那么就是把S1剩余字符全部删除
+        return i+1
+    }
+
+    // 
+    if memo[i][j] != -1{
+        return memo[i][j]
+    }
+    if s1[i] == s2[j]{
+        memo[i][j]= dp(s1,i-1,s2,j-1)
+    }else {
+        // 插入 dp(s1, i, s2, j - 1)
+        // 删除 dp(s1, i - 1, s2, j) + 1
+        // 替换 dp(s1, i - 1, s2, j - 1) + 1 
+        memo[i][j] = min( min( dp(s1, i, s2, j - 1) + 1,dp(s1, i - 1, s2, j) + 1 ) ,dp(s1, i - 1, s2, j - 1) + 1 )
+        
+    
+    }
+    return memo[i][j]
+}
+
+func min(a int, b int) int{
+    if a<b {
+        return a
+    }
+    return b
+}
+```
+
+### 动态规划 -俄罗斯套娃问题!!!!
+
+> 二分查找
+```go
+func maxEnvelopes(envelopes [][]int) int {
+	sort.Slice(envelopes, func(i, j int) bool {
+		if envelopes[i][0] == envelopes[j][0] {
+			return envelopes[i][1] > envelopes[j][1]
+		}
+		return envelopes[i][0] < envelopes[j][0]
+	})
+
+	dp := []int{}
+	for i := 0; i < len(envelopes); i++ {
+		idx := sort.Search(len(dp), func(j int) bool { return dp[j] >= envelopes[i][1] })
+		if idx < len(dp) {
+			dp[idx] = envelopes[i][1]
+		} else {
+			dp = append(dp, envelopes[i][1])
+		}
+	}
+	return len(dp)
+}
+```
+
+
+```go
+var memo []int
+func maxEnvelopes(envelopes [][]int) int {
+    sort.Slice(envelopes, func(i, j int) bool {
+        if envelopes[i][0] == envelopes[j][0] {
+            return envelopes[i][1] > envelopes[j][1]
+        }
+        return envelopes[i][0] < envelopes[j][0]
+    })
+
+    memo = make([]int, len(envelopes))
+    res := 0
+    for i := range envelopes {
+        //我们遍历所有信封，并调用 `dp(envelopes, i)` 函数，它会返回以第i个信封开始，可以嵌套的最大信封数量。然后我们用 `max(res, dp(envelopes, i))` 更新当前找到的最大嵌套数量。所以，最后的 `res` 就是我们可以嵌套的最大信封数量。<br/><br/>之所以要这样做，是因为我们不能假定总是从第一个信封开始就能得到最多的嵌套信封。我们需要检查所有可能的开始信封，才能保证找到最多的嵌套数量。
+        res = max(res, dp(envelopes, i))
+    }
+    return res
+}
+
+func dp(envelopes [][]int, i int) int {
+    if memo[i] != 0 {
+        return memo[i]
+    }
+    
+    res := 1
+    for j := i+1; j < len(envelopes); j++ {
+        if envelopes[i][1] < envelopes[j][1] {
+            res = max(res, dp(envelopes, j)+1)
+        }
+    }
+    memo[i] = res
+    return res
+}
+
+func max(a, b int) int {
+    if a > b {
+        return a
+    }
+    return b
+}
+```
+
+## 组合
+
+
+```go
+// 从n-1个数中挑选k-1个数或者从n-1个数中挑选k个数
+func DFS(n int, k int) [][]int {
+    // 空集合是任意集合的一个子集，因此也被认为是一种组合。因此，当需要选择 0 个元素时，空集合也被视为一种组合。
+
+    if k == 0 {
+        return [][]int{{}}  // 返回包含空集合的二维数组
+    }
+    if n == 0 {
+        return [][]int{}  // 返回空的二维数组
+    }
+    result := [][]int{}
+    // 不包括当前元素n的所有组合
+    without_n := DFS(n-1, k)
+    // 我们的目标是找到从 1 到 `n-1` 的数字（即不包含 `n`）中选取 `k-1` 个数字的所有组合。然后，我们把 `n` 添加到这些组合中，从而形成从 1 到 `n` 中选取 `k` 个数字的组合。
+    with_n := DFS(n-1, k-1)
+    // 将n添加到所有包括它的组合中
+    for _, combination := range with_n {
+        combination = append(combination, n)
+        result = append(result, combination)
+    }
+    // 结果是包括n和不包括n的所有组合
+    return append(without_n, result...)
+}
+
+```
+
+## 排列
+
+### 排列变种-1
+
+```text
+不含重复数字的数组 nums 
+输入：nums = [1,2,3]
+输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+```
+
+```go
+func backtrack(nums []int, current []int, result *[][]int) {
+	// 如果当前的排列长度等于原数组长度，那么这就是一个有效的排列
+	if len(current) == len(nums) {
+		temp := make([]int, len(current))
+		copy(temp, current)
+		*result = append(*result, temp)
+		return
+	}
+
+	for _, num := range nums {
+		// 排除已经在当前排列中的数字
+		if contains(current, num) {
+			continue
+		}
+		// 将新数字加入当前排列中
+		current = append(current, num)
+		// 继续下一个数字的选择
+		backtrack(nums, current, result)
+		// 撤销刚才的选择，进入下一轮循环，选择另外的数字
+		current = current[:len(current)-1]
+	}
+}
+
+// 判断一个切片中是否包含某个数字
+func contains(slice []int, target int) bool {
+	for _, num := range slice {
+		if num == target {
+			return true
+		}
+	}
+	return false
+}
+```
+
+### 排列变种-2
+```text
+可包含重复数字的序列 nums ，按任意顺序 返回所有不重复的全排列。
+输入：nums = [1,1,2]
+输出：
+[
+[1,1,2],
+[1,2,1],
+[2,1,1]
+]
+```
+
+```go
+var hashMap map[string]int
+func permuteUnique(nums []int) [][]int {
+    hashMap = map[string]int{}
+    res:=[][]int{}
+    backtrack(nums,[]int{},&res) 
+    return res
+}
+
+func backtrack(nums []int, path []int, result *[][]int) {
+	// 如果当前的排列长度等于原数组长度，那么这就是一个有效的排列
+	if len(path) == len(nums) {
+		temp := make([]int, len(path))
+		copy(temp, path)
+        res:=[]int{}
+        resKey:=""
+        for _,v := range temp{
+            res =  append(res,nums[v])
+            resKey = resKey+strconv.Itoa(nums[v])
+        }
+        
+        if _,ok:= hashMap[resKey];!ok{
+            hashMap[resKey]++
+            *result = append(*result, res)
+        }
+		return
+	}
+
+	for k, _ := range nums {
+		// 排除已经在当前排列中的数字
+		if contains(path, k) {
+			continue
+		}
+		// 将新数字的下标加入当前排列中
+		path = append(path, k)
+		// 继续下一个数字的选择
+		backtrack(nums, path, result)
+		// 撤销刚才的选择，进入下一轮循环，选择另外的数字
+		path = path[:len(path)-1]
+	}
+}
+
+// 判断一个切片中是否包含某个数字
+func contains(slice []int, target int) bool {
+	for _, num := range slice {
+		if num == target {
+			return true
+		}
+	}
+	return false
+}
+```
+>  假设我们有三个重复的数字，例如 `[1,2,2,2]`，数组已经提前进行了排序。当我们在深度优先搜索的过程中，遇到了重复的数字，我们希望的是这些重复的数字只有在前一个相同的数字已经被使用过的情况下才能被使用，这样才能保证生成的全排列中，相同的数字是按照他们在原数组中的顺序进行排列的，从而避免了重复的全排列。举个例子，我们首先选取第一个2，然后继续选取第二个2，然后是第三个2，这样得到了全排列`[2,2,2]`
+
+```go
+// 优化版
+type Solution struct {
+	path []int
+	used []bool
+	res  [][]int
+}
+
+func permuteUnique(nums []int) [][]int {
+    // 
+	sort.Ints(nums)
+	s := &Solution{
+		path: make([]int, 0),
+		used: make([]bool, len(nums)),
+		res:  make([][]int, 0),
+	}
+	s.dfs(nums, 0)
+	return s.res
+}
+
+func (s *Solution) dfs(nums []int, index int) {
+	if index == len(nums) {
+		temp := make([]int, len(s.path))
+		copy(temp, s.path)
+		s.res = append(s.res, temp)
+		return
+	}
+	for i, num := range nums {
+		if s.used[i]  {
+			continue
+		}
+        if i > 0 && nums[i] == nums[i-1] &&  !s.used[i-1]{
+            continue
+        }
+		s.used[i] = true
+		s.path = append(s.path, num)
+		s.dfs(nums, index+1)
+		s.used[i] = false
+		s.path = s.path[:len(s.path)-1]
+	}
+}
+
+```
+
+### 排列变种-3
+
+```go
+func permute(nums []int, start int, result *[][]int) {
+    if start == len(nums) {
+        temp := make([]int, len(nums))
+        copy(temp, nums)
+        *result = append(*result, temp)
+        return
+    }
+
+    for i := start; i < len(nums); i++ {
+        nums[i], nums[start] = nums[start], nums[i]
+        permute(nums, start+1, result)
+        nums[i], nums[start] = nums[start], nums[i]
+    }
+}
+
+func permuteNChooseK(n int, k int) [][]int {
+    nums := make([]int, n)
+    for i := 0; i < n; i++ {
+        nums[i] = i + 1
+    }
+
+    result := make([][]int, 0)
+    permute(nums, 0, &result)
+
+    var finalResult [][]int
+    for _, v := range result {
+        if len(v) == k {
+            finalResult = append(finalResult, v[:k])
+        }
+    }
+    return finalResult
+}
+```
+
+## 组合
+
+### 组合变种-1
+
+> 给你一个 无重复元素 的整数数组 candidates 和一个目标整数 target ，找出 candidates 中可以使数字和为目标数 target 的 所有 不同组合 ，并以列表形式返回。你可以按 任意顺序 返回这些组合。candidates 中的 同一个 数字可以 无限制重复被选取 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+```go
+var res [][]int
+var hashSet map[string]bool
+func combinationSum(candidates []int, target int) [][]int {
+    res = [][]int{}
+    hashSet = map[string]bool{}
+    backtrack(candidates,target,[]int{})
+    return res
+}
+
+func backtrack(candidates []int, target int, path []int){
+    if target == 0{
+        temp := make([]int,len(path))
+        copy(temp,path)
+        sort.Ints(temp)
+        tempKey := ""
+        for _,v := range temp{
+            tempKey = tempKey +  strconv.Itoa(v)
+        }
+        if _,ok := hashSet[tempKey];!ok{
+            hashSet[tempKey]=true
+            res = append(res,temp)
+        }
+        return 
+    }
+    if target<0{
+        return 
+    }
+    for _,v := range candidates{
+        backtrack(candidates,target-v,append(path,v))
+    }
+}
+```
+
+### 组合变种-2
+
+>  `if i>start && candidates[i] == candidates[i-1] {continue }`这个的意思是，后面重复的数字的情况会在第一个重复数字的情况中包含，`[1,1,2]`,对于第一个1来说，他组合的下标范围是0～2，第2个1的情况也会被包含在里面。
+
+
+```go
+var res [][]int
+func combinationSum2(candidates []int, target int) [][]int {
+    sort.Ints(candidates)
+    res = [][]int{}
+    backtrack(candidates,target,0,[]int{})
+    return res
+}
+
+func backtrack(candidates []int,target int ,start int , path []int){
+    if target == 0{
+        temp:=make([]int,len(path))
+        copy(temp,path)
+        res = append(res,temp)
+        return 
+    }
+
+    for i:=start;i<len(candidates);i++{
+        if candidates[i] > target{
+            break
+        }
+        if i>start && candidates[i] == candidates[i-1] {
+            continue
+        }
+        path = append(path,candidates[i])
+        backtrack(candidates,target-candidates[i],i+1,path)
+        path = path[:len(path)-1]
+    }
+} 
+```
+
+
+### 总结-组合去重
+
+> 重复数字去重
+```text
+对于组合来说，含有重复数字，需要
+
+sort.Ints()
+然后在backtrack（start int）内部
+for i:=start ;i<len(nums);i++{
+    if i>start && nums[i]==nums[i-1]{
+        continue
+    }
+    backtrack(i+1)
+}
+```
+
+### 总结-排列去重
+
+> 重复数字去重
+```text
+对于组合来说，含有重复数字，需要
+
+sort.Ints()
+然后在backtrack（start int）内部
+for i:=start ;i<len(nums);i++{
+    if i>start && nums[i]==nums[i-1] && used[i-1]==true{
+        continue
+    }
+    backtrack(i+1)
+}
+```
+
+
+## 单词拆分——回溯/Memo 存储的是子问题的解
+
+```go
+var memo map[string][]string
+var res []string
+func wordBreak(s string, wordDict []string) []string {
+    res = []string{}
+    memo = make(map[string][]string)
+    wordSet:= map[string]bool{}
+    for _,v := range wordDict{
+        wordSet[v] = true
+    }
+    return backtrack(s,wordSet)
+}
+
+
+func backtrack(s string, wordSet map[string]bool) []string {
+    if _, ok := memo[s]; ok {
+        return memo[s]
+    }
+    if len(s) == 0 {
+        return []string{""}
+    }
+   res:=[]string{}
+    for word := range wordSet {
+        if strings.HasPrefix(s, word) {
+            temp:=backtrack(s[len(word):], wordSet )
+            for _,sub:= range temp {
+                if sub == ""{
+                    res = append(res,word)
+                }else{
+                    res = append(res,word+" "+sub)
+                }
+
+            }
+            
+        }
+    }
+    memo[s] = res 
+    return res
+}
+```
+
+
+
+
+### Kadane's 模版
+> Kadane's 算法（Kadane's algorithm）是一种用于在数组中寻找最大子数组的算法，其时间复杂度为 O(n)。它的基本思想是维护两个变量：当前最大子数组和和当前最大子数组的右端点。
+
+```go
 ```
