@@ -2,7 +2,7 @@
 layout: post
 title: 关于MYSQL 关键字的具体实现
 subtitle: Order by
-tags: [MYSQL]
+tags: [Mysql]
 comments: true
 ---
 
