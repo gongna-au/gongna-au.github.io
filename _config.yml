@@ -23,6 +23,7 @@ navbar-links:
   About Me: "aboutme"
   Life: "life"
   Author's home: "https://github.com/gongna-au"
+  AllArticles: "https://gongna-au.github.io/tags/"
 
 ################
 # --- Logo --- #
