@@ -1,16 +1,12 @@
 ---
 layout: post
-title: Kubernetes
+title: Kubernetes基础
 subtitle:
 tags: [Kubernetes]
 comments: true
 ---
 
-
-
 > 集群安装、配置和管理，工作负载和调度，服务和网络，存储，故障排除等主题.了解 kubectl 命令行工具的使用，熟悉 Pods，Deployments，Services，以及其他 Kubernetes API 对象。
-
-
 
 
 ##  1.集群安装
@@ -21,15 +17,15 @@ comments: true
 
 **使用 Docker Desktop:**
 
-1. 首先，您需要下载并安装 [Docker Desktop](https://www.docker.com/products/docker-desktop)。
+1. 首先，需要下载并安装 [Docker Desktop](https://www.docker.com/products/docker-desktop)。
 
 2. 安装完成后，打开 Docker Desktop 的 Preferences，在 "Kubernetes" 标签页中勾选 "Enable Kubernetes"，然后点击 "Apply & Restart"。这将启动一个单节点的 Kubernetes 集群。
 
 3. 在命令行中，使用 `kubectl` 命令检查集群状态。如果一切正常，以下命令应该能返回集群状态：
+```bash
+kubectl cluster-info
+```
 
-    ```bash
-    kubectl cluster-info
-    ```
 ```bash
     Kubernetes control plane is running at https://127.0.0.1:6443
     CoreDNS is running at https://127.0.0.1:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
@@ -69,9 +65,7 @@ comments: true
     ```
 
 
-
 ## 2.配置和管理
-
 
 ## 3.工作负载和调度
 
@@ -122,6 +116,7 @@ comments: true
 
 - 为了让 Pod 之间能够相互通信，需要在集群中部署一个 Pod 网络插件。
 
+
 #### 具体安装思路
 
 以下是使用 `kubeadm` 安装高可用 Kubernetes 集群的步骤：
@@ -164,7 +159,7 @@ comments: true
 
 ## Docker 基础
 
-#### 虚拟机
+### 虚拟机
 虚拟机（Virtual Machine, VM）是一种模拟物理计算机系统的软件实现。虚拟机的核心是虚拟机监视器（Virtual Machine Monitor, VMM）或称为超级管理程序（Hypervisor）。这个监视器负责在一个物理主机上模拟出多个虚拟的计算机，每一个虚拟计算机被称为一台虚拟机。
 
 以下是虚拟机工作的基本过程：
@@ -179,14 +174,13 @@ comments: true
 
 通过以上方式，虚拟机在单个物理机器上模拟出多个计算机，**每个虚拟机都有自己的 CPU、内存和设备**，能够**运行自己的操作系统和应用程序**，虚拟机之间互不干扰。这就是虚拟机如何"虚拟出"另一个机器的基本原理。
 
-
 虚拟机管理程序有两种类型：
 
 Type 1（原生或裸机Hypervisor）：这类Hypervisor直接安装在物理硬件上，无需依赖于其他操作系统。它具有较好的性能和安全性。例如，VMware ESXi和Microsoft Hyper-V。
 
 Type 2（宿主机Hypervisor）：这类Hypervisor安装在一个基础操作系统上，作为一个应用程序运行。虚拟机运行在这个基础操作系统之上。例如，VMware Workstation和Oracle VirtualBox。
 
-#### Docker的基础命令
+### Docker的基础命令
 
 ```shell
 docker version
@@ -217,7 +211,7 @@ docker commit
 docker build -t
 ```
 
-#### Dockerfile指令
+### Dockerfile指令
 
 ```dockerfile
 FROM
@@ -281,7 +275,7 @@ ENV DB_CONNECTION_STRING="your-db-connection-string"
 ENTRYPOINT ["/main"]
 ```
 
-#### 实战场景中的Dockerfile
+### 实战场景中的Dockerfile
 
 MySQL 数据库运行在同一台 Docker 主机的另一个容器中，你可以使用 Docker 的网络功能来使这两个容器互相通信。例如，你可以创建一个 Docker 网络，然后在这个网络上启动你的应用容器和 MySQL 容器。
 
@@ -310,7 +304,6 @@ docker run --network=mynetwork -e DB_HOST=mymysql -p 8080:8080 -d myapp
 - `-p 8080:8080`: 这部分映射了容器的端口到宿主机的端口。在这个例子中，容器的 8080 端口被映射到宿主机的 8080 端口。这样，我们可以通过访问宿主机的 8080 端口来访问容器的 8080 端口。
 - `-d`: 这个选项让容器在后台运行，并返回容器的 ID。
 - `myapp`: 这是你要运行的 Docker 镜像的名称。
-
 
 
 在 `docker run` 命令中，你已经将 MySQL 容器的 3306 端口映射到了宿主机的 8806 端口，同时你还将 MySQL 容器加入到了 `mynetwork` 网络。那么在同一网络中的其他容器就可以使用你给 MySQL 容器命名的名字（在这里是 `mymysql`）作为主机名来访问 MySQL 服务。
@@ -377,431 +370,50 @@ docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
 ```
 
 
-
-
 ## Kubernetes基础
+
+### 架构
 
 Kubernetes是谷歌以Borg为前身，基于谷歌15年生产环境经验的基础上开源的一个项目，Kubernetes致力于提供跨主机集群的自动部署、扩展、高可用以及运行应用程序容器的平台。
 
 Master节点：整个集群的控制中枢
-	•	Kube-APIServer：集群的控制中枢，各个模块之间信息交互都需要经过Kube-APIServer，同时它也是集群管理、资源配置、整个集群安全机制的入口。
-	•	Controller-Manager：集群的状态管理器，保证Pod或其他资源达到期望值，也是需要和APIServer进行通信，在需要的时候创建、更新或删除它所管理的资源。
-	•	Scheduler：集群的调度中心，它会根据指定的一系列条件，选择一个或一批最佳的节点，然后部署我们的Pod。
-	•	Etcd：键值数据库，报错一些集群的信息，一般生产环境中建议部署三个以上节点（奇数个）。
+
+- Kube-APIServer：集群的控制中枢，各个模块之间信息交互都需要经过Kube-APIServer，同时它也是集群管理、资源配置、整个集群安全机制的入口。
+- Controller-Manager：集群的状态管理器，保证Pod或其他资源达到期望值，也是需要和APIServer进行通信，在需要的时候创建、更新或删除它所管理的资源。
+- Scheduler：集群的调度中心，它会根据指定的一系列条件，选择一个或一批最佳的节点，然后部署我们的Pod。
+- Etcd：键值数据库，报错一些集群的信息，一般生产环境中建议部署三个以上节点（奇数个）。
 
 Node：工作节点
-	Worker、node节点、minion节点
-	•	Kubelet：负责监听节点上Pod的状态，同时负责上报节点和节点上面Pod的状态，负责与Master节点通信，并管理节点上面的Pod。
-	•	Kube-proxy：负责Pod之间的通信和负载均衡，将指定的流量分发到后端正确的机器上。
-	•	查看Kube-proxy工作模式：curl 127.0.0.1:10249/proxyMode
-	•	Ipvs：监听Master节点增加和删除service以及endpoint的消息，调用Netlink接口创建相应的IPVS规则。通过IPVS规则，将流量转发至相应的Pod上。
-	•	Iptables：监听Master节点增加和删除service以及endpoint的消息，对于每一个Service，他都会场景一个iptables规则，将service的clusterIP代理到后端对应的Pod。
+Worker、node节点、minion节点
+- Kubelet：负责监听节点上Pod的状态，同时负责上报节点和节点上面Pod的状态，负责与Master节点通信，并管理节点上面的Pod。
+- Kube-proxy：负责Pod之间的通信和负载均衡，将指定的流量分发到后端正确的机器上。
+- 查看Kube-proxy工作模式：curl 127.0.0.1:10249/proxyMode
+- Ipvs：监听Master节点增加和删除service以及endpoint的消息，调用Netlink接口创建相应的IPVS规则。通过IPVS规则，将流量转发至相应的Pod上。
+- Iptables：监听Master节点增加和删除service以及endpoint的消息，对于每一个Service，他都会场景一个iptables规则，将service的clusterIP代理到后端对应的Pod。
 其他组件
-	•	Calico：符合CNI标准的网络插件，给每个Pod生成一个唯一的IP地址，并且把每个节点当做一个路由器。Cilium
-	•	CoreDNS：用于Kubernetes集群内部Service的解析，可以让Pod把Service名称解析成IP地址，然后通过Service的IP地址进行连接到对应的应用上。
-	•	Docker：容器引擎，负责对容器的管理。
+- Calico：符合CNI标准的网络插件，给每个Pod生成一个唯一的IP地址，并且把每个节点当做一个路由器。Cilium
+- CoreDNS：用于Kubernetes集群内部Service的解析，可以让Pod把Service名称解析成IP地址，然后通过Service的IP地址进行连接到对应的应用上。
+- Docker：容器引擎，负责对容器的管理。
 
 
+### Service的类型
 
-## 实践
+ClusterIP/NodePort/LoadBalancer/ExternalName
 
 
+这些术语都是 Kubernetes 中关于 Service 的一部分。Kubernetes Service 是定义在 Pod 上的网络抽象，它能使应用程序与它们所依赖的后端工作负载进行解耦。这四种 Service 类型是 Kubernetes 提供的四种不同的方式来暴露服务：
 
-### Container
+`ClusterIP`：这是默认的 ServiceType。它会通过一个集群内部的 IP 来暴露服务。只有在集群内部的其他 Pod 才能访问这种类型的服务。
 
-> 应用程序
+`NodePort`：这种类型的服务是在每个节点的 IP 和一个静态端口（也就是 NodePort）上暴露服务。这意味着如果你知道任意一个节点的 IP 和服务的 NodePort，就可以从集群的外部访问服务。在内部，Kubernetes 将 NodePort 服务路由到自动创建的 ClusterIP 服务。
 
-```go
-package main
+`LoadBalancer`：这种类型的服务会使用云提供商的负载均衡器向外部暴露服务。这个负载均衡器可以将外部的网络流量路由到集群内部的 NodePort 服务和 ClusterIP 服务。
 
-import (
-	"io"
-	"net/http"
-)
+`ExternalName`：通过返回 CNAME 和对应值，可以将服务映射到 externalName 字段的内容（例如，foo.bar.example.com）。 无需创建任何类型代理。
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "[v1] Hello, Kubernetes!")
-}
 
-func main() {
-	http.HandleFunc("/", hello)
-	http.ListenAndServe(":3000", nil)
-}
 
-```
->  Dockerfile文件
 
-```dockerfile
-FROM golang:1.16-buster AS builder
-RUN mkdir /src
-ADD . /src
-WORKDIR /src
 
-RUN go env -w GO111MODULE=auto
-RUN go build -o main .
-
-FROM gcr.io/distroless/base-debian10
-
-WORKDIR /
-
-COPY --from=builder /src/main /main
-EXPOSE 3000
-ENTRYPOINT ["/main"]
-```
-
-> main.go 文件需要和 Dockerfile 文件在同一个目录下面执行,fieelina 就是Docker注册的用户名
-
-```shell
-docker build . -t fieelina/hellok8s:v1
-```
-
-> 查看镜像状态
-```shell
-docker images 
-```
-
-> 测试
-
-```shell
-docker run -p 3000:3000 --name hellok8s -d fieelina/hellok8s:v1 
-```
-
-> 登录
-```shell
-docker login -u fieelina
-```
-
-> 推送
-
-```shell
-docker push fieelina/hellok8s:v1 
-```
-
-
-### Pod
-
-
-> 编写一个可以创建 nginx 的 Pod。
-
-```yaml
-# nginx.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx-pod
-spec:
-  containers:
-    - name: nginx-container
-      image: nginx
-```
-kind 表示我们要创建的资源是 Pod 类型
-metadata.name 表示要创建的 pod 的名字
-spec.containers 表示要运行的容器的名称和镜像名称。镜像默认来源 DockerHub。
-
->  创建Pod
-
-```shell
-kubectl apply -f nginx.yaml 
-```
-
-> 查看Pod 状态
-```shell
-kubectl get pods
-```
-> 进入Pod内部
-
-```shell
-kubectl exec -it nginx-pod /bin/bash
-```
-> 配置 nginx 的首页内容
-```shell
-echo "hello kubernetes by nginx!" > /usr/share/nginx/html/index.html
-```
-
-> 退出Pod
-```shell
-exit
-```
-> 端口映射
-```shell
-kubectl port-forward nginx-pod 4000:80
-```
-这个命令的作用是在你的本地机器（kubectl 客户端）上创建一个到 nginx-pod 的 4000 到 80 的端口映射。这样你就可以通过访问本地的 4000 端口.虽然 YAML 文件中虽然没有明确指定 80 端口，但是 Nginx 服务器默认在 80 端口上运行，这是它的默认配置。
-
-> 访问测试
-
-```shell
-http://127.0.0.1:4000
-```
-
-> 查看日志
-
-```shell
-kubectl logs --follow nginx-pod
-```
-```shell
-kubectl logs  nginx-pod
-```
-`kubectl logs --follow nginx-pod` 命令中的 `--follow` 参数使得命令不会立即返回，而是持续地输出 Pod 的日志，就像 `tail -f` 命令一样。当新的日志在 Pod 中生成时，这些日志会实时地在你的终端中显示。这对于跟踪和调试 Pod 的行为非常有用。如果不使用 `--follow` 参数，`kubectl logs` 命令只会打印出到目前为止已经生成的日志，然后命令就会返回。
-
-
-> 在Pod的外部输入命令，让在Pod内部执行
-
-```shell
-kubectl exec nginx-pod -- ls
-```
-
-`kubectl exec nginx-pod -- ls` 命令的作用是在名为 "nginx-pod" 的 Pod 中执行 `ls` 命令。
-
-在这里，`kubectl exec` 是执行命令的操作，`nginx-pod` 是你要在其中执行命令的 Pod 的名称，`--` 是一个分隔符，用于分隔 kubectl 命令的参数和你要在 Pod 中执行的命令，而 `ls` 是你要在 Pod 中执行的命令。
-
-`ls` 命令是 Linux 中的一个常用命令，用于列出当前目录中的所有文件和目录。所以 `kubectl exec nginx-pod -- ls` 命令会打印出在 "nginx-pod" Pod 中的当前目录下的所有文件和目录。
-
-> 删除Pod
-
-```shell
-kubectl delete pod nginx-pod
-```
-
-> 删除Yaml
-
-```shell
-kubectl delete -f nginx.yaml
-```
-
-> 总结
-
-container (容器) 的本质是进程，而 pod 是管理这一组进程的资源。pod 可以管理多个 container，在某些场景例如服务之间需要文件交换(日志收集)，本地网络通信需求(使用 localhost 或者Socket 文件进行本地通信) 
-
-
-### Deployment
-
-可以自动扩容或者自动升级版本.
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: hellok8s-deployment
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: hellok8s
-  template:
-    metadata:
-      labels:
-        app: hellok8s
-    spec:
-      containers:
-        - image: fieelina/hellok8s:v1
-          name: hellok8s-container
-```
-kind 表示我们要创建的资源是 deployment 类型
-metadata.name 表示要创建的 deployment 的名字
-replicas 表示的是部署的 pod 副本数量
-selector 里面表示的是 deployment 资源和 pod 资源关联的方式,deployment 会管理 (selector) 所有 labels=hellok8s 的 pod。
-
-template 的内容是用来定义 pod 资源的,和Pod差不多，唯一的区别是要加上metadata.labels 和上面的selector.matchLabels对应。
-
-> 执行
-```shell
-kubectl apply -f deployment.yaml
-```
-> 查看deployment状态
-```shell
-kubectl get deployments
-```
-
-> 获取Pod
-```shell
-kubectl get pods 
-```
-> 删除Pod
-```shell
-kubectl delete pod hellok8s-deployment-7f9d6776b6-vklpc
-```
-
-> 检查删除后的状态
-
-```shell
-kubectl get pods 
-# NAME                                   READY   STATUS    RESTARTS   AGE
-# hellok8s-deployment-7f9d6776b6-vcqqd   1/1     Running   0          54s
-# 得到了新的Pods
-```
-
-> 自动扩容,修改replicas=3
-```shell
-kubectl apply -f deployment.yaml
-```
-
-> 命令来观察 pod 启动和删除的记
-```shell
-kubectl get pods --watch 
-```
-
-> 升级版本-修改内容
-
-```go
-package main
-
-import (
-	"io"
-	"net/http"
-)
-
-func hello(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "[v2] Hello, Kubernetes!")
-}
-
-func main() {
-	http.HandleFunc("/", hello)
-	http.ListenAndServe(":3000", nil)
-}
-```
-> 升级版本-构件镜像并推送到仓库
-
-```shell
-docker build . -t fieelina/hellok8s:v2
-```
-
-```shell
-docker push fieelina/hellok8s:v2
-```
-
-> 升级版本-修改deployment文件
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: hellok8s-deployment
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: hellok8s
-  template:
-    metadata:
-      labels:
-        app: hellok8s
-    spec:
-      containers:
-        - image: fieelina/hellok8s:v2
-          name: hellok8s-container
-```
-
-> 执行
-```shell
-kubectl apply -f deployment.yaml
-```
-
-> 查看Pod的状态
-```shell
-kubectl get pods 
-
-# hellok8s-deployment-6c6fcbc8b5-86rg5   1/1     Running   0          4s
-# hellok8s-deployment-6c6fcbc8b5-fhv62   1/1     Running   0          3s
-# hellok8s-deployment-6c6fcbc8b5-qx2n8   1/1     Running   0          6s
-```
-
-> 端口映射
-```shell
-kubectl port-forward hellok8s-deployment-66799848c4-kpc6q 3000:3000
-```
-
-> 访问测试
-```shell
-http://localhost:3000
-```
-
-> 查看
-```shell
-kubectl describe pod  hellok8s-deployment-6c6fcbc8b5-86rg5
-```
-
-> 滚动更新-修改deployment文件
-
-spec.strategy.type有两种选择：
-
-RollingUpdate:逃逸增加新版本的pod，逃逸减少旧版本的pod。
-Recreate:在新版本的 pod 增加之前，先将所有旧版本 pod 删除。
-
-滚动更新又可以通过maxSurge和maxUnavailable字节来控制升级 pod 的速度，具体可以详细看官网定义。：
-
-maxSurge:最大峰值，用来指定可以创建的超预期Pod个数的Pod数量。
-maxUnavailable:最大不可使用，用于指定更新过程中不可使用的Pod的个数上限。
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: hellok8s-deployment
-spec:
-  strategy:
-     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-  replicas: 3
-  selector:
-    matchLabels:
-      app: hellok8s
-  template:
-    metadata:
-      labels:
-        app: hellok8s
-    spec:
-      containers:
-      - image: fieelina/hellok8s:v2
-        name: hellok8s-container
-```
-最大可能会创建 4 个 hellok8s pod (replicas + maxSurge)，最少会有 2 个 hellok8s pod 存在 (replicas - maxUnavailable) 。
-
-> 执行
-
-```shell
-kubectl apply -f deployment.yaml
-```
-
-> 查看pod的创建状况
-```shell
-kubectl get pods --watch
-```
-
-> 滚动更新-回滚
-```shell
-kubectl rollout undo deployment hellok8s-deployment
-```
-
-> 滚动更新-回滚历史
-```shell
-kubectl rollout history deployment hellok8s-deployment
-```
-
-> 总结
-
-手动删除一个 pod 资源后，deployment 会自动创建一个新的 pod，这代表着当生产环境管理着成千上万个 pod 时，我们不需要关心具体的情况，只需要维护好这份 deployment.yaml 文件的资源定义即可。
-
-
-
-### 生存探针
-
-生存探测器来确定什么时候需要重新启动容器。继续执行后面的步骤）情况。重新启动这种状态下的容器有助于提高应用的可用性，即使其中存在不足。 -- LivenessProb
-
-
-在生产中，有时会因为某些bug导致应用死锁或线路进程写入尽了，最终会导致应用无法继续提供服务，此时此刻如如果没有手段来自动监控和处理这个问题的话，可能会导致很长一段时间无人发现。kubelet使用现存检测器（livenessProb）来确定什么时候需要重新启动容器。
-
-
-
-
-
-> 执行
-```shell
-```
-
-> 执行
-```shell
-```
 
 
