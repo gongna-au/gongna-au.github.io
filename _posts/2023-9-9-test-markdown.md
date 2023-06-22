@@ -197,7 +197,6 @@ kind 表示我们要创建的资源是 deployment 类型
 metadata.name 表示要创建的 deployment 的名字
 replicas 表示的是部署的 pod 副本数量
 selector 里面表示的是 deployment 资源和 pod 资源关联的方式,deployment 会管理 (selector) 所有 labels=hellok8s 的 pod。
-
 template 的内容是用来定义 pod 资源的,和Pod差不多，唯一的区别是要加上metadata.labels 和上面的selector.matchLabels对应。
 
 > 执行

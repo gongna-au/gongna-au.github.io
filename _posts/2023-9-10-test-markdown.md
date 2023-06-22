@@ -64,14 +64,40 @@ kubectl cluster-info
     kubectl cluster-info
     ```
 
-
 ## 2.配置和管理
+
+问题1：请解释Kubernetes中ConfigMaps和Secrets的主要区别。
+
+答案：ConfigMaps允许你将配置项分离出来，不与应用代码混在一起，而Secrets主要用于存储敏感信息，如密码、密钥等。二者最大的区别是，Secrets中的数据在传输和存储时都是加密的，而ConfigMaps则不是。
+
+
+问题2：你如何使用Helm在Kubernetes中管理复杂应用？
+
+答案：Helm是Kubernetes的包管理器，类似于Linux的apt或yum。它可以让用户更加方便地部署和管理Kubernetes应用。Helm提供了一种称为Chart的打包格式，用户可以将一个复杂的应用，包括其所有的依赖服务、配置等，打包为一个Chart。然后用户可以一键部署这个Chart到任何Kubernetes集群。同时，Helm也提供了升级、回滚、版本管理等功能，使得管理Kubernetes应用更为方便。
+
+问题3：在Kubernetes中，你如何将敏感数据（例如密码、密钥）从应用代码中分离出来？
+
+答案：在Kubernetes中，我们通常使用Secrets来管理敏感数据。Secrets可以用来存储和管理敏感信息，如密码、OAuth 令牌、ssh key等。在Pod中，Secrets可以被以数据卷或者环境变量的形式使用.
+
+
 
 ## 3.工作负载和调度
 
+问题2：请解释Kubernetes中的Pod、Deployment和Service之间的关系。
+
+答案：Pod是Kubernetes的最小部署单元，它包含一个或多个容器。Deployment负责管理Pods，提供升级(rollingUpdate)和回滚(kubectl rollout)功能。Service则是一种抽象，提供了一种方法来访问一组Pods的网络接口，无论它们如何移动或扩展。
+
 ## 4.服务和网络
 
+问题3：简述Kubernetes中的网络策略(Network Policies)的工作原理。
+
+答案：网络策略在Kubernetes中提供了基于Pod的网络隔离。默认情况下，Pods之间没有访问限制，但当我们定义了网络策略后，只有符合网络策略规则的流量才能到达Pod。
+
 ## 5.存储
+
+问题4：在Kubernetes中，Persistent Volume和Persistent Volume Claim有何区别？
+
+答案：Persistent Volume (PV)是集群中的一部分存储，已经由管理员预先配置好。Persistent Volume Claim (PVC)则是用户对这些存储资源的请求。用户可以在PVC中指定所需的存储大小以及访问模式。
 
 
 
