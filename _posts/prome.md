@@ -806,23 +806,307 @@ Tenant操作指标：在New函数中，可以看到tenantOp被传入，这可能
 
 服务发现指标：在New函数中，看到了serviceDiscovery被传入，这可能是一个服务发现的接口。可以在这个接口的实现中添加指标，来收集关于服务发现的信息，如发现新服务的次数、服务丢失的次数等。
 
+## 补充
+
+cmd：这个目录通常包含主程序的入口点，可以在这里收集关于程序启动、运行和关闭的指标。
+
+pkg：这个目录包含了项目的主要代码，可以在这里收集各种功能模块的运行指标，例如数据库连接、查询处理、事务处理等。
+
+integration_test 和 test：这两个目录包含了集成测试和单元测试的代码，可以在这里收集测试覆盖率、测试通过率等指标。
+
+scripts：这个目录包含了一些脚本，可以在这里收集脚本执行的指标。
+
+
+## pkg/mysql
+
+admin：这个目录包含了管理和监控功能的代码，可以在这里收集关于管理操作的指标，例如操作的数量、操作的结果等。
+
+boot：这个目录包含了启动和初始化的代码，可以在这里收集关于启动和初始化的指标，例如启动时间、初始化的结果等。
+
+config：这个目录包含了配置相关的代码，可以在这里收集关于配置的指标，例如配置的数量、配置的更改次数等。
+
+executor：这个目录包含了执行数据库查询的代码，可以在这里收集关于查询执行的指标，例如查询的数量、查询的延迟、查询的结果等。
+
+metrics：这个目录已经包含了一些收集和报告指标的代码，可以在这里收集各种已经定义的指标。
+
+mysql：这个目录包含了与MySQL交互的代码，可以在这里收集关于MySQL操作的指标，例如操作的数量、操作的延迟、操作的结果等。
+
+runtime：这个目录包含了运行时相关的代码，可以在这里收集关于运行时的指标，例如CPU使用率、内存使用量、线程数量等。
+
+server：这个目录包含了服务器相关的代码，可以在这里收集关于服务器状态的指标，例如连接的数量、请求的数量、响应的延迟等。
+
+
+###  pkg/mysql
+在Arana的pkg/mysql目录下，可以在这些位置收集指标：
+
+auth.go：这个文件包含了与MySQL认证相关的代码，可以在这里收集关于认证的指标，例如认证尝试的次数、认证失败的次数等。
+
+client.go 和 conn.go：这两个文件包含了与MySQL服务器建立和管理连接的代码，可以在这里收集关于连接的指标，例如建立连接的次数、连接的持续时间、连接错误的次数等。
+
+execute_handle.go：这个文件包含了执行MySQL查询的代码，可以在这里收集关于查询执行的指标，例如查询的数量、查询的延迟、查询错误的次数等。
+
+server.go：这个文件包含了MySQL服务器相关的代码，可以在这里收集关于服务器状态的指标，例如连接的数量、请求的数量、响应的延迟等。
+
+在auth.go的CheckAuth函数中，可以添加一个指标来跟踪认证尝试的次数和结果。
+
+在client.go的Connect函数中，可以添加一个指标来跟踪建立连接的次数和结果。
+
+在conn.go的handleCommand函数中，可以添加一个指标来跟踪处理的命令的数量和类型。
+
+在execute_handle.go的handleStmtExecute函数中，可以添加一个指标来跟踪执行的查询的数量和结果。
+
+在server.go的Run函数中，可以添加一个指标来跟踪服务器的运行状态和连接的数量。
+
+
+###  pkg/executor 
+
+
+getCharsetCollation(c uint8) (string, string): 这个函数返回字符集和排序规则。可以在这里添加关于字符集和排序规则使用情况的指标。
+
+IsErrMissingTx(err error) bool: 这个函数检查是否存在缺失的事务错误。可以在这里添加关于事务错误的指标。
+
+ExecuteUseDB(ctx *proto.Context, db string) error: 这个函数执行数据库切换操作。可以在这里添加关于数据库切换的指标。
+
+ExecuteFieldList(ctx *proto.Context) ([]proto.Field, error): 这个函数执行字段列表查询。可以在这里添加关于字段列表查询的指标。
+
+doExecutorComQuery(ctx *proto.Context, act ast.StmtNode) (proto.Result, uint16, error): 这个函数执行通用查询。可以在这里添加关于通用查询的指标
+
+###  pkg/server.go
+```go
+func NewServer() *Server {
+    // 在这里添加一个指标来跟踪服务器的创建次数
+    metrics.Increment("server_create_count")
+
+    return &Server{
+        listeners: make([]proto.Listener, 0),
+    }
+}
+
+func (srv *Server) AddListener(listener proto.Listener) {
+    // 在这里添加一个指标来跟踪添加监听器的次数
+    metrics.Increment("listener_add_count")
+
+    srv.listeners = append(srv.listeners, listener)
+}
+
+func (srv *Server) Start() {
+    // 在这里添加一个指标来跟踪服务器启动的次数
+    metrics.Increment("server_start_count")
+
+    for _, l := range srv.listeners {
+        // 在这里添加一个指标来跟踪每个监听器开始监听的次数
+        metrics.Increment("listener_start_count")
+
+        go l.Listen()
+    }
+}
+```
 
 
 
+### pkg/register
+
+```go
+package registry
+
+import (
+	"context"
+	"fmt"
+	"github.com/arana-db/arana/pkg/config"
+	"github.com/arana-db/arana/pkg/registry/base"
+	"github.com/dubbogo/gost/net"
+	"github.com/pkg/errors"
+)
+
+// DoRegistry register the service
+func DoRegistry(ctx context.Context, registryInstance base.Registry, name string, listeners []*config.Listener) error {
+	serviceInstance := &base.ServiceInstance{Name: name}
+	serverAddr, err := gostnet.GetLocalIP()
+	if err != nil {
+		return fmt.Errorf("service registry register error because get local host err:%v", err)
+	}
+	if len(listeners) == 0 {
+		return fmt.Errorf("listeners is not exist")
+	}
+	tmpLister := listeners[0]
+	if tmpLister.SocketAddress.Address == "0.0.0.0" || tmpLister.SocketAddress.Address == "127.0.0.1" {
+		tmpLister.SocketAddress.Address = serverAddr
+	}
+	serviceInstance.Endpoint = tmpLister
+
+	// Call the function to update metrics here
+	err = UpdateMetrics(serviceInstance)
+	if err != nil {
+		return fmt.Errorf("error updating metrics: %v", err)
+	}
+
+	return registryInstance.Register(ctx, serviceInstance)
+}
+
+// UpdateMetrics is a function to update metrics
+func UpdateMetrics(serviceInstance *base.ServiceInstance) error {
+	// Add your logic to update metrics here
+	// For example, you can increment a counter for each new service instance
+	// metrics.Counter.Inc()
+
+	return nil
+}
+
+```
 
 
 
+### pkg/runtime
+
+根据你的需求，可能需要在runtime.go文件中的defaultRuntime结构体或者AtomDB结构体中添加指标更新的函数。
+
+如果想要跟踪每次数据库查询的执行时间，可能需要在defaultRuntime中添加一个函数来更新这个指标。
+```go
+func (r *defaultRuntime) UpdateQueryExecutionTimeMetric(duration time.Duration) {
+    // 这里是更新指标的代码
+    // 可能需要使用一些第三方库来帮助你记录和更新这些指标
+}
+```
+然后，在执行数据库查询的地方，可以调用这个函数来更新指标。例如，如果在Execute函数中执行查询，你可以在查询执行完成后调用这个函数：
+
+```go
+func (r *defaultRuntime) Execute(ctx context.Context, query string, bindVars map[string]*querypb.BindVariable, isStreaming bool, options *querypb.ExecuteOptions) (*sqltypes.Result, error) {
+    startTime := time.Now()
+
+    // 这里是执行查询的代码
+
+    duration := time.Since(startTime)
+    r.UpdateQueryExecutionTimeMetric(duration)
+
+    // 其他代码
+}
+```
+### pkg/security 
+
+在 tenant.go 文件中，可以在 TenantManager 接口的实现 simpleTenantManager 中添加指标更新的函数。这个接口管理了租户的信息，包括用户和集群。可以在对用户或集群进行操作的函数中添加指标更新的代码。
+
+
+```go
+func (st *simpleTenantManager) PutUser(tenant string, user *config.User) {
+    st.Lock()
+    defer st.Unlock()
+    current, ok := st.tenants[tenant]
+    if !ok {
+        current = &tenantItem{
+            clusters: make(map[string]struct{}),
+            users:    make(map[string]*config.User),
+        }
+        st.tenants[tenant] = current
+    }
+    current.users[user.Username] = user
+    // 在这里添加指标更新的代码
+}
+```
+
+也可以在 PutCluster、RemoveUser 和 RemoveCluster 等函数中添加指标更新的代码，以跟踪这些操作的情况。
+
+###  pkg/selector
+
+```go
+// db_manager.go
+type Selector interface {
+	GetDataSourceNo() int
+	UpdateMetrics() // 新增的指标更新函数
+}
+```
+
+
+```go
+// weight_random.go
+type weightRandom struct {
+	weightValues   []int
+	weightAreaEnds []int
+}
+
+func (w weightRandom) GetDataSourceNo() int {
+	// 在这里添加指标更新的函数
+	// ...
+}
+
+func (w *weightRandom) setWeight(weights []int) {
+	// 在这里添加指标更新的函数
+	// ...
+}
+
+func (w *weightRandom) genAreaEnds() {
+	// 在这里添加指标更新的函数
+	// ...
+}
+```
+
+## 抽象
 
 
 
+请求处理时间：了解每个请求的处理时间，从而了解系统的性能。
 
+请求错误率：了解系统的错误率，从而了解系统的稳定性。
 
+并发连接数：了解系统的并发处理能力。
 
+数据库查询执行时间：了解数据库查询的性能。
 
+数据库连接池的使用情况：了解数据库连接池的使用情况，从而了解系统的资源使用情况。
 
+```go
+func handleRequest(request *Request) {
+    startTime := time.Now()
 
+    // 处理请求的代码
 
+    duration := time.Since(startTime)
+    metrics.UpdateRequestProcessingTimeMetric(duration)
+}
+```
+请求错误率：在处理错误的地方添加代码来更新错误率指标。
+```go
+func handleError(err error) {
+    metrics.IncrementErrorCountMetric()
 
+    // 处理错误的代码
+}
+```
+并发连接数：在新建和关闭连接的地方添加代码来更新并发连接数指标。
+```go
+func newConnection() {
+    metrics.IncrementConnectionCountMetric()
 
+    // 新建连接的代码
+}
 
+func closeConnection() {
+    metrics.DecrementConnectionCountMetric()
 
+    // 关闭连接的代码
+}
+```
+数据库查询执行时间：在执行数据库查询的函数中添加代码来记录开始时间和结束时间，然后计算查询执行时间。
+```go
+func executeQuery(query string) {
+    startTime := time.Now()
+
+    // 执行查询的代码
+
+    duration := time.Since(startTime)
+    metrics.UpdateQueryExecutionTimeMetric(duration)
+}
+```
+数据库连接池的使用情况：在从连接池中获取和归还连接的地方添加代码来更新连接池使用情况指标。
+```go
+func getConnectionFromPool() {
+    metrics.IncrementPoolUsageMetric()
+
+    // 从连接池中获取连接的代码
+}
+
+func returnConnectionToPool() {
+    metrics.DecrementPoolUsageMetric()
+
+    // 将连接归还到连接池的代码
+}
+```
