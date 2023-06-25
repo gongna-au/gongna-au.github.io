@@ -175,3 +175,58 @@ func maxSubArray(nums []int) (int, int, int) {
 ```
 
 
+### 并查集思想在动态规划中的运用
+
+```go
+/*368. 最大整除子集
+给你一个由 无重复 正整数组成的集合 nums ，请你找出并返回其中最大的整除子集 answer ，子集中每一元素对 (answer[i], answer[j]) 都应当满足：
+answer[i] % answer[j] == 0 ，或
+answer[j] % answer[i] == 0
+如果存在多个有效解子集，返回其中任何一个均可*/
+func largestDivisibleSubset(nums []int) []int {
+    sort.Ints(nums)
+    n := len(nums)
+    f := make([]int, n)
+    g := make([]int, n)
+
+    for i := 0; i < n; i++ {
+        // 至少包含自身一个数，因此起始长度为 1，由自身转移而来
+        length, prev := 1, i
+        for j := 0; j < i; j++ {
+            if nums[i]%nums[j] == 0 {
+                // 如果能接在更长的序列后面，则更新「最大长度」&「从何转移而来」
+                if f[j]+1 > length {
+                    length = f[j] + 1
+                    prev = j
+                }
+            }
+        }
+        // 记录「最终长度」&「从何转移而来」
+        f[i] = length
+        g[i] = prev
+    }
+
+    // 遍历所有的 f[i]，取得「最大长度」和「对应下标」
+    maxLen := -1
+    idx := -1
+    for i := 0; i < n; i++ {
+        if f[i] > maxLen {
+            maxLen = f[i]
+            idx = i
+        }
+    }
+
+    // 使用 g[] 数组回溯出最长上升子序列
+    path := make([]int, 0)
+    for {
+        path = append(path, nums[idx])
+        if idx == g[idx] {
+            break
+        }
+        idx = g[idx]
+    }
+
+    return path
+}
+
+```

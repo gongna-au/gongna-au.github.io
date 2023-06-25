@@ -1,6 +1,3 @@
-Arana是一个云原生数据库代理，它也可以作为数据库网格sidecar进行部署。它提供了透明的数据访问能力，当使用Arana时，用户不需要关心数据库的分片细节，他们可以像使用单个MySQL数据库一样使用它。Arana还提供了多租户、分布式事务、影子数据库、SQL审计、数据加密/解密等能力。通过简单的配置，用户可以直接使用Arana提供的这些能力。
-
-Arana还可以作为数据库网格sidecar进行部署。作为数据库网格sidecar，Arana将数据访问从客户端模式切换到代理模式，这大大优化了应用程序的启动速度。它提供了管理数据库流量的能力，它占用的容器资源非常少，不影响容器中应用服务的性能，但提供了所有代理的能力。
 
 Arana的监控方案提案：
 
@@ -24,7 +21,7 @@ Arana的监控方案提案：
 
 可视化仪表板：提供一个可视化的仪表板，展示Arana的性能指标、数据库状态、日志等信息，以便于运维人员进行监控和管理。
 
-在Arana项目中集成并收集指标，我们可以使用Prometheus和Grafana这两个开源工具。以下是一个基本的示例，展示如何在Go语言项目中使用Prometheus库来收集和暴露指标。
+在Arana项目中集成并收集指标，我们可以使用Prometheus和Grafana这两个开源工具。
 
 ### 定义指标
 首先，我们需要在项目中导入Prometheus的Go客户端库：
@@ -690,13 +687,9 @@ func (r *RedirectExecutor) ExecutorComStmtExecute(ctx *proto.Context) (proto.Res
 在这个示例中，QueryDuration、QueryErrors 和 QuerySuccess 是你定义的指标，可以根据你的需要替换它们。WithLabelValues 函数用于为指标添加标签，Observe 函数用于为Histogram或Summary类型的指标添加观察值，Inc 函数用于增加指标的计数。
 
 
-
-
 ### pkg/server
 
 pkg/server：这个包可能包含了服务器的主要代码。你可以在这里收集关于服务器状态的指标，如CPU使用率、内存使用率和磁盘使用率。
-
-
 它是 Arana 数据库代理的一部分。这个文件主要处理了服务器的启动和监听。以下是一些主要的函数和它们的功能：
 ```text
 NewServer() *Server：创建一个新的服务器实例。
