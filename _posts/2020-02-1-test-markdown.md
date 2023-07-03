@@ -17,6 +17,24 @@ comments: true
 /bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
 ```
 
+## 设置环境变量
+
+为了将 node@18 加入到 PATH 环境变量中，使其成为优先选择的版本，可以运行以下命令：
+```shell
+echo 'export PATH="/opt/homebrew/opt/node@18/bin:$PATH"' >> ~/.zshrc
+```
+此命令将 export PATH=... 添加到你的 ~/.zshrc 文件中，以确保 node@18 的二进制文件在你的路径中优先被找到。
+
+另外，为了让编译器能找到 node@18，你可能需要设置以下环境变量：
+
+
+```shell
+export LDFLAGS="-L/opt/homebrew/opt/node@18/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/node@18/include"
+```
+
+这些环境变量指定了编译器在编译过程中需要搜索的库文件和头文件路径。设置这些变量可以确保在编译需要使用到 node@18 的程序时，编译器能够正确地找到所需的文件。
+
 
 ## 更换Homebrew的镜像源
 你可以通过以下步骤来更换Homebrew的镜像源：
