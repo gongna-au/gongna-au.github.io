@@ -63,6 +63,28 @@ Kubelet 一个代理服务，运行每个 Node 上，使得从服务器和主服
 
 #### 2.5 Kubernetes 基础概念
 
+在 Kubernetes 集群中，工作节点（Worker Node）承载着运行应用程序的容器。每个工作节点都运行着几个关键的组件，包括 Kubelet、Kube-proxy 和容器运行时（如 Docker 或 containerd）。这些组件共同工作，以确保容器化的应用程序（通常以 Pod 的形式组织）能够正常运行。
+
+Kubelet：Kubelet 是在每个工作节点上运行的主要节点代理。它监视从 Kubernetes API 服务器分配给其节点的 Pod，并确保这些 Pod 正在运行并处于健康状态。Kubelet 与Container Runtime 进行交互，以启动或停止容器，获取容器的状态，以及其他管理任务。
+
+Kube-proxy：Kube-proxy 是 Kubernetes 的网络代理，它在每个节点上运行。Kube-proxy 负责实现 Kubernetes Service 的概念，通过维护网络规则并执行连接转发，使得在集群内部可以使用服务的虚拟 IP 地址进行通信。
+
+Container Runtime ：Container Runtime 是负责运行容器的软件。在 Kubernetes 中，最常见的Container Runtime 是 Docker，但也可以使用其他的，如 containerd 或 CRI-O。容器运行时负责拉取镜像，启动和停止容器，以及与容器进行交互。
+
+Pod：Pod 是 Kubernetes 的最小部署单元，它包含一个或多个紧密相关的容器。这些容器在同一个网络和存储空间中运行，可以相互通信和共享资源。Pod 是由 Kubelet 管理，并由Container Runtime 运行的。
+
+这些组件之间的关系可以这样理解：Kubelet 是与 Kubernetes API 服务器通信的主要节点代理，它接收到 API 服务器的指令后，会与本地的容器运行时交互，来管理 Pod 的生命周期。Kube-proxy 则负责处理集群内部的网络通信，使得 Pod 可以通过服务的虚拟 IP 进行通信。
+
+> kubelet :K8s 集群的每个工作节点上都会运行一个 kubelet 程序 维护容器的生命周期，它接收并执行Master 节点发来的指令，管理节点上的 Pod 及 Pod 中的容器。同时也负责Volume（CVI）和网络（CNI）的管理。每个 kubelet 程序会在 API Server 上注册节点自身的信息，定期向Master节点汇报自身节点的资源使用情况，并通过cAdvisor监控节点和容器的资源。通过运行 kubelet，节点将自身的 CPU，RAM 和存储等计算机资源变成集群的一部分，相当于是放进了集群统一的资源管理池中，交由 Master 统一调配。
+
+> Container Runtime容器运行时负责与容器实现进行通信，完成像容器镜像库中拉取镜像，然后启动和停止容器等操作， 引入容器运行时另外一个原因是让 K8s 的架构与具体的某一个容器实现解耦，不光是 Docker 能运行在 K8s 之上，同样也让K8s 的发展按自己的节奏进行。想要运行在我的生态里的容器，请实现我的CRI （Container Runtime Interface），Container Runtime 只负责调用CRI 里定义的方法完成容器管理，不单独执行 docker run 之类的操作。这个也是K8s 发现Docker 制约了它的发展在 1.5 后引入的。
+
+> Pod:Pod 是 K8s 中的最小调度单元。我们的应用程序运行在容器里，而容器又被分装在 Pod 里。一个 Pod 里可以有多个容器，也可以有多个容器。没有统一的标准，是单个还是多个，看要运行的应用程序的性质。不过一个 Pod 里只有一个主容器，剩下的都是辅助主容器工作的。
+
+> kube-proxy：为集群提供内部的服务发现和负载均衡，监听 API Server 中 Service 控制器和它后面挂的 endpoint 的变化情况，并通过 iptables 等方式来为 Service 的虚拟IP、访问规则、负载均衡。
+
+
+
 - Master Node : 集群的管理节点，拥有 ETCD 服务（可选）。运行 API-Server、Controller、Scheduler 进程.
 - Node 是 pod 的载体。用来运行 pod 的服务节点。运行 kubelet 以及用于负载均衡的 kube-proxy 以及 docker eninge.
 - Pod 包含的若干容器运行在同一个宿主机器上，这些容器使用相同的 ip 地址和端口，通过 Localhost 通信。
@@ -592,3 +614,184 @@ Secret 怎么用？
 同一个 pod 内部的容器共享同一个网络命名空间。
 同一个 pod 内部的容器可以通过 localhost 来连接对方的端口。
 IP 是以 Pod 为单位分配的。
+
+### 11. Kubernetes的四要素
+
+类型/元信息/在集群中期望的状态/Status（给K8s集群用）
+
+Kind：对象种类
+
+metadata：对象的元信息。
+spec：技术规格，以及期望的状态，**PS：所有预期状态的定义都是声明式的（Declarative）的而不是命令式（Imperative），在分布式系统中的好处是稳定，不怕丢操作或执行多次。比如设定期望 3 个运行 Nginx 的Pod，执行多次也还是一个结果，而给副本数加1的操作就不是声明式的，执行多次结果就错了**
+
+
+
+### 12.常用的控制器对象
+
+K8s 中能经常被我们用到的控制器对象有下面这些：
+
+Deployment
+StatuefulSet
+Service
+DaemonSet
+Ingress
+控制器都实现了——控制循环（control loop）
+
+```go
+for {
+  实际状态 := 获取集群中对象X的实际状态（Actual State）
+  期望状态 := 获取集群中对象X的期望状态（Desired State）
+  if 实际状态 == 期望状态{
+    什么都不做
+  } else {
+    执行编排动作，将实际状态调整为期望状态
+  }
+}
+```
+
+### 13.Deployment
+
+Deployment 控制器用来管理无状态应用的，创建、水平扩容/缩容、滚动更新、健康检查等。为啥叫无状态应用呢，就是它的创建和滚动更新是不保证顺序的，这个特征就特别适合管控运行着 Web 服务的 Pod， 因为一个 Web 服务的重启、更新并不依赖副本的顺序。不像 MySQL 这样的服务，肯定是要先启动主节点再启动从节点才行。
+
+Deployment 是一个复合型的控制器，它包装了一个叫做 ReplicaSet -- 副本集的控制器。ReplicaSet 管理正在运行的Pod数量，Deployment 在其之上实现 Pod 滚动更新，对Pod的运行状况进行健康检查以及回滚更新的能力。他们三者之间的关系可以用下面这张图表示。
+
+> 回滚更新是 Deployment 在**内部记录了 ReplicaSet 每个版本的对象**，要回滚就直接把生效的版本切回原来的ReplicaSet 对象.并且滚动更新是先创建新的Pod ,然后逐渐用新的Pod替换掉老的Pod。
+ReplicaSet 和 Pod 的定义其实是包含在 Deployment 对象的定义中的.
+
+定义文件里的**replicas: 3** 代表的就是我期望一个拥有三个副本 Pod 的副本集，而 **template** 这个 YAML 定义也叫做Pod模板，意思就是副本集的Pod，要按照这个样板创建出来。
+
+
+ReplicaSet 控制器可以控制 Pod 的可用数量始终保持在想要数量。但是在 K8s 里我们却不应直接定义和操作他们俩。对这两种对象的所有操作都应该通过 Deployment 来执行。这么做最主要的好处是能控制 Pod 的滚动更新。
+
+### StatefulSet
+
+
+StatefulSet，是在Deployment的基础上扩展出来的控制器。使用Deployment时多数时候你不会在意Pod的调度方式。但当你需要调度有拓扑状态的应用时，就需要关心Pod的部署顺序、对应的持久化存储、 Pod 在集群内拥有固定的网络标识（即使重启或者重新调度后也不会变）这些文图，这个时候，就需要 StatefulSet 控制器实现调度目标。
+
+StatefulSet 是 Kubernetes 中的一种工作负载 API 对象，用于管理有状态应用。相比于 Deployment，StatefulSet 为每个 Pod 提供了一个持久且唯一的标识，这使得你可以在分布式或集群环境中部署和扩展有状态应用。
+
+例如，假设你正在运行一个分布式数据库，如 MongoDB 或 Cassandra，这些数据库需要在多个 Pod 之间同步数据。在这种情况下，每个 Pod 都需要有一个稳定的网络标识，以便其他 Pod 可以找到它并与之通信。此外，每个 Pod 可能还需要连接到一个持久的存储卷，以便在 Pod 重启或迁移时保留其数据。
+
+以下是一个 StatefulSet 的 YAML 配置示例，用于部署一个简单的 MongoDB 集群：
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  serviceName: "mongo"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: mongo-persistent-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+```
+在这个示例中，我们创建了一个包含 3 个副本的 MongoDB StatefulSet。每个 Pod 都有一个持久的存储卷（通过 volumeClaimTemplates 定义），并且每个 Pod 的网络标识都是稳定的（通过 serviceName 定义）。这样，即使 Pod 重启或迁移，它的数据和网络标识也会保持不变，这对于维护数据库的一致性至关重要。
+
+### Service 
+
+Service 是另一个我们必用到的控制器对象，因为在K8s 里 Pod 的 IP 是不固定的，所以 K8s 通过 Service 对象向应用程序的客户端提供一个静态/稳定的网络地址，另外因为应用程序往往是由多个Pod 副本构成， Service还可以为它负责的 Pod 提供负载均衡的功能。
+
+每个 Service 都具有一个ClusterIP和一个可以解析为该IP的DNS名，并且由这个 ClusterIP 向 Pod 提供负载均衡。
+
+Service 控制器也是靠着 Pod 的标签在集群里筛选到自己要代理的 Pod，被选中的 Pod 叫做 Service 的端点（EndPoint）
+
+
+在 Kubernetes 中，Pod 的生命周期是有限的，它们可能会因为各种原因（如节点故障、扩缩容操作等）被创建和销毁。这就意味着 Pod 的 IP 地址可能会频繁变化，这对于需要稳定访问的客户端来说是个问题。
+
+Service 是 Kubernetes 提供的一种抽象，它提供了一个稳定的网络地址来代理后端的一组 Pod。客户端只需要访问这个 Service 的地址，而不需要关心具体的 Pod IP。Service 通过标签选择器来选择其后端的 Pod，这些被选中的 Pod 被称为该 Service 的 Endpoints。
+
+此外，Service 还提供了负载均衡功能。当有多个 Pod 匹配 Service 的标签选择器时，Service 会将流量均匀地分配到这些 Pod 上。
+
+下面是一个 Service 的 YAML 配置示例，它代理了前面提到的 MongoDB StatefulSet：
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+```
+在这个示例中，我们创建了一个名为 mongo 的 Service，它选择了标签为 app: mongo 的所有 Pod 作为其后端。这个 Service 对外提供 27017 端口，所有到这个端口的流量都会被负载均衡地转发到后端的 MongoDB Pod 上。
+
+这样，客户端只需要连接到 mongo 这个 Service 的地址和端口，就可以访问到 MongoDB 数据库，而不需要关心具体的 Pod IP 或者 Pod 是否存在。即使后端的 Pod 发生了变化，Service 的地址和端口都会保持不变，这为客户端提供了一个稳定的访问点。
+
+
+### ClusterIP Service
+ClusterIP: 这是默认的 Service 类型。当你创建一个 Service 时，Kubernetes 会为该 Service 分配一个唯一的 IP 地址，这个地址在整个集群内部都可以访问。但是，这个 IP 地址**不能从集群外部访问**。这种类型的 Service 适合在集群内部进行通信，例如一个前端应用访问一个后端服务。
+
+### NodePort Service
+NodePort: 这种类型的 Service 在 ClusterIP 的基础上增加了一层，除了在集群内部提供一个 IP 地址让集群内的 Pod 访问外，还在每个节点上开放一个端口（30000-32767），并将所有到这个端口的请求转发到该 Service。这样，即使 Service 后端的 Pod 在不同的节点上，外部的客户端也可以通过 `<NodeIP>:<NodePort>` 的方式访问该 Service。这种类型的 Service 适合需要从集群外部访问的服务。
+
+
+总的来说，ClusterIP 和 NodePort 的主要区别在于他们提供服务访问的范围。ClusterIP 只能在集群内部访问，而 NodePort 可以从集群外部访问。
+
+### Ingress
+Ingress 在 K8s 集群里的角色是给 Service 充当反向代理。它可以位于多个 Service 的前端，给这些 Service 充当“智能路由”或者集群的入口点。
+
+使用 Ingress 对象前需要先安装 Ingress-Controller, 像阿里云、亚马逊 AWS 他们的 K8s 企业服务都会提供自己的Controller ，对于自己搭建的集群，通常使用nginx-ingress作为控制器，它使用 NGINX 服务器作为反向代理，访问 Ingress 的流量按规则路由给集群内部的Service。
+
+正常的生产环境，因为Ingress是公网的流量入口，所以压力比较大肯定需要多机部署。一般会在集群里单独出几台Node，只用来跑Ingress-Controller，可以使用deamonSet的让节点创建时就安装上Ingress-Controller，在这些Node上层再做一层负载均衡，把域名的DNS解析到负载均衡IP上。
+
+
+### DaemonSet
+
+这个控制器不常用，主要保证每个 Node上 都有且只有一个 DaemonSet 指定的 Pod 在运行。当然可以定义多个不同的 DaemonSet 来运行各种基础软件的 Pod。
+
+比如新建节点的网络配置、或者是每个节点上收集日志的组件往往是靠 DaemonSet 来保证的， 他会在集群创建时优先于其他组件执行， 为的是做好集群的基础设施建设。
+
+
+
+### K8s命令实用命令
+
+默认我们所有命令生效的命名空间都是 default 。
+```bash
+kubectl get pods
+```
+使用--all-namespaces查看所有命名空间
+```bash
+kubectl get pods --all-namespaces
+```
+
+查询命名空间下所有在运行的pod
+```bash
+kubectl get pods --filed-selector=status.phase=Running
+```
+这个就不多解释了，其实擅用—field-selector 能根据资源的属性查出各种在某个状态、拥有某个属性值的资源。
+那怎么知道某个类型的资源对象有哪些属性值呢，毕竟K8s资源的类型十几种，每种的属性就更多了，这个时候就可以看下个命令。
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
