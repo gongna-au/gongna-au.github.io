@@ -2,7 +2,7 @@
 layout: post
 title: 容器
 subtitle:
-tags: [消息队列]
+tags: [Kubernetes]
 comments: true
 ---
 

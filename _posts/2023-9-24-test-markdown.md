@@ -1,8 +1,8 @@
 ---
 layout: post
-title: Linux 命令
+title: Kubernetes的Operator机制
 subtitle:
-tags: [linux]
+tags: [Kubernetes]
 ---
 
 以下是如何为假设的数据库应用程序定义自定义资源定义 (CRD) 和控制器的简单示例：
