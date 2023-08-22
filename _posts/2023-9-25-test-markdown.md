@@ -563,6 +563,7 @@ kubectl get hpa my-hpa
 > 参考：https://thanos.io/tip/thanos/getting-started.md/
 
 
+
 #####  Thanos ？
 
 ##### Thanos与 Prometheus集成
@@ -573,6 +574,36 @@ Thanos Sidecar 是一个与 Prometheus 实例一起部署的组件，它可以�
 - 它只上传未压缩的 Prometheus 块。对于压缩块，参见 上传压缩块。
 - 必须将 --storage.tsdb.min-block-duration 和 --storage.tsdb.max-block-duration 设置为相等的值，以禁用本地压缩，以便使用 Thanos sidecar 上传，否则如果 sidecar 只暴露 StoreAPI 并且你的保留期正常，则保留本地压缩。建议使用默认的 2h。提到的参数设置为相等的值会禁用 Prometheus 的内部压缩，这是为了避免在 Thanos compactor 做其工作时上传的数据被破坏，这对于数据一致性至关重要，如果你计划使用 Thanos compactor，不应忽视这一点。
 - 为了将 Thanos 与 Prometheus 集成，你需要在 Prometheus 中启用一些标志，包括 --web.enable-admin-api 和 --web.enable-lifecycle。然后，你可以在 Thanos sidecar 中设置 --tsdb.path、--prometheus.url 和 --objstore.config-file 标志，以连接到 Prometheus 和你的对象存储。
+
+以下是如何将 Prometheus 和 Thanos 集成的基本步骤：
+
+安装 Thanos Sidecar:
+
+Thanos Sidecar 是一个伴随 Prometheus 实例运行的容器/服务。它监视 Prometheus 的数据目录，并为新的块数据上传到对象存储（例如 AWS S3, GCS, MinIO 等）。
+启动 Sidecar，同时指定对象存储的配置。
+配置 Prometheus:
+
+修改 Prometheus 的配置文件，以启用远程写功能，并指向 Thanos Sidecar。
+在 Prometheus 配置中添加以下内容：
+
+```yaml
+remote_write:
+ - url: "http://<thanos-sidecar-address>:<port>/api/v1/receive"
+Thanos Store:
+```
+Thanos Store 是另一个组件，它提供了访问在对象存储中存储的长期指标数据的能力。
+它可以被 Thanos Query 查询，从而提供对旧指标数据的访问。
+
+Thanos Query:
+Thanos Query 是用户面向的组件，用于查询 Prometheus 和 Thanos Store 中的数据。
+当查询旧的数据时，Thanos Query 将从 Thanos Store 中检索数据。对于最近的数据，它将直接查询 Prometheus。
+
+对象存储配置:
+你需要为 Thanos 配置一个对象存储，例如 AWS S3 或 GCS。这通常通过一个配置文件完成，该文件定义了如何访问和认证到你选择的对象存储。
+其他可选的 Thanos 组件:
+
+Thanos Compactor：减少对象存储中的数据并压缩旧的时间序列数据块。
+Thanos Ruler：为基于长期数据的警报和规则评估提供支持。
 
 ##### 利用S3与 作为Thanos 后端存储服务
 对于使用 S3 作为 Thanos 后端存储服务，你需要在 Thanos 的配置中指定 S3 的详细信息。这通常在 Thanos 的启动参数或配置文件中完成，其中包括 S3 的访问密钥、秘密密钥、端点和存储桶名称。具体的配置可能会根据你使用的 S3 兼容服务（如 Amazon S3、MinIO、Ceph 等）有所不同。

@@ -11,11 +11,200 @@ comments: true
 1-：请描述一下如何使用Linux命令来查看正在运行的进程，以及如何结束特定进程？
 答：我们可以使用`ps`命令来查看正在运行的进程，如`ps aux`。若要结束特定的进程，我们可以使用`kill`命令，需要知道进程的PID，例如`kill 12345`，其中12345是进程号。
 
+```shell
+curl ifconfig.me
+```
+
+当你在Mac或Linux系统上运行ifconfig（或ip addr show在某些Linux系统上）并查看en0接口，你通常会看到与该接口相关的网络配置信息。
+
+对于Mac系统（特别是使用Wi-Fi的MacBook），en0通常是Wi-Fi适配器。你在en0下看到的地址通常是以下之一：
+
+IPv4地址: 这是你在公司Wi-Fi网络上的局域网（LAN）地址。这个地址是通过DHCP从你公司的路由器/网络获取的。
+
+IPv6地址: 如果你的公司网络支持IPv6，你也可能会看到一个IPv6地址。
+
+子网掩码: 通常与IPv4地址一起显示，描述了你的局域网子网的大小。
+
+广播地址: 用于在局域网上广播数据。
+
+除此之外，ifconfig还会显示其他一些信息，例如数据包计数、错误计数等。
+
+如果你想知道你的公共IP地址（即你公司出口到互联网的地址），那么你不能使用ifconfig来获取。相反，你需要使用诸如curl ifconfig.me之类的在线服务或访问某些提供此信息的网站。
+```shell
+ifconfig:
+```
+来源: 它是Unix-like操作系统（如Linux、MacOS）中的一个标准命令行工具。
+主要功能: 它用于显示和配置系统上网络接口的网络参数。
+返回的信息: 当你运行ifconfig，你会看到关于你系统上所有活动网络接口的详细信息，如en0或eth0等。这包括IPv4和IPv6地址、子网掩码、广播地址、发送和接收的数据包数量等。返回的IP地址通常是私有的局域网地址。
+用途: 它主要用于诊断和配置本地机器上的网络接口。
+```shell
+curl ifconfig.me:
+```
+
+来源: curl是一个命令行工具，用于从或发送数据到服务器。ifconfig.me是一个在线服务，返回查询它的用户的公共IP地址。
+主要功能: 通过这个命令，你可以从外部服务获取你的公共IP地址。
+返回的信息: 当你运行curl ifconfig.me，你会收到一个简单的响应，这是你的公共IP地址。这是你的网络（如家庭网络或公司网络）在互联网上的地址，而不是你的个人设备的局域网地址。
+用途: 它用于确定你的网络在互联网上的公共IP地址，这可能对诊断外部连接问题或配置远程访问服务非常有用。
 
 2-. 请说出你常用的几个Linux命令，并解释其功能。
 答案：ls（列出目录中的文件和目录），cd（改变目录），mkdir（创建目录），rm（删除文件或目录），cat（查看文件内容），vi（编辑文件），ps（查看进程状态），top（查看系统运行状态）
+作为一名系统软件研发工程师，对Linux系统有深入的了解和频繁的交互是很常见的。以下是一些常用的Linux命令以及它们的用途：
+
+ls: 列出目录的内容。
+用途: 查看当前目录下的文件和文件夹。
+
+pwd: 打印当前工作目录的完整路径。
+用途: 确定当前所在的文件夹。
+
+cd: 更改当前工作目录。
+用途: 导航到不同的文件夹。
+
+cat: 显示文件的内容。
+用途: 查看或连接文件内容。
+
+echo: 在标准输出中显示一行文本。
+用途: 打印文本或变量的值。
+
+grep: 搜索文本。
+用途: 在文件或输出中搜索特定的字符串或正则表达式匹配。
+
+ps: 显示当前进程。
+用途: 查看正在运行的进程。
+
+top: 显示系统的实时状态，如CPU使用率、进程等。
+用途: 实时监控系统性能。
+
+netstat: 显示网络连接、路由表、接口统计等。
+用途: 分析网络问题。
+
+ifconfig (或 ip a 在较新的Linux版本中): 显示或配置网络接口。
+用途: 查看或设置网络配置。
+
+vi/vim: 文本编辑器。
+用途: 编辑文件内容。
+
+chmod: 更改文件或目录的权限。
+用途: 设置文件或目录的访问权限。
+
+chown: 更改文件或目录的所有者和组。
+用途: 修改文件或目录的拥有者。
+
+tail: 查看文件的最后几行。
+用途: 实时查看或跟踪文件的更新，如日志文件。
+
+man: 显示手册页面。
+用途: 查看命令或程序的详细文档和使用方式。
+
+更改文件的所有者和组:
+
+```bash
+chown newowner:newgroup filename.txt
+```
+这将 "filename.txt" 的所有者更改为 "newowner" 并将组更改为 "newgroup"。
+
+仅更改文件的组:
+
+```bash
+chown :newgroup filename.txt
+```
+这将 "filename.txt" 的组更改为 "newgroup"，但所有者保持不变。
+
+更改目录及其内容的所有者和组:
+
+```bash
+chown -R newowner:newgroup directoryname/
+```
+使用 -R（或 --recursive）选项将递归更改目录及其所有子目录和文件的所有者和组。
+
+更改文件的所有者，但只使用用户ID:
+
+```bash
+chown 1002 filename.txt
+```
+这将 "filename.txt" 的所有者更改为用户ID为 1002 的用户。
+
+更改文件的组，但只使用组ID:
+
+```bash
+chown :1003 filename.txt
+```
+这将 "filename.txt" 的组更改为组ID为 1003 的组。
+
+curl 是一个强大的命令行工具，用于发出各种网络请求，尤其是HTTP请求。以下是一些常用的 curl 用法：
+
+简单地获取一个URL:
+
+```shell
+curl http://example.com
+```
+保存URL的输出到文件:
+```shell
+curl -o output.txt http://example.com
+```
+使用 -o 参数和文件名将输出保存到 "output.txt" 文件中。
+
+跟踪URL的重定向:
+```shell
+curl -L http://example.com
+```
+使用 -L 或 --location 参数跟踪重定向。
+
+发送POST请求:
+
+```shell
+curl -X POST -d "param1=value1&param2=value2" http://example.com/resource
+```
+使用 -X 参数指定HTTP方法（在这种情况下是POST），并使用 -d 参数传递数据。
+
+使用基本认证发送请求:
+
+```shell
+curl -u username:password http://example.com
+```
+使用 -u 参数提供基本认证凭据。
+
+发送带有header的请求:
+
+```shell
+curl -H "Content-Type: application/json" -X POST -d '{"key":"value"}' http://example.com/resource
+```
+使用 -H 参数添加HTTP头。
+
+上传文件:
+
+```shell
+curl -F "file=@path/to/file.txt" http://example.com/upload
+```
+使用 -F 参数上传文件。
+静默模式（不显示进度或错误信息）:
+
+```shell
+curl -s http://example.com
+```
+使用 -s 或 --silent 参数。
+
+显示请求和响应头:
+
+```shell
+curl -i http://example.com
+```
+使用 -i 或 --include 参数。
+
+使用代理:
+```shell
+curl -x http://proxy:8080 http://example.com
+```
+使用 -x 或 --proxy 参数设置代理。
+
+验证SSL证书:
+```shell
+curl --cacert /path/to/cert.pem https://secure-site.com
+```
+使用 --cacert 参数提供证书。
+这些只是 curl 的冰山一角。由于它的功能非常丰富，建议查阅其手册页 (man curl) 或在线文档来获取更多的信息和用法。
 
 3-. 请解释Linux的运行原理。
+
 答案：Linux的运行原理主要包括内核、硬件、shell和用户四个层面。用户通过shell发出命令，shell将命令传递给内核，内核再对硬件进行操作。
 
 > 在 Linux 中，Shell 是一种用于交互式和批处理命令解释器的程序, Shell 通过用户输入的命令来执行操作，并将结果输出给用户.Linux Shell 包括 Bash、Zsh、Ksh、Tcsh 等。下面是这些 Shell 的简单介绍.
@@ -29,10 +218,9 @@ comments: true
 echo $SHELL
 ```
 
-```
+```shell
 chsh -s /bin/zsh
 ```
-
 
 4- 请问如何在Linux中查看系统日志？
 
