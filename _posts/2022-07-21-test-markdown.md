@@ -25,8 +25,6 @@ golang client 是当pro收集所监控的系统的数据时，用于响应pro的
 
 ### 数据类型
 
-
-
 ```
 # HELP go_gc_duration_seconds A summary of the GC invocation durations.
 # TYPE go_gc_duration_seconds summary

@@ -142,7 +142,6 @@ kubectl cluster-info
 
 - 为了让 Pod 之间能够相互通信，需要在集群中部署一个 Pod 网络插件。
 
-
 #### 具体安装思路
 
 以下是使用 `kubeadm` 安装高可用 Kubernetes 集群的步骤：
@@ -415,8 +414,33 @@ Worker、node节点、minion节点
 - Kube-proxy：负责Pod之间的通信和负载均衡，将指定的流量分发到后端正确的机器上。
 - 查看Kube-proxy工作模式：curl 127.0.0.1:10249/proxyMode
 - Ipvs：监听Master节点增加和删除service以及endpoint的消息，调用Netlink接口创建相应的IPVS规则。通过IPVS规则，将流量转发至相应的Pod上。
+```shell
+IPVS (IP Virtual Server):
+类型：IPVS是一个内核级的负载均衡器，它可以在传输层进行负载均衡。
+工作原理：
+IPVS工作在网络的第4层（传输层），支持四种IP负载均衡技术：轮询、加权轮询、最少连接、加权最少连接。
+它通过替换数据包的地址信息来将流量从虚拟服务器转发到真实的后端服务器。
+IPVS使用哈希表来存储其转发规则，这使得查找和匹配规则非常快。
+优势：与iptables相比，IPVS具有更好的性能和可伸缩性，特别是在处理大量并发连接时。
+```
 - Iptables：监听Master节点增加和删除service以及endpoint的消息，对于每一个Service，他都会场景一个iptables规则，将service的clusterIP代理到后端对应的Pod。
 其他组件
+```shell
+kube-proxy的iptables模式：
+工作原理：当创建一个Kubernetes Service时，kube-proxy会为该Service生成一系列的iptables规则。这些规则将流量从Service的ClusterIP（或NodePort，如果配置了的话）转发到后端的Pod。
+优点：简单，成熟，广泛支持。
+缺点：随着Service和Endpoint的增加，iptables规则的数量也会增加，可能导致性能下降。
+
+kube-proxy的ipvs模式：
+工作原理：IPVS模式使用Linux的IPVS功能来实现负载均衡。与iptables模式相比，IPVS模式使用哈希表来存储其转发规则，这使得查找和匹配规则非常快。
+优点：提供更好的性能、可伸缩性和更丰富的负载均衡算法（如轮询、加权轮询、最少连接等）。
+缺点：可能需要在节点上安装额外的内核模块或工具。
+如何配置kube-proxy使用IPVS或iptables模式：
+通过命令行参数：当启动kube-proxy时，可以使用--proxy-mode参数来指定使用的模式，例如--proxy-mode=ipvs或--proxy-mode=iptables。
+
+通过Kubernetes配置文件：如果你使用的是Kubeadm来部署Kubernetes，可以在kube-proxy的ConfigMap中设置mode字段来选择模式。
+```
+
 - Calico：符合CNI标准的网络插件，给每个Pod生成一个唯一的IP地址，并且把每个节点当做一个路由器。Cilium
 - CoreDNS：用于Kubernetes集群内部Service的解析，可以让Pod把Service名称解析成IP地址，然后通过Service的IP地址进行连接到对应的应用上。
 - Docker：容器引擎，负责对容器的管理。
@@ -431,15 +455,225 @@ ClusterIP/NodePort/LoadBalancer/ExternalName
 
 `ClusterIP`：这是默认的 ServiceType。它会通过一个集群内部的 IP 来暴露服务。只有在集群内部的其他 Pod 才能访问这种类型的服务。
 
+```shell
+当我们说“只有集群内的其他Pod才能访问这种类型的服务”时，我们是指以下几点：
+
+集群内部的IP：当你创建一个默认的ServiceType（即ClusterIP）的Kubernetes服务时，该服务会被分配一个唯一的IP地址，这个地址只在Kubernetes集群内部可用。这意味着这个IP地址对于集群外部的任何实体（例如，外部的服务器、客户端或你的本地机器）都是不可达的。
+
+Pod之间的通信：在Kubernetes集群中，Pods可以与其他Pods通信，无论它们是否在同一节点上。当一个Pod想要与另一个服务通信时，它可以使用该服务的ClusterIP和服务端口。由于ClusterIP只在集群内部可用，只有集群内的Pods才能使用这个IP地址来访问服务。
+
+集群外部的访问：如果你想从集群外部访问一个服务，你不能使用ClusterIP类型的服务。相反，你需要使用其他类型的服务，如NodePort或LoadBalancer，这些服务类型提供了从集群外部访问服务的方法。
+```
+
 `NodePort`：这种类型的服务是在每个节点的 IP 和一个静态端口（也就是 NodePort）上暴露服务。这意味着如果你知道任意一个节点的 IP 和服务的 NodePort，就可以从集群的外部访问服务。在内部，Kubernetes 将 NodePort 服务路由到自动创建的 ClusterIP 服务。
 
+```shell
+当你创建一个NodePort类型的服务时，Kubernetes实际上会为你执行两个操作：
+
+创建一个ClusterIP服务：首先，Kubernetes会为该服务自动创建一个ClusterIP，这是一个只能在集群内部访问的IP地址。这意味着，即使你明确地创建了一个NodePort服务，你仍然会得到一个与该服务关联的ClusterIP。
+
+在每个节点上开放一个端口（NodePort）：Kubernetes会在每个集群节点上的指定端口（即NodePort）上开放该服务。任何到达节点上这个端口的流量都会被自动转发到该服务的ClusterIP，然后再路由到后端的Pods。
+
+这种设计的好处是，你可以在集群内部使用ClusterIP来访问服务（就像任何其他ClusterIP服务一样），同时还可以从集群外部通过NodePort来访问该服务。
+
+所以，当我们说“在内部，Kubernetes将NodePort服务路由到自动创建的ClusterIP服务”时，我们是指：从外部到达NodePort的流量首先被转发到该服务的ClusterIP，然后再由ClusterIP路由到后端的Pods。这是Kubernetes如何处理NodePort服务的流量的内部机制。
+```
+
 `LoadBalancer`：这种类型的服务会使用云提供商的负载均衡器向外部暴露服务。这个负载均衡器可以将外部的网络流量路由到集群内部的 NodePort 服务和 ClusterIP 服务。
+
+```shell
+LoadBalancer服务类型：
+外部负载均衡器：当你在支持的云提供商环境中创建一个LoadBalancer类型的服务时，Kubernetes会自动为你配置云提供商的外部负载均衡器。
+
+与NodePort和ClusterIP的关联：
+
+在创建LoadBalancer服务时，Kubernetes也会自动创建一个NodePort服务和一个ClusterIP服务。
+外部流量首先到达云提供商的负载均衡器，然后被路由到任意节点的NodePort。
+从NodePort，流量再被路由到ClusterIP服务，最后到达后端的Pods。
+健康检查和流量分发：
+
+云提供商的负载均衡器通常会执行健康检查，确保只将流量路由到健康的节点。
+一旦流量到达一个健康的节点，Kubernetes的NodePort和ClusterIP机制会接管，确保流量正确地路由到一个健康的Pod。
+云提供商的集成：不同的云提供商可能会提供不同的配置选项和特性，例如：注解、负载均衡器类型、网络策略等。因此，当在特定的云环境中使用LoadBalancer服务时，建议查阅相关的文档。
+```
 
 `ExternalName`：通过返回 CNAME 和对应值，可以将服务映射到 externalName 字段的内容（例如，foo.bar.example.com）。 无需创建任何类型代理。
 
 
+没有选择器和Pods：与其他Service类型不同，ExternalName服务不使用选择器，因此它不与任何Pods关联。
+
+返回CNAME：当一个应用或Pod尝试解析这个Service的名称时，它实际上会得到一个CNAME记录，该记录指向externalName字段中指定的值。
+
+使用场景：
+
+假设你的Kubernetes集群内部的应用需要访问一个位于集群外部的数据库，例如database.external.com。
+你可以创建一个ExternalName服务，名为database-service，其externalName字段设置为database.external.com。
+现在，集群内的应用可以简单地连接到database-service。但在DNS解析时，它实际上会被解析为database.external.com。
+无代理和负载均衡：由于ExternalName只是返回CNAME，所以没有涉及到流量代理或负载均衡。它只是一个DNS级别的别名或引用。
+
+示例：
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  type: ExternalName
+  externalName: my.database.example.com
+```
+总之，ExternalName服务类型提供了一种简单的方法，使Kubernetes集群内的应用能够通过服务名称引用或访问集群外部的服务或资源，而不需要任何复杂的网络配置或代理。
 
 
+> k8s的节点挂掉，如何处理
+
+当Kubernetes中的一个节点（Node）挂掉时，Kubernetes会采取一系列的自动化步骤来恢复工作负载和服务的可用性。但作为集群管理员或操作员，你也可以采取一些手动步骤来确保系统的健康和稳定性。以下是当K8s的节点挂掉时的处理步骤：
+
+1. **确认节点状态**:
+   - 使用`kubectl get nodes`检查节点的状态。如果节点挂掉，它的状态可能会显示为`NotReady`。
+
+2. **检查节点日志和监控**:
+   - 如果你有对节点的SSH访问权限，尝试登录并检查系统日志、kubelet日志等，以确定导致节点故障的原因。
+   - 查看任何已部署的监控和警报系统（如Prometheus）以获取更多信息。
+
+3. **等待自动恢复**:
+   - 如果节点在短时间内没有恢复，Kubernetes的控制平面将开始重新调度该节点上的Pods到其他健康的节点。
+   - 如果你的工作负载使用了持久性存储，如PersistentVolumeClaims (PVCs)，确保存储系统支持多节点访问或正确处理节点故障。
+
+4. **手动干预**:
+   - 如果节点长时间处于`NotReady`状态，并且自动恢复没有成功，你可能需要手动干预。
+   - 你可以尝试重启节点或修复任何已知的硬件/软件问题。
+   - 如果节点无法恢复，考虑替换它。在云环境中，这通常意味着终止有问题的实例并启动一个新的实例。
+
+5. **清理和维护**:
+   - 如果你决定永久删除一个节点，确保首先使用`kubectl drain <node-name>`来安全地从节点中移除所有工作负载。
+   - 然后，你可以使用`kubectl delete node <node-name>`从集群中删除该节点。
+
+6. **预防措施**:
+   - 考虑使用自动扩展组或类似机制来自动替换失败的节点。
+   - 确保你的集群有足够的冗余，以便在一个或多个节点失败时仍然可以继续运行。
+   - 定期备份集群的状态和数据，以便在灾难恢复时使用。
 
 
+> Kubernetes如何查看节点的信息？
+
+在Kubernetes中，你可以使用kubectl命令行工具来查看节点的信息。以下是一些常用的命令来查看和获取节点相关的信息：
+
+查看所有节点的简要信息:
+
+```shell
+kubectl get nodes
+```
+
+查看特定节点的详细信息:
+这将显示节点的详细描述，包括标签、注解、状态、容量、分配的资源等。
+
+```shell
+kubectl describe node <node-name>
+```
+
+查看所有节点的详细信息:
+```shell
+kubectl describe nodes
+```
+
+获取节点的原始YAML或JSON格式的配置:
+这可以帮助你查看节点的完整配置和状态。
+
+```shell
+kubectl get node <node-name> -o yaml
+```
+```shell
+kubectl get node <node-name> -o json
+```
+
+
+查看节点的标签:
+```shell
+kubectl get nodes --show-labels
+```
+
+使用标签选择器查看特定的节点:
+例如，如果你想查看所有标记为env=production的节点。
+```shell
+kubectl get nodes -l env=production
+```
+
+查看节点的资源使用情况:
+这需要Metrics Server或其他兼容的指标解决方案在集群中部署。
+
+```shell
+kubectl top node
+```
+> 获取公网的IP地址
+
+在Kubernetes中，节点的公网IP不是默认的信息，因为Kubernetes主要关注的是集群内部的通信。但是，根据你的云提供商和网络设置，公网IP可能会作为节点的一个注解或标签存在。
+
+以下是一些常见的方法来尝试获取节点的公网IP：
+
+**使用kubectl describe**:
+ 
+```bash
+kubectl describe node <node-name>
+```
+在输出中查找`Addresses`部分，可能会有`ExternalIP`或`PublicIP`字段。
+
+**获取节点的YAML表示**:
+```bash
+kubectl get node <node-name> -o yaml
+```
+在输出中查找公网IP。它可能存在于`status.addresses`部分，并标记为`ExternalIP`。
+
+**云提供商的CLI工具**:
+如果你在云环境（如AWS、GCP、Azure等）中运行Kubernetes，你可以使用云提供商的CLI工具来获取实例的公网IP。例如，在AWS中，你可以使用`aws ec2 describe-instances`来获取实例的详细信息，其中包括公网IP。
+
+**使用标签或注解**:
+有些云提供商或网络插件可能会将公网IP作为节点的一个标签或注解添加。你可以检查节点的标签和注解来查找这些信息。
+
+**自定义脚本或工具**:
+如果你经常需要这些信息，可以考虑编写一个小脚本或工具，结合`kubectl`和云提供商的CLI，自动获取所有节点的公网IP。
+
+请注意，不是所有的Kubernetes节点都有公网IP。在某些环境中，节点可能只有私有IP，而公网访问是通过负载均衡器或其他网络设备实现的。
+
+> Go语言的GMP模型，为什么需要设计全局队列
+
+Go语言的并发模型基于GMP模型，其中：
+
+- **G** 代表 Goroutine，它是Go语言中的轻量级线程。
+- **M** 代表 Machine，它实际上是一个操作系统的线程。
+- **P** 代表 Processor，它代表Go运行时的调度上下文，负责执行Goroutines。
+
+在GMP模型中，全局队列是一个关键组件，以下是为什么需要设计全局队列的原因：
+
+**负载均衡**：全局队列允许P（处理器）从中获取Goroutines来执行，这有助于在多个M（机器线程）之间均衡负载。
+
+**Goroutine创建**：当新的Goroutine被创建时，它首先被放入全局队列。这确保了新创建的Goroutine可以被任何可用的P捡起并执行。
+
+**防止饥饿**：如果一个P的本地队列为空，它可以从全局队列中偷取Goroutines来执行。这确保了即使某些P的本地队列为空，它们仍然可以从全局队列中获取工作。
+
+**Goroutine的迁移**：在某些情况下，Goroutine可能会被阻塞（例如，等待I/O操作）。在这种情况下，该Goroutine可以被移动到全局队列，以便其他P可以在未来捡起并继续执行它。
+
+**简化调度**：全局队列为Go的调度器提供了一个中心化的地方来管理Goroutines，这简化了调度逻辑并使其更加高效。
+
+**系统调用和网络操作**：当Goroutine因为系统调用或网络操作被阻塞时，与其关联的M可能会被释放，而Goroutine本身会被放回全局队列，等待其他M来执行它。
+
+总的来说，全局队列在Go的GMP模型中起到了关键的作用，确保了Goroutines的有效调度和执行，同时提供了负载均衡和防止饥饿的机制。
+
+> 查看所有节点的InternalIP查看所有节点的InternalIP
+
+要查看Kubernetes集群中所有节点的`InternalIP`，你可以使用`kubectl`命令行工具配合`jsonpath`来提取这些信息。以下是如何做到这一点的命令：
+
+```bash
+kubectl get nodes -o=jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}'
+```
+
+这个命令会为每个节点输出一个行，显示节点的名称和其对应的`InternalIP`。
+
+解释：
+- `-o=jsonpath=...`：这部分使用jsonpath语法来提取和格式化输出。
+- `{range .items[*]}...{"\n"}`：遍历所有节点。
+- `.metadata.name`：获取节点的名称。
+- `.status.addresses[?(@.type=="InternalIP")].address`：从节点的地址中提取`InternalIP`。
+
+输出的结果将是每个节点的名称和其对应的`InternalIP`，每个节点占一行。
 
