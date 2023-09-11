@@ -61,11 +61,11 @@ docker run -d --name jaeger \
   jaegertracing/all-in-one:1.30
 ```
 
-然后您可以简单地在`http://localhost:16686`上打开 `jaeger UI` 。
+然后可以简单地在`http://localhost:16686`上打开 `jaeger UI` 。
 
 # Jaeger 跟踪和 OpenTelemetry
 
-你是对的。我之前确实提到过 Jaeger 的数据模型与 OpenTracing 规范兼容。您可能已经知道 OpenTracing 和 OpenCensus 已合并形成 OpenTelemetry，并且想知道 Jaeger 为什么使用 OpenTracing 以及是否可以使用 OpenTelemetry 改为向 Jaeger 报告。
+我之前确实提到过 Jaeger 的数据模型与 OpenTracing 规范兼容。可能已经知道 OpenTracing 和 OpenCensus 已合并形成 OpenTelemetry。
 
 ### SDK 中的采样策略
 
