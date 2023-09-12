@@ -36,7 +36,7 @@ sum(rate(api_request_cost_status_count{service_name="gateway", code!="0"}[1m])) 
 接口 Pxx 耗时统计看图绘图
 接口耗时统计打点依赖 prometheus api 中的 histogram 实现，在呈现打点耗时的时候有时候局部的某个耗时过长并不能进行直接反应整体的，我们只需要关注 SLO （服务级别目标）目标下是否达标即可。
 
-```text
+```shell
 // 过去1分钟 95% 请求最大耗时统计
 // histogram_quantile 
 1000* histogram_quantile(0.95, sum(rate(api_request_cost_status_bucket{service_name="gateway",handler=~"v1.app.+"}[1m])) 
