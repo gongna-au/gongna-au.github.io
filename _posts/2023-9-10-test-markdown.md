@@ -82,7 +82,6 @@ kubectl cluster-info
 答案：在Kubernetes中，我们通常使用Secrets来管理敏感数据。Secrets可以用来存储和管理敏感信息，如密码、OAuth 令牌、ssh key等。在Pod中，Secrets可以被以数据卷或者环境变量的形式使用.
 
 
-
 ## 3.工作负载和调度
 
 问题：请解释Kubernetes中的Pod、Deployment和Service之间的关系。
@@ -102,13 +101,13 @@ kubectl cluster-info
 答案：Persistent Volume (PV)是集群中的一部分存储，已经由管理员预先配置好。Persistent Volume Claim (PVC)则是用户对这些存储资源的请求。用户可以在PVC中指定所需的存储大小以及访问模式。
 
 
-
 ## K8s生产环境
 建立一个高可用（High Availability，HA）的 Kubernetes 集群需要考虑多个因素，包括主控节点的冗余、数据存储的冗余、负载均衡器的设置，等等。以下是一个基本的步骤概述：
 
 ### 安装
 
 #### 大致安装思路
+
 **1. 准备硬件和环境：**
 
 - 至少三台主控节点（master node），用以运行 Kubernetes 控制面板的组件，如 kube-apiserver、kube-scheduler 和 kube-controller-manager。（有的时候，Master节点也会Kubelet kube-Proxy）以及一个ETCDcluster 。master 是控制节点。Node 节点用来跑Pod 。有多台主控节点可以在节点故障时保证控制面板的可用性。
@@ -634,29 +633,6 @@ kubectl get node <node-name> -o yaml
 
 请注意，不是所有的Kubernetes节点都有公网IP。在某些环境中，节点可能只有私有IP，而公网访问是通过负载均衡器或其他网络设备实现的。
 
-> Go语言的GMP模型，为什么需要设计全局队列
-
-Go语言的并发模型基于GMP模型，其中：
-
-- **G** 代表 Goroutine，它是Go语言中的轻量级线程。
-- **M** 代表 Machine，它实际上是一个操作系统的线程。
-- **P** 代表 Processor，它代表Go运行时的调度上下文，负责执行Goroutines。
-
-在GMP模型中，全局队列是一个关键组件，以下是为什么需要设计全局队列的原因：
-
-**负载均衡**：全局队列允许P（处理器）从中获取Goroutines来执行，这有助于在多个M（机器线程）之间均衡负载。
-
-**Goroutine创建**：当新的Goroutine被创建时，它首先被放入全局队列。这确保了新创建的Goroutine可以被任何可用的P捡起并执行。
-
-**防止饥饿**：如果一个P的本地队列为空，它可以从全局队列中偷取Goroutines来执行。这确保了即使某些P的本地队列为空，它们仍然可以从全局队列中获取工作。
-
-**Goroutine的迁移**：在某些情况下，Goroutine可能会被阻塞（例如，等待I/O操作）。在这种情况下，该Goroutine可以被移动到全局队列，以便其他P可以在未来捡起并继续执行它。
-
-**简化调度**：全局队列为Go的调度器提供了一个中心化的地方来管理Goroutines，这简化了调度逻辑并使其更加高效。
-
-**系统调用和网络操作**：当Goroutine因为系统调用或网络操作被阻塞时，与其关联的M可能会被释放，而Goroutine本身会被放回全局队列，等待其他M来执行它。
-
-总的来说，全局队列在Go的GMP模型中起到了关键的作用，确保了Goroutines的有效调度和执行，同时提供了负载均衡和防止饥饿的机制。
 
 > 查看所有节点的InternalIP查看所有节点的InternalIP
 
