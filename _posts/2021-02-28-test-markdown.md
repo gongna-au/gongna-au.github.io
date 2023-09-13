@@ -1,7 +1,7 @@
 ---
 layout: post
-title: What 's OK log?
-subtitle: 远程分支有更新，如何同步？
+title: 远程分支有更新，如何同步？
+subtitle: 
 tags: [git]
 ---
 

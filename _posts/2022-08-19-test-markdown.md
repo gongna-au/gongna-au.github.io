@@ -206,7 +206,7 @@ hello-world   latest    feb5d9fea6a5   10 months ago   13.3kB
 你可以通过 `docker system df` 命令来便捷的查看镜像、容器、数据卷所占用的空间
 
 ```
-gongna@gongna-Ubuntu:~$ docker system df
+$ docker system df
 TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
 Images          2         0         63.16MB   63.16MB (100%)
 Containers      0         0         0B        0B

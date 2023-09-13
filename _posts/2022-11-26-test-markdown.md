@@ -2,7 +2,7 @@
 layout: post
 title: Golang 八股文学习？
 subtitle:
-tags: [golnag]
+tags: [golang]
 ---
 
 # 1.缓存
