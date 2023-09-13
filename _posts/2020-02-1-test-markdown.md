@@ -69,7 +69,7 @@ git remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/home
 
 以上步骤将Homebrew的源更换为了清华大学的镜像站点，你可以根据需要更换为其他的镜像站点。
 
-注意：如果你在更换源之后遇到了问题，你可以通过运行以上命令并将URL更换为官方源的URL来恢复到官方源。官方源的URL分别为：
+注意：如果在更换源之后遇到了问题，可以通过运行以上命令并将URL更换为官方源的URL来恢复到官方源。官方源的URL分别为：
 
 - Homebrew：https://github.com/Homebrew/brew.git
 - Homebrew Bottles：https://homebrew.bintray.com/bottles

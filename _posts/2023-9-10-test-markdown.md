@@ -6,7 +6,9 @@ tags: [Kubernetes]
 comments: true
 ---
 
-> 集群安装、配置和管理，工作负载和调度，服务和网络，存储，故障排除等主题.了解 kubectl 命令行工具的使用，熟悉 Pods，Deployments，Services，以及其他 Kubernetes API 对象。
+# 部署
+> 集群安装、配置和管理，工作负载和调度，服务和网络，存储，故障排除
+> 了解 kubectl 命令行工具的使用，熟悉 Pods，Deployments，Services，以及其他 Kubernetes API 对象。
 
 
 ##  1.集群安装
@@ -22,6 +24,7 @@ comments: true
 2. 安装完成后，打开 Docker Desktop 的 Preferences，在 "Kubernetes" 标签页中勾选 "Enable Kubernetes"，然后点击 "Apply & Restart"。这将启动一个单节点的 Kubernetes 集群。
 
 3. 在命令行中，使用 `kubectl` 命令检查集群状态。如果一切正常，以下命令应该能返回集群状态：
+
 ```bash
 kubectl cluster-info
 ```
@@ -30,7 +33,6 @@ kubectl cluster-info
     Kubernetes control plane is running at https://127.0.0.1:6443
     CoreDNS is running at https://127.0.0.1:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 ```
-
 
 **使用 Minikube:**
 
@@ -83,19 +85,19 @@ kubectl cluster-info
 
 ## 3.工作负载和调度
 
-问题2：请解释Kubernetes中的Pod、Deployment和Service之间的关系。
+问题：请解释Kubernetes中的Pod、Deployment和Service之间的关系。
 
 答案：Pod是Kubernetes的最小部署单元，它包含一个或多个容器。Deployment负责管理Pods，提供升级(rollingUpdate)和回滚(kubectl rollout)功能。Service则是一种抽象，提供了一种方法来访问一组Pods的网络接口，无论它们如何移动或扩展。
 
 ## 4.服务和网络
 
-问题3：简述Kubernetes中的网络策略(Network Policies)的工作原理。
+问题：简述Kubernetes中的网络策略(Network Policies)的工作原理。
 
 答案：网络策略在Kubernetes中提供了基于Pod的网络隔离。默认情况下，Pods之间没有访问限制，但当我们定义了网络策略后，只有符合网络策略规则的流量才能到达Pod。
 
 ## 5.存储
 
-问题4：在Kubernetes中，Persistent Volume和Persistent Volume Claim有何区别？
+问题：在Kubernetes中，Persistent Volume和Persistent Volume Claim有何区别？
 
 答案：Persistent Volume (PV)是集群中的一部分存储，已经由管理员预先配置好。Persistent Volume Claim (PVC)则是用户对这些存储资源的请求。用户可以在PVC中指定所需的存储大小以及访问模式。
 
@@ -178,8 +180,6 @@ kubectl cluster-info
 
 **1.1.9 Dashboard 部署：**
 - 使用 kubectl 应用 Kubernetes Dashboard 的 YAML 配置文件。
-
-这只是大致的步骤，每个步骤可能需要额外的配置和调整，具体根据你的需求和环境进行操作。在实际操作之前，建议仔细阅读官方的安装和配置文档。
 
 
 ## Docker 基础
@@ -395,7 +395,7 @@ docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
 ```
 
 
-## Kubernetes基础
+# Kubernetes基础
 
 ### 架构
 
@@ -425,7 +425,7 @@ IPVS使用哈希表来存储其转发规则，这使得查找和匹配规则非�
 ```
 - Iptables：监听Master节点增加和删除service以及endpoint的消息，对于每一个Service，他都会场景一个iptables规则，将service的clusterIP代理到后端对应的Pod。
 其他组件
-```shell
+
 kube-proxy的iptables模式：
 工作原理：当创建一个Kubernetes Service时，kube-proxy会为该Service生成一系列的iptables规则。这些规则将流量从Service的ClusterIP（或NodePort，如果配置了的话）转发到后端的Pod。
 优点：简单，成熟，广泛支持。
@@ -439,7 +439,6 @@ kube-proxy的ipvs模式：
 通过命令行参数：当启动kube-proxy时，可以使用--proxy-mode参数来指定使用的模式，例如--proxy-mode=ipvs或--proxy-mode=iptables。
 
 通过Kubernetes配置文件：如果你使用的是Kubeadm来部署Kubernetes，可以在kube-proxy的ConfigMap中设置mode字段来选择模式。
-```
 
 - Calico：符合CNI标准的网络插件，给每个Pod生成一个唯一的IP地址，并且把每个节点当做一个路由器。Cilium
 - CoreDNS：用于Kubernetes集群内部Service的解析，可以让Pod把Service名称解析成IP地址，然后通过Service的IP地址进行连接到对应的应用上。
@@ -455,7 +454,7 @@ ClusterIP/NodePort/LoadBalancer/ExternalName
 
 `ClusterIP`：这是默认的 ServiceType。它会通过一个集群内部的 IP 来暴露服务。只有在集群内部的其他 Pod 才能访问这种类型的服务。
 
-```shell
+
 当我们说“只有集群内的其他Pod才能访问这种类型的服务”时，我们是指以下几点：
 
 集群内部的IP：当你创建一个默认的ServiceType（即ClusterIP）的Kubernetes服务时，该服务会被分配一个唯一的IP地址，这个地址只在Kubernetes集群内部可用。这意味着这个IP地址对于集群外部的任何实体（例如，外部的服务器、客户端或你的本地机器）都是不可达的。
@@ -463,11 +462,11 @@ ClusterIP/NodePort/LoadBalancer/ExternalName
 Pod之间的通信：在Kubernetes集群中，Pods可以与其他Pods通信，无论它们是否在同一节点上。当一个Pod想要与另一个服务通信时，它可以使用该服务的ClusterIP和服务端口。由于ClusterIP只在集群内部可用，只有集群内的Pods才能使用这个IP地址来访问服务。
 
 集群外部的访问：如果你想从集群外部访问一个服务，你不能使用ClusterIP类型的服务。相反，你需要使用其他类型的服务，如NodePort或LoadBalancer，这些服务类型提供了从集群外部访问服务的方法。
-```
+
 
 `NodePort`：这种类型的服务是在每个节点的 IP 和一个静态端口（也就是 NodePort）上暴露服务。这意味着如果你知道任意一个节点的 IP 和服务的 NodePort，就可以从集群的外部访问服务。在内部，Kubernetes 将 NodePort 服务路由到自动创建的 ClusterIP 服务。
 
-```shell
+
 当你创建一个NodePort类型的服务时，Kubernetes实际上会为你执行两个操作：
 
 创建一个ClusterIP服务：首先，Kubernetes会为该服务自动创建一个ClusterIP，这是一个只能在集群内部访问的IP地址。这意味着，即使你明确地创建了一个NodePort服务，你仍然会得到一个与该服务关联的ClusterIP。
@@ -477,11 +476,11 @@ Pod之间的通信：在Kubernetes集群中，Pods可以与其他Pods通信，�
 这种设计的好处是，你可以在集群内部使用ClusterIP来访问服务（就像任何其他ClusterIP服务一样），同时还可以从集群外部通过NodePort来访问该服务。
 
 所以，当我们说“在内部，Kubernetes将NodePort服务路由到自动创建的ClusterIP服务”时，我们是指：从外部到达NodePort的流量首先被转发到该服务的ClusterIP，然后再由ClusterIP路由到后端的Pods。这是Kubernetes如何处理NodePort服务的流量的内部机制。
-```
+
 
 `LoadBalancer`：这种类型的服务会使用云提供商的负载均衡器向外部暴露服务。这个负载均衡器可以将外部的网络流量路由到集群内部的 NodePort 服务和 ClusterIP 服务。
 
-```shell
+
 LoadBalancer服务类型：
 外部负载均衡器：当你在支持的云提供商环境中创建一个LoadBalancer类型的服务时，Kubernetes会自动为你配置云提供商的外部负载均衡器。
 
@@ -495,7 +494,7 @@ LoadBalancer服务类型：
 云提供商的负载均衡器通常会执行健康检查，确保只将流量路由到健康的节点。
 一旦流量到达一个健康的节点，Kubernetes的NodePort和ClusterIP机制会接管，确保流量正确地路由到一个健康的Pod。
 云提供商的集成：不同的云提供商可能会提供不同的配置选项和特性，例如：注解、负载均衡器类型、网络策略等。因此，当在特定的云环境中使用LoadBalancer服务时，建议查阅相关的文档。
-```
+
 
 `ExternalName`：通过返回 CNAME 和对应值，可以将服务映射到 externalName 字段的内容（例如，foo.bar.example.com）。 无需创建任何类型代理。
 

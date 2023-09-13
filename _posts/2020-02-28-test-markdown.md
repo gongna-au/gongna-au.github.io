@@ -12,7 +12,7 @@ comments: true
 
 不考虑线程安全的单例实现
 
-```
+```go
 package singleton
 
 type singleton struct {
@@ -32,9 +32,9 @@ func GetInstance() *singleton {
 
 ## 2.Aggressive Locking
 
-> ### 激进的锁定
+### 激进的锁定
 
-```
+```go
 var mu Sync.Mutex
 
 func GetInstance() *singleton {
@@ -54,7 +54,7 @@ func GetInstance() *singleton {
 
 ## 3.Check-Lock-Check Pattern
 
-```
+```go
 if check() {
     lock() {
         if check() {
