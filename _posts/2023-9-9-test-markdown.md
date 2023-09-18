@@ -49,26 +49,31 @@ ENTRYPOINT ["/main"]
 ```
 
 > main.go 文件需要和 Dockerfile 文件在同一个目录下面执行,fieelina 就是Docker注册的用户名
+
 ```go
 docker build . -t fieelina/hellok8s:v1
 ```
 
 > 查看镜像状态
+
 ```go
 docker images 
 ```
 
 > 测试
+
 ```go
 docker run -p 3000:3000 --name hellok8s -d fieelina/hellok8s:v1 
 ```
 
 > 登录
+
 ```go
 docker login -u fieelina
 ```
 
 > 推送
+
 ```go
 docker push fieelina/hellok8s:v1 
 ```
@@ -93,41 +98,52 @@ metadata.name 表示要创建的 pod 的名字
 spec.containers 表示要运行的容器的名称和镜像名称。镜像默认来源 DockerHub。
 
 >  创建Pod
+
 ```shell
 kubectl apply -f nginx.yaml 
 ```
 
 > 查看Pod 状态
+
 ```shell
 kubectl get pods
 ```
+
 > 进入Pod内部
+
 ```shell
 kubectl exec -it nginx-pod /bin/bash
 ```
 > 配置 nginx 的首页内容
+
 ```shell
 echo "hello kubernetes by nginx!" > /usr/share/nginx/html/index.html
 ```
 
 > 退出Pod
+
 ```shell
 exit
 ```
+
 > 端口映射
+
 ```shell
 kubectl port-forward nginx-pod 4000:80
 ```
 这个命令的作用是在你的本地机器（kubectl 客户端）上创建一个到 nginx-pod 的 4000 到 80 的端口映射。这样你就可以通过访问本地的 4000 端口.虽然 YAML 文件中虽然没有明确指定 80 端口，但是 Nginx 服务器默认在 80 端口上运行，这是它的默认配置。
 
 > 访问测试
+
 ```shell
 http://127.0.0.1:4000
 ```
 > 查看日志
+
 ```shell
 kubectl logs --follow nginx-pod
 ```
+
 ```shell
 kubectl logs  nginx-pod
 ```
@@ -135,6 +151,7 @@ kubectl logs  nginx-pod
 
 
 > 在Pod的外部输入命令，让在Pod内部执行
+
 ```shell
 kubectl exec nginx-pod -- ls
 ```
@@ -218,9 +235,9 @@ kubectl delete pod hellok8s-deployment-7f9d6776b6-vklpc
 
 ```shell
 kubectl get pods 
-# NAME                                   READY   STATUS    RESTARTS   AGE
-# hellok8s-deployment-7f9d6776b6-vcqqd   1/1     Running   0          54s
-# 得到了新的Pods
+NAME                                   READY   STATUS    RESTARTS   AGE
+hellok8s-deployment-7f9d6776b6-vcqqd   1/1     Running   0          54s
+得到了新的Pods
 ```
 
 > 自动扩容,修改replicas=3
