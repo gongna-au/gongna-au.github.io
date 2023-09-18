@@ -1351,11 +1351,13 @@ spec:
 ```
 
 > 执行
+
 ```shell
 kubectl apply -f hello-cronjob.yaml
 ```
 
 > 查看
+
 ```shell
 kubectl get cronjob
 kubectl get pods 
@@ -1371,6 +1373,7 @@ helm create hello-helm
 ```
 
 > 编写应用程序
+
 ```go
 package main
 
