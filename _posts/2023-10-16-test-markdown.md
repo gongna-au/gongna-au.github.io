@@ -2,7 +2,7 @@
 layout: post
 title: Prometheus
 subtitle: 
-tags: []
+tags: [Prometheus]
 comments: true
 ---
 
@@ -61,7 +61,6 @@ by (handler, le))
 1000*:
 
 这可能是一个单位转换，例如将秒转换为毫秒。
-
 
 ## 使用 Prometheus 的 Alert Manager 就可以对服务进行报警，但是如何及时又准确的报警，以及如何合理设置报警
 
@@ -194,3 +193,63 @@ Prometheus Server部署：
 根据需要扩展你的Prometheus部署。随着你的网关集群的增长，你可能需要添加更多的Prometheus实例或增加存储容量。
 
 
+
+
+定义指标:
+
+```go
+import (
+    "github.com/prometheus/client_golang/prometheus"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
+    "net/http"
+    "time"
+)
+
+var httpDuration = prometheus.NewHistogramVec(
+    prometheus.HistogramOpts{
+        Name:    "http_request_duration_seconds",
+        Help:    "Duration of HTTP requests.",
+        Buckets: prometheus.DefBuckets,
+    },
+    []string{"path", "method"},
+)
+```
+注册指标:
+在启动应用程序时，你需要注册你的指标，这样 Prometheus 客户端库才知道它们存在。
+
+```go
+func init() {
+    prometheus.MustRegister(httpDuration)
+}
+```
+测量请求耗时:
+使用中间件或 HTTP 处理程序来测量每个请求的耗时，并更新你的指标。
+
+```go
+func trackDuration(handler http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        startTime := time.Now()
+        handler(w, r)
+        duration := time.Since(startTime)
+        httpDuration.WithLabelValues(r.URL.Path, r.Method).Observe(duration.Seconds())
+    }
+}
+```
+使用中间件:
+对于你的每个 HTTP 处理程序，使用上面定义的 trackDuration 中间件。
+
+```go
+http.HandleFunc("/your_endpoint", trackDuration(yourHandlerFunc))
+```
+暴露指标给 Prometheus:
+你需要提供一个 HTTP 端点，通常是 /metrics，供 Prometheus 服务器抓取。
+
+```go
+http.Handle("/metrics", promhttp.Handler())
+```
+启动 HTTP 服务器:
+
+```go
+http.ListenAndServe(":8080", nil)
+```
+将上述代码组合在一起，你就可以在你的应用程序中统计和暴露 HTTP 请求的耗时了。确保你已经正确地设置了 Prometheus 服务器来抓取你的应用程序的 /metrics 端点。

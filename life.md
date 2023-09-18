@@ -1,7 +1,7 @@
 ---
 layout: page
-title: 生活杂记
-subtitle: 发疯文学实录
+title: 发疯文学实录
+subtitle: 生活杂记
 ---
 
 > 2023.9.11

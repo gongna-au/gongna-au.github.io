@@ -218,3 +218,69 @@ CPU使用率:
 接口耗时
 接口可用性
 ```
+
+> GMP的个数
+
+在 Go 语言的运行时系统中，GMP 模型是一个核心的调度模型，其中：
+
+G 代表 Goroutine，它是 Go 语言中的轻量级线程。
+M 代表 Machine，可以理解为操作系统的物理线程。
+P 代表 Processor，代表了执行 Go 代码的资源，可以看作是 M 和 G 之间的桥梁。
+关于 M 和 P 的数量：
+
+M (Machine) 的数量：
+
+M 的数量与程序创建的系统线程数量有关。当一个 Goroutine 阻塞（例如，因为系统调用或因为等待某些资源）时，Go 运行时可能会创建一个新的 M 来保证其他 Goroutines 可以继续执行。
+Go 的运行时会尽量复用 M，但在某些情况下，例如系统调用，可能会创建新的 M。
+M 的数量是动态变化的，取决于 Goroutines 的行为和系统的负载。
+P (Processor) 的数量：
+
+P 的数量通常与机器的 CPU 核心数相等。这意味着在任何给定的时间点，最多可以有 P 个 Goroutines 同时在不同的线程上执行。
+P 的数量可以通过 GOMAXPROCS 环境变量或 runtime.GOMAXPROCS() 函数来设置。默认情况下，它的值是机器上的 CPU 核心数。
+P 的数量决定了可以并发执行 Go 代码的 M 的最大数量。
+总的来说，M 的数量与程序的实际行为和系统调用的频率有关，而 P 的数量通常与 CPU 核心数相等（但可以调整），决定了可以并发执行的 Goroutines 的数量。
+
+
+
+context.Context 是 Go 语言中用于跨多个 goroutine 传递 deadline、取消信号和其他请求范围的值的接口。Done() 方法返回一个 channel，当该 context 被取消或超时时，该 channel 会被关闭。
+
+为了理解 context.Done() 的底层实现，我们首先需要了解 context.Context 的几种具体实现：
+
+context.emptyCtx：它是一个不可取消、没有值、没有 deadline 的 context。
+context.cancelCtx：它是一个可以取消的 context。
+context.timerCtx：它是一个在指定时间后自动取消的 context。
+context.valueCtx：它是一个携带键值对的 context。
+其中，cancelCtx 和 timerCtx 是与取消相关的 context 实现，它们都有一个 Done channel。
+
+现在，让我们看一下 context.Done() 的低层实现：
+
+>  context.Done() 的底层实现
+
+```go
+type cancelCtx struct {
+	Context
+
+	mu       sync.Mutex            // protects following fields
+	done     chan struct{}         // created lazily, closed by first cancel call
+	children map[canceler]struct{} // set to nil by the first cancel call
+	err      error                 // set to non-nil by the first cancel call
+}
+
+func (c *cancelCtx) Done() <-chan struct{} {
+	c.mu.Lock()
+	if c.done == nil {
+		c.done = make(chan struct{})
+	}
+	d := c.done
+	c.mu.Unlock()
+	return d
+}
+```
+从上面的代码中，我们可以看到：
+
+cancelCtx 结构体有一个 done channel，它是懒加载的，即在第一次调用 Done() 时才被创建。
+当 cancelCtx 被取消时，done channel 会被关闭。
+Done() 方法简单地返回 done channel。
+对于 timerCtx（它是 cancelCtx 的子类型），当 deadline 到达时，它也会取消 context，从而关闭 done channel。
+
+总的来说，context.Done() 的底层实现是基于一个懒加载的 channel，当 context 被取消或超时时，这个 channel 会被关闭。

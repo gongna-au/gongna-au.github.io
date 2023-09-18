@@ -287,16 +287,16 @@ ZNode（ZooKeeper Node）：是ZooKeeper中的数据节点。每一个ZNode都�
 
 一旦这种节点被创建，它就会一直存在，直到被明确删除。
 它们可以有子节点，而且子节点也可以是永久节点或临时节点。
-临时节点 (Ephemeral ZNode)：
 
+临时节点 (Ephemeral ZNode)：
 这种节点的生命周期与创建它的客户端会话绑定。当客户端会话结束时，这个节点会被自动删除。
 临时节点不能有子节点。
-顺序节点 (Sequential ZNode)：
 
+顺序节点 (Sequential ZNode)：
 当创建这种节点时，ZooKeeper 会自动在其名称后追加一个递增的数字。这可以确保每次创建的节点名称都是唯一的。
 顺序节点可以是永久的或临时的。
-临时顺序节点 (Ephemeral-Sequential ZNode)：
 
+临时顺序节点 (Ephemeral-Sequential ZNode)：
 这是临时节点和顺序节点的结合。当创建这种节点时，ZooKeeper 会自动追加一个递增的数字，但节点仍然是临时的，当客户端会话结束时，这个节点会被自动删除。
 
 > etcd如何保证数据的强一致性？它是基于什么算法实现的？
@@ -399,13 +399,13 @@ ZNode（ZooKeeper Node）：是ZooKeeper中的数据节点。每一个ZNode都�
 如果Kafka的某个broker宕机，系统会如何处理？如何恢复？
 Zookeeper的写性能为什么通常被认为是一个瓶颈？有什么办法可以改进？
 如何备份和恢复etcd的数据？
-与其他技术的对比：
 
+与其他技术的对比：
 与其他消息队列系统（如RabbitMQ、ActiveMQ）相比，Kafka有什么优势和劣势？
 除了Zookeeper，还有哪些分布式协调服务？它们与Zookeeper有何异同？
 与etcd相似的键值存储服务还有哪些？例如Consul和Zookeeper，它们之间有什么主要的差异？
-扩展性和未来趋势：
 
+扩展性和未来趋势：
 如何扩展Kafka集群以支持更高的吞吐量？
 Zookeeper和etcd在大规模集群中可能会遇到哪些扩展性问题？
 对于Kafka、Zookeeper和etcd的未来发展，你有什么看法或预测？

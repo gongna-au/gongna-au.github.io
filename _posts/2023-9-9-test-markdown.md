@@ -49,7 +49,6 @@ ENTRYPOINT ["/main"]
 ```
 
 > main.go 文件需要和 Dockerfile 文件在同一个目录下面执行,fieelina 就是Docker注册的用户名
-
 ```go
 docker build . -t fieelina/hellok8s:v1
 ```
@@ -60,7 +59,6 @@ docker images
 ```
 
 > 测试
-
 ```go
 docker run -p 3000:3000 --name hellok8s -d fieelina/hellok8s:v1 
 ```
@@ -71,7 +69,6 @@ docker login -u fieelina
 ```
 
 > 推送
-
 ```go
 docker push fieelina/hellok8s:v1 
 ```
@@ -138,7 +135,6 @@ kubectl logs  nginx-pod
 
 
 > 在Pod的外部输入命令，让在Pod内部执行
-
 ```shell
 kubectl exec nginx-pod -- ls
 ```
@@ -291,30 +287,34 @@ spec:
 ```
 
 > 执行
+
 ```shell
 kubectl apply -f deployment.yaml
 ```
 
 > 查看Pod的状态
+
 ```shell
 kubectl get pods 
-
-# hellok8s-deployment-6c6fcbc8b5-86rg5   1/1     Running   0          4s
-# hellok8s-deployment-6c6fcbc8b5-fhv62   1/1     Running   0          3s
-# hellok8s-deployment-6c6fcbc8b5-qx2n8   1/1     Running   0          6s
+hellok8s-deployment-6c6fcbc8b5-86rg5   1/1     Running   0          4s
+hellok8s-deployment-6c6fcbc8b5-fhv62   1/1     Running   0          3s
+hellok8s-deployment-6c6fcbc8b5-qx2n8   1/1     Running   0          6s
 ```
 
 > 端口映射
+
 ```shell
 kubectl port-forward hellok8s-deployment-66799848c4-kpc6q 3000:3000
 ```
 
 > 访问测试
+
 ```shell
 http://localhost:3000
 ```
 
 > 查看
+
 ```shell
 kubectl describe pod  hellok8s-deployment-6c6fcbc8b5-86rg5
 ```
@@ -369,11 +369,13 @@ kubectl get pods --watch
 ```
 
 > 滚动更新-回滚
+
 ```shell
 kubectl rollout undo deployment hellok8s-deployment
 ```
 
 > 滚动更新-回滚历史
+
 ```shell
 kubectl rollout history deployment hellok8s-deployment
 ```
@@ -392,6 +394,7 @@ kubectl rollout history deployment hellok8s-deployment
 
 
 > 写个接口
+
 ```go
 package main
 
