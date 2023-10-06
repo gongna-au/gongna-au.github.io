@@ -1170,6 +1170,7 @@ func removeKdigits(num string, k int) string {
 ### 单调栈变种-3
 
 > 记录长度。
+
 ```go
 type StockSpanner struct {
 	stk []pair
@@ -1192,10 +1193,10 @@ func (this *StockSpanner) Next(price int) int {
 type pair struct{ price, cnt int }
 ```
 
-
 ## 母题
 
 > 给你两个**有序**的非空数组nums1 和nums2，让你从每个数组中分别挑一个，使得二者差的绝对值最小。/ 给你两个有序的非空数组 nums1 和nums2，让你将两个数组合并，使得新的数组有序。
+
 ```go
 func Solve(nums1 []int,nums2 []int){
     ans:=1<<9

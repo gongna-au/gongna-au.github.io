@@ -94,6 +94,48 @@ kubectl cluster-info
 
 答案：网络策略在Kubernetes中提供了基于Pod的网络隔离。默认情况下，Pods之间没有访问限制，但当我们定义了网络策略后，只有符合网络策略规则的流量才能到达Pod。
 
+在 Kubernetes 中，网络策略(Network Policy)定义了怎样的流量可以进入和离开 Pods。使用网络策略，可以为一个或多个 Pods 定义白名单或黑名单的访问规则。以下是 Kubernetes 网络策略中的主要概念和策略类型：
+
+策略类型：
+Ingress: 控制流入 Pod 的流量。
+Egress: 控制从 Pod 流出的流量。
+
+选择器：
+podSelector: 定义哪些 Pod 受到网络策略的影响。
+namespaceSelector: 根据命名空间选择器选择流量来源或目的地。
+ipBlock: 允许或拒绝特定的 IP 地址范围。
+
+端口和协议：
+可以为指定的端口和协议（如 TCP 或 UDP）设置策略。
+
+默认行为：
+
+当没有网络策略应用于 Pod 时，默认行为是允许所有流量。
+一旦为 Pod 定义了任何 Ingress 网络策略，默认行为变为拒绝所有进入流量，除非它与策略规则匹配。
+对于 Egress 规则，逻辑与 Ingress 相同。
+
+以下是一个简单的网络策略示例，该策略允许从带有标签 role=frontend 的所有 Pod 到带有标签 app=myapp 的 Pod 的 Ingress 流量：
+
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: my-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: myapp
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: frontend
+```
+要使网络策略生效，你的 Kubernetes 集群必须运行支持网络策略的网络插件，如 Calico、Cilium、Weave 等。
+
 ## 5.存储
 
 问题：在Kubernetes中，Persistent Volume和Persistent Volume Claim有何区别？

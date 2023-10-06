@@ -233,12 +233,37 @@ M (Machine) 的数量：
 M 的数量与程序创建的系统线程数量有关。当一个 Goroutine 阻塞（例如，因为系统调用或因为等待某些资源）时，Go 运行时可能会创建一个新的 M 来保证其他 Goroutines 可以继续执行。
 Go 的运行时会尽量复用 M，但在某些情况下，例如系统调用，可能会创建新的 M。
 M 的数量是动态变化的，取决于 Goroutines 的行为和系统的负载。
-P (Processor) 的数量：
 
+P (Processor) 的数量：
 P 的数量通常与机器的 CPU 核心数相等。这意味着在任何给定的时间点，最多可以有 P 个 Goroutines 同时在不同的线程上执行。
 P 的数量可以通过 GOMAXPROCS 环境变量或 runtime.GOMAXPROCS() 函数来设置。默认情况下，它的值是机器上的 CPU 核心数。
 P 的数量决定了可以并发执行 Go 代码的 M 的最大数量。
 总的来说，M 的数量与程序的实际行为和系统调用的频率有关，而 P 的数量通常与 CPU 核心数相等（但可以调整），决定了可以并发执行的 Goroutines 的数量。
+
+
+早期的GM模型
+在早期的Go调度模型（GM模型）中，所有的Goroutine（G）都是由一组系统线程（M）来执行的。这些系统线程共享一个全局的Goroutine队列。当一个系统线程需要执行一个新的Goroutine时，它会从全局队列中取出一个Goroutine来执行。
+
+全局锁问题
+全局队列的争用: 在GM模型中，所有的M都要访问同一个全局的Goroutine队列，这会导致高度的锁争用。
+
+缺乏局部性: 因为所有的M都从同一个全局队列中取G，这导致了缓存局部性的问题。
+
+调度开销: 每次从全局队列中取G或放G都需要加锁和解锁，这增加了调度的开销。
+
+现在的GMP模型
+为了解决这些问题，Go引入了现在的GMP模型。在这个模型中，引入了一个新的实体，即Processor（P）。
+
+P与M的绑定: 在GMP模型中，每个M在执行Goroutines之前都会先获取一个P。这样，每个M都有自己的本地队列，从而减少了锁的争用。
+
+本地队列: 每个P都有一个本地的Goroutine队列。当M需要执行新的Goroutine时，它首先会查看与其绑定的P的本地队列。
+
+全局队列仍然存在: 全局队列没有被完全去掉，但它只在本地队列为空，或者需要平衡负载时才会被访问。
+
+动态调整: GMP模型允许动态地增加或减少M和P的数量，以适应不同的工作负载。
+
+通过这些改进，GMP模型解决了早期GM模型中的全局锁争用和其他问题，同时提供了更高效和更灵活的调度机制。
+
 
 
 
@@ -284,3 +309,60 @@ Done() 方法简单地返回 done channel。
 对于 timerCtx（它是 cancelCtx 的子类型），当 deadline 到达时，它也会取消 context，从而关闭 done channel。
 
 总的来说，context.Done() 的底层实现是基于一个懒加载的 channel，当 context 被取消或超时时，这个 channel 会被关闭。
+
+> sync.Map的底层实现
+
+通过 read 和 dirty 两个字段实现数据的读写分离，读的数据存在只读字段 read 上，将最新写入的数据则存在 dirty 字段上
+读取时会先查询 read，不存在再查询 dirty，写入时则只写入 dirty
+读取 read 并不需要加锁，而读或写 dirty 则需要加锁
+另外有 misses 字段来统计 read 被穿透的次数（被穿透指需要读 dirty 的情况），超过一定次数则将 dirty 数据更新到 read 中（触发条件：misses=len(dirty)）
+
+
+优缺点
+优点：Go官方所出；通过读写分离，降低锁时间来提高效率；
+缺点：不适用于大量写的场景，这样会导致 read map 读不到数据而进一步加锁读取，同时dirty map也会一直晋升为read map，整体性能较差，甚至没有单纯的 map+metux 高。
+适用场景：读多写少的场景
+
+
+```go
+// sync.Map的核心数据结构
+type Map struct {
+    mu Mutex                        // 对 dirty 加锁保护，线程安全
+    read atomic.Value                 // readOnly 只读的 map，充当缓存层
+    dirty map[interface{}]*entry     // 负责写操作的 map，当misses = len(dirty)时，将其赋值给read
+    misses int                        // 未命中 read 时的累加计数，每次+1
+}
+
+// 上面read字段的数据结构
+type readOnly struct {
+    m  map[interface{}]*entry // 
+    amended bool // Map.dirty的数据和这里read中 m 的数据不一样时，为true
+}
+
+// 上面m字段中的entry类型
+type entry struct {
+    // 可见value是个指针类型，虽然read和dirty存在冗余情况（amended=false），但是由于是指针类型，存储的空间应该不是问题
+    p unsafe.Pointer // *interface{}
+}
+```
+
+在 sync.Map 中常用的有以下方法：
+
+- ```Load()```：读取指定 key 返回 value
+- ```Delete()```： 删除指定 key
+- ```Store()```： 存储（新增或修改）key-value
+
+当Load方法在read map中没有命中（miss）目标key时，该方法会再次尝试在dirty中继续匹配key；无论dirty中是否匹配到，Load方法都会在锁保护下调用missLocked方法增加misses的计数（+1）；当计数器misses值到达len(dirty)阈值时，则将dirty中的元素整体更新到read，且dirty自身变为nil。
+
+发现sync.Map是通过冗余的两个数据结构(read、dirty),实现性能的提升。为了提升性能，load、delete、store等操作尽量使用只读的read；为了提高read的key击中概率，采用动态调整，将dirty数据提升为read；对于数据的删除，采用延迟标记删除法，只有在提升dirty的时候才删除。
+
+delete(m.dirty, key)这里采用直接删除dirty中的元素，而不是先查再删：
+将read中目标key对应的value值置为nil（e.delete()→将read=map[interface{}]*entry中的值域*entry置为nil）
+
+实现原理总结：
+通过 read 和 dirty 两个字段将读写分离，读的数据存在只读字段 read 上，将最新写入的数据则存在 dirty 字段上
+读取时会先查询 read，不存在再查询 dirty，写入时则只写入 dirty
+读取 read 并不需要加锁，而读或写 dirty 都需要加锁
+另外有 misses 字段来统计 read 被穿透的次数（被穿透指需要读 dirty 的情况），超过一定次数则将 dirty 数据同步到 read 上
+对于删除数据则直接通过标记来延迟删除
+

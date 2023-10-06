@@ -47,7 +47,7 @@ OpenTelemetry为应用程序提供了追踪和度量的能力。当你使用Open
 
 > Jaeger的基础存储
 
-可插拔存储后端：Jaeger支持多种存储后端，包括Elasticsearch、Cassandra、Kafka和Badger等。这种可插拔的设计意味着你可以选择最适合你的环境和需求的存储后端。
+可插拔存储后端：Jaeger支持多种存储后端，包括Elasticsearch、Cassandra、Kafka和Badger等。这种可插拔的设计意味着你可以选择最适合你的环境和需求的存储后端。虽然 Jaeger 本身的存储可能足够用于开发和测试环境，但在生产环境中，一个健壮的外部存储后端几乎总是必需的。
 
 存储结构：Jaeger的追踪数据通常存储为一系列的spans。每个span代表一个操作或任务，并包含其开始时间、结束时间、标签、日志和其他元数据。这些spans被组织成traces，每个trace代表一个完整的请求或事务。
 
@@ -62,6 +62,7 @@ OpenTelemetry为应用程序提供了追踪和度量的能力。当你使用Open
 总的来说，Jaeger的存储是其架构中的一个关键组件，负责持久化追踪数据。通过与多种存储后端的集成，Jaeger为用户提供了灵活性，使他们可以选择最适合他们需求的存储解决方案。
 
 > Jaeger的内存存储
+
 内存存储：Jaeger的一个简单配置是使用内存存储，这意味着所有的追踪数据都保存在内存中，不持久化到磁盘。这种配置适用于开发和测试环境，但不适用于生产环境，因为重启Jaeger实例会导致数据丢失。
 
 Badger存储：Badger是一个嵌入式的键/值存储，可以在本地文件系统中持久化数据。Jaeger可以配置为使用Badger作为其存储后端，这为那些不想设置外部存储系统（如Elasticsearch或Cassandra）的用户提供了一个简单的持久化选项。
@@ -73,11 +74,15 @@ Badger存储：Badger是一个嵌入式的键/值存储，可以在本地文件�
 
 应用程序/服务：这是开始点。当一个请求进入你的应用程序或服务时，OpenTelemetry或Jaeger客户端库会开始记录一个追踪。追踪包含了请求从开始到结束的所有信息，包括调用的各个服务、函数和外部资源。
 
-Jaeger客户端库：这个库在应用程序中集成，负责收集追踪数据。它还可以进行采样决策，决定是否将某个特定的追踪发送到Jaeger代理。
+Jaeger-client：这个库在应用程序中集成，负责收集追踪数据。它还可以进行采样决策，决定是否将某个特定的追踪发送到Jaeger代理。
 
-Jaeger代理：Jaeger代理通常作为一个独立的进程运行，可能在与应用程序相同的主机上或在一个集中的位置。应用程序通过UDP将追踪数据发送到这个代理。代理的主要任务是接收这些数据，进行一些轻量级的处理（如批处理），然后转发它们到Jaeger收集器。
+Jaeger-agent：Jaeger代理通常作为一个独立的进程运行，可能在与应用程序相同的主机上或在一个集中的位置。应用程序通过UDP将追踪数据发送到这个代理。代理的主要任务是接收这些数据，进行一些轻量级的处理（如批处理），然后转发它们到Jaeger收集器。jaeger-agent 。通过 UDP 协议监听来自应用程序的跟踪数据。这种方式的优点是非常快速和轻量级，但缺点是不保证数据的可靠传输。
 
-Jaeger收集器：收集器接收来自一个或多个代理的追踪数据。它负责处理这些数据，例如进行索引和转换，然后将其写入配置的存储后端。
+从 Jaeger-client 到 Jaeger-agent: jaeger-agent 通常通过 UDP 协议监听来自应用程序（Jaeger-client）的跟踪数据。UDP 是一种无连接的协议，因此它非常快速和轻量级，但不保证数据的可靠传输。
+
+从 Jaeger-agent 到 Jaeger-collector: jaeger-agent 可以通过多种方式将数据发送到 jaeger-collector。这包括 UDP、HTTP/HTTPS，以及 gRPC。在生产环境中，可能会更倾向于使用 HTTP/HTTPS 或 gRPC，因为这些协议更可靠。
+
+Jaeger-collector：收集器接收来自一个或多个代理的追踪数据。它负责处理这些数据，例如进行索引和转换，然后将其写入配置的存储后端。在生产环境中，通常会有多个 jaeger-collector 实例，并且 jaeger-agent 可以配置为通过负载均衡器将数据发送到这些 jaeger-collector 实例，以实现高可用和负载均衡。
 
 存储后端：这是追踪数据的最终存储位置。如前所述，Jaeger可以配置为使用多种存储后端，如Elasticsearch、Cassandra、Kafka或Badger。这里，数据被持久化并为后续的查询和分析所用。
 
@@ -85,6 +90,24 @@ Jaeger UI：当用户想要查看追踪数据时，他们会使用Jaeger UI。�
 
 总结：一个请求的追踪数据从应用程序开始，通过Jaeger客户端库、Jaeger代理、Jaeger收集器，最后存储在配置的存储后端中。当需要查看这些数据时，可以通过Jaeger UI进行查询和可视化。
 ```
+
+> jaeger-agent 和 jaeger-collector 通过gRPC 通信
+
+在 Jaeger 的架构中，jaeger-agent 和 jaeger-collector 之间的通信通常是由 Jaeger 项目本身管理的，通常不需要手动编写 gRPC 代码来实现这一点。Jaeger 的各个组件已经内置了这些通信机制。
+
+如果使用的 Jaeger 版本支持 gRPC，那么只需要在配置 jaeger-agent 和 jaeger-collector 时指定使用 gRPC 协议即可。
+
+例如，在启动 jaeger-collector 时，可以通过命令行参数或环境变量来启用 gRPC 端口（默认为 14250）。
+
+```bash
+jaeger-collector --collector.grpc-port=14250
+```
+同样，在配置 jaeger-agent 时，您可以指定将数据发送到 jaeger-collector 的 gRPC 端口。
+
+```bash
+jaeger-agent --reporter.grpc.host-port=jaeger-collector.example.com:14250
+```
+这样，jaeger-agent 就会使用 gRPC 协议将数据发送到 jaeger-collector。
 
 > Jaeger分布式部署
 
@@ -991,3 +1014,62 @@ Context Propagation：在同一进程内的不同组件之间，可以使用编�
 雪花算法（Snowflake）：这是Twitter开发的一个算法，用于生成唯一的ID。它结合了时间戳、机器ID和序列号来确保在分布式系统中生成的ID是唯一的。
 
 增量或原子计数器：对于单一服务，可以简单地使用一个原子计数器来生成span IDs。但是，这种方法在分布式系统中可能不是很实用，除非它与其他信息（如机器ID）结合使用。
+
+
+> 请简单介绍一下 Zipkin 是什么以及它的主要用途。
+Zipkin 是一个开源的分布式追踪系统，用于收集、存储和可视化微服务架构中的请求数据。它可以帮助开发者和运维人员理解系统中各个服务的调用关系、延迟和性能瓶颈。Zipkin 最初是由 Twitter 开发的，并受到了 Google 的 Dapper 论文的启发。
+
+主要用途：
+
+性能优化：通过分析请求在各个服务间的传播，找出性能瓶颈。
+故障排查：当系统出现问题时，可以快速定位到具体的服务或请求。
+系统可视化：提供了一个界面，用于可视化服务间的调用关系和延迟。
+
+
+> Zipkin 是如何工作的？能否描述其基本架构和组件？
+
+Zipkin 主要由以下几个组件构成：
+Instrumentation（监测）：在微服务的代码中嵌入 Zipkin 客户端库，用于收集请求数据。
+Collector（收集器）：负责从各个服务收集追踪数据。
+Storage（存储）：存储收集到的追踪数据。Zipkin 支持多种存储后端，如 In-Memory、Cassandra、Elasticsearch 等。
+API Server（API 服务器）：提供 API，用于查询存储在后端的追踪数据。
+Web UI（Web 用户界面）：一个 Web 应用，用于可视化追踪数据。
+
+
+工作流程：
+当一个请求进入系统时，Instrumentation 会生成一个唯一的 Trace ID，并在微服务间传播这个 ID。
+每个服务都会记录与该请求相关的 Span 数据，包括开始时间、结束时间、注解等。
+这些 Span 数据会被发送到 Collector。
+Collector 将这些数据存储在 Storage 中。
+用户可以通过 Web UI 或 API 查询这些数据。
+
+> Zipkin 和其他分布式追踪系统（如 Jaeger、OpenTelemetry 等）有什么区别或优势？
+
+成熟度：Zipkin 是较早出现的分布式追踪系统，社区活跃，文档完善。
+简单易用：Zipkin 的安装和配置相对简单，适合小型到中型的项目。
+灵活的存储选项：Zipkin 支持多种存储后端。
+与 Spring Cloud 集成：对于使用 Spring Cloud 的项目，Zipkin 提供了很好的集成支持。
+
+Zipkin 本身就是一个完整的分布式追踪系统，包括数据收集、存储和可视化等功能。可以在微服务的代码中嵌入 Zipkin 的客户端库（或者使用与 Zipkin 兼容的库）来收集追踪数据。这些数据然后会被发送到 Zipkin 的收集器，并存储在 Zipkin 支持的存储后端（如 In-Memory、Cassandra、Elasticsearch 等）。最后，你可以通过 Zipkin 的 Web UI 或 API 来查询和可视化这些数据。
+
+OpenTelemetry
+在 OpenTelemetry 中，Trace ID 通常是在分布式系统的入口点（例如，一个前端服务接收到的 HTTP 请求）生成的。一旦生成了 Trace ID，它就会在整个请求的生命周期内传播，包括跨服务和跨进程的调用。这通常是通过在服务间通信的请求头中添加特殊字段来实现的。
+
+
+> 分布式环境下是如何确保Trace ID 的不同？
+
+OpenTelemetry 的 Trace ID 通常是一个 128 位或 64 位的随机数，这几乎可以确保在不同的机器和不同的请求之间都是唯一的。
+
+Zipkin
+Zipkin 的工作方式与 OpenTelemetry 类似。它也在请求进入系统时生成一个 Trace ID，并在整个请求链路中进行传播。Zipkin 的 Trace ID 通常是一个 64 位或 128 位的随机数。
+
+确保唯一性
+随机性: 由于 Trace ID 是使用高度随机的算法生成的，因此即使在分布式环境中，两台不同的机器生成的 Trace ID 也极不可能相同。
+
+时间戳和机器标识: 一些系统可能会在 Trace ID 中嵌入时间戳和机器标识信息，以进一步降低冲突的可能性。
+
+全局状态: 在更复杂的设置中，可以使用全局状态或者分布式锁来确保唯一性，但这通常是不必要的，因为随机生成的 ID 已经足够唯一。
+
+高位数: 使用 128 位或 64 位的长数字也增加了唯一性。
+
+因此，即使在高度分布式的环境中，Trace ID 的冲突概率也非常低。

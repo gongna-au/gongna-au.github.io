@@ -222,6 +222,60 @@ locate
 df -hl
 ```
 
+Linux查看内存的使用情况
+ChatGPT
+在Linux系统中，有多种方法可以用来查看内存使用情况：
+
+free 命令
+free命令是最简单和最常用的查看内存使用情况的命令。
+
+bash
+Copy code
+free -h
+这里，-h选项表示以人类可读的格式（如G、M）显示输出。
+
+输出示例：
+
+```shell
+              total        used        free      shared  buff/cache   available
+Mem:           7.7Gi       1.1Gi       5.3Gi       647Mi       1.3Gi       6.0Gi
+Swap:          2.0Gi       128Mi       1.9Gi
+/proc/meminfo 文件
+```
+你也可以直接查看 /proc/meminfo 文件以获取详细的内存使用信息。
+
+```shell
+cat /proc/meminfo
+```
+输出会包括物理内存、交换内存、缓存等多方面的详细信息。
+
+vmstat 命令
+vmstat命令也可以用来查看内存使用情况，以及其他系统资源的使用情况。
+
+```shell
+vmstat
+```
+top 和 htop 命令
+top命令提供了一个实时更新的视图，展示当前系统中各个进程的资源使用情况，包括内存。
+
+```shell
+top
+htop是top的一个更先进的替代品，提供了更多的信息和更好的交互界面。
+```
+
+```shell
+htop
+```
+如果你的系统没有预安装htop，你可以使用包管理器（如apt、yum或brew等）来安装。
+
+sar 命令
+sar命令可以用来查看系统资源的历史和实时使用情况，包括CPU、内存、I/O等。
+
+```shell
+sar -r
+```
+这些只是查看Linux系统内存使用情况的几种方法。根据你的具体需求，你可能会选择使用其中的一种或多种方法。
+
 显示磁盘的使用空间
 
 ```shell
@@ -291,11 +345,10 @@ compgen -c
 $ whatis cat
 cat (1)              - concatenate files and print on the standard output
 ```
-
 查看⼀个 linux 命令的概要与⽤法.
 
 
-问题： 请解释Linux操作系统的基本组成部分。
+> 问题： 请解释Linux操作系统的基本组成部分。
 
 答案： Linux操作系统的基本组成部分包括：
 
@@ -303,8 +356,8 @@ cat (1)              - concatenate files and print on the standard output
 Shell：命令行界面，允许用户与系统进行交互。
 文件系统（File System）：用于组织和管理文件、目录和硬盘分区。
 用户空间（User Space）：包含各种应用程序、服务和库文件。
-问题： 请列举至少五个常用的Linux命令及其功能。
 
+问题： 请列举至少五个常用的Linux命令及其功能。
 答案：
 
 ls: 列出目录内容。
@@ -320,16 +373,15 @@ grep: 在文件中搜索指定的文本。
 
 答案： 可以使用ps命令或top命令查看系统中正在运行的进程。ps命令会显示当前用户的进程，而top命令会实时更新并显示所有用户的进程信息。
 
-问题： 请解释软链接和硬链接的区别。
+> 问题： 请解释软链接和硬链接的区别。
 
 答案：
-
 软链接（Symbolic Link）：类似于Windows中的快捷方式，是一个指向另一个文件或目录的特殊文件。如果原始文件被删除，软链接将无法访问。
 硬链接（Hard Link）：是一个指向文件数据的inode的引用。硬链接与原始文件共享相同的inode和数据，因此，即使原始文件被删除，硬链接仍然可以访问文件内容
 
 
 
-问题： 什么是Cron？如何使用Cron来安排定时任务？
+> 问题： 什么是Cron？如何使用Cron来安排定时任务？
 
 答案： Cron是一个Linux系统中的时间基准作业调度程序，用于安排定时任务。用户可以创建Crontab文件，其中包含要定期执行的任务及其执行计划。要编辑当前用户的Crontab文件，请使用命令crontab -e。Cron表达式由五个字段组成，分别表示分钟、小时、月份的天数、月份和星期几。例如，要每天早上6点运行脚本/home/user/example.sh，可以在Crontab文件中添加以下行：0 6 * * * /home/user/example.sh。
 

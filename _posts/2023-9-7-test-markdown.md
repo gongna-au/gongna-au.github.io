@@ -1,8 +1,8 @@
 ---
 layout: post
-title: Go/Linux
+title: Linux 常用命令
 subtitle:
-tags: [Go]
+tags: [Linux]
 comments: true
 ---
 
