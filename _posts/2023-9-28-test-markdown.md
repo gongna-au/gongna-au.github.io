@@ -41,6 +41,7 @@ show master status
 ```
 
 5-配置从服务器：在从服务器的配置文件中，也需要设置server-id（必须和主服务器不同）和relay-log（指定中继日志的位置）。例如：
+
 ```makefile
 [mysqld]
 server-id=2
@@ -48,6 +49,7 @@ relay-log=/var/lib/mysql/mysql-relay-bin
 ```
 6-重启从服务器
 7-配置从服务器连接到主服务器：在从服务器上，需要使用CHANGE MASTER TO命令指定主服务器的信息，包括主服务器的IP地址、复制用户的用户名和密码、二进制日志文件的名称和位置。例如
+
 ```sql
 change master to 
 MASTER_HOST='192.168.1.100',
@@ -137,16 +139,20 @@ rpl_semi_sync_master_enabled=1
 3-重启主服务器：更改配置后，需要重启MySQL服务器以使更改生效。
 
 4-创建复制用户：在主服务器上，需要创建一个专门用于复制的用户，并给予该用户复制的权限。例如：
+
 ```sql
 CREATE USER 'repl'@'%' IDENTIFIED BY 'password';
 GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
 ```
+
 5-配置从服务器：在从服务器的配置文件中，也需要设置server-id（必须和主服务器不同），并启用半同步复制的从服务器功能。例如：
+
 ```ini
 [mysqld]
 server-id=2
 rpl_semi_sync_slave_enabled=1
 ```
+
 6-重启从服务器：和主服务器一样，更改配置后需要重启MySQL服务器。
 
 7-配置从服务器连接到主服务器：在从服务器上，需要使用CHANGE MASTER TO命令指定主服务器的信息，包括主服务器的IP地址、复制用户的用户名和密码。例如：
@@ -217,6 +223,7 @@ MASTER_DELAY=3600;
 MySQL本身并没有内置的熔断机制，但是我们可以通过一些外部工具或者在应用层面实现熔断机制。以下是一个基本的实现熔断机制的步骤：
 
 1-监控MySQL性能指标：首先，我们需要对MySQL的性能指标进行监控，这些指标可能包括响应时间、错误率、CPU使用率、内存使用率等。这可以通过MySQL的性能监控工具，如Performance Schema，Information Schema，或者第三方的监控工具，如Prometheus，Zabbix等来实现。
+
 > 启用performance_schema 在MySQL 5.6.6及更高版本中，performance_schema默认是启用的。可以通过查询performance_schema数据库中的表来确认它是否已经启用：
 
 ```shell
@@ -228,6 +235,7 @@ SHOW VARIABLES LIKE 'performance_schema';
 [mysqld]
 performance_schema=ON
 ```
+
 > 查询performance_schema中的表
 
 > performance_schema数据库包含许多表，可以查询这些表来获取关于MySQL服务器性能的信息。例如，可以查询events_statements_summary_by_digest表来获取关于每种SQL语句的性能统计信息：
@@ -322,15 +330,19 @@ Percona XtraDB Cluster的主要特点包括：
 在Docker容器中运行Percona XtraDB Cluster需要以下步骤：
 
 > 1.拉取Percona XtraDB Cluster的Docker镜像：可以从Docker Hub上拉取Percona XtraDB Cluster的官方Docker镜像。使用以下命令：
+
 ```shell
 docker pull percona/percona-xtradb-cluster
 ```
+
 > 2.创建网络：为了让容器之间可以互相通信，需要创建一个Docker网络。使用以下命令：
+
 ```shell
 docker network create --driver bridge pxc-net
 ```
 
 > 3.启动第一个节点：首先，需要启动第一个节点，它会创建一个新的集群。使用以下命令：
+
 ```shell
 docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=pxc-cluster -e XTRABACKUP_PASSWORD=root --name=pxc-node1 --net=pxc-net percona/percona-xtradb-cluster
 ```
@@ -338,31 +350,37 @@ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=pxc-clust
 > 4.这个命令会启动一个新的容器，设置MySQL的root密码为root，集群名称为pxc-cluster，XtraBackup的密码为root。
 
 > 5.启动其他节点：然后，可以启动其他节点，它们会自动加入到集群中。使用以下命令：
+
 ```shell
 docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=pxc-cluster -e XTRABACKUP_PASSWORD=root -e CLUSTER_JOIN=pxc-node1 --name=pxc-node2 --net=pxc-net percona/percona-xtradb-cluster
 ```
+
 ```shell
 docker run -d -p 3308:3306 -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=pxc-cluster -e XTRABACKUP_PASSWORD=root -e CLUSTER_JOIN=pxc-node1 --name=pxc-node3 --net=pxc-net percona/percona-xtradb-cluster
 ```
 
 > 6.这些命令会启动两个新的容器，设置MySQL的root密码为root，集群名称为pxc-cluster，XtraBackup的密码为root，并加入到pxc-node1节点的集群中。
+
 > 7.验证集群状态：可以进入任何一个节点，使用mysql命令行工具查看集群的状态。使用以下命令：
+
 ```shell
 docker exec -it pxc-node1 mysql -uroot -proot -e "SHOW STATUS LIKE 'wsrep_%';"
 ```
-> 8.这个命令会在pxc-node1节点上执行mysql命令，查看集群的状态。
 
+> 8.这个命令会在pxc-node1节点上执行mysql命令，查看集群的状态。
 
 在Docker中运行Percona XtraDB Cluster并使用SSL证书:
 
 > 1.首先，创建一个目录来存放配置文件和证书：
+
 ```shell
 mkdir -p ~/pxc-docker/cert
 mkdir -p ~/pxc-docker/config
 ```
 
 > 2.创建一个包含以下内容的custom.cnf文件，并将该文件放置在新目录中
-```shell
+
+```text
 cat << EOF > ~/pxc-docker/config/custom.cnf
 [mysqld]
 ssl-ca = /cert/ca.pem
@@ -383,6 +401,7 @@ EOF
 ```
 
 > 3.在主机节点上创建cert目录并生成自签名SSL证书：
+
 ```shell
 docker run --name pxc-cert --rm -v ~/pxc-docker/cert:/cert percona/percona-xtradb-cluster:8.0 mysql_ssl_rsa_setup -d /cert
 ```
@@ -394,11 +413,13 @@ docker run --name pxc-cert --rm -v ~/pxc-docker/cert:/cert percona/percona-xtrad
 - mysql_ssl_rsa_setup -d /cert：这是在容器内部执行的命令。mysql_ssl_rsa_setup是一个工具，用于生成SSL证书。-d /cert告诉这个工具将生成的证书保存到/cert目录中。
   
 > 4.创建Docker网络：
+
 ```shell
 docker network create pxc-network
 ```
 
 > 5.引导集群（创建第一个节点）：
+
 ```shell
 docker run -d \
   -e MYSQL_ROOT_PASSWORD=test1234# \
@@ -411,6 +432,7 @@ docker run -d \
 ```
 
 > 6.加入第二个节点：
+
 ```shell
 docker run -d \
   -e MYSQL_ROOT_PASSWORD=test1234# \
@@ -424,6 +446,7 @@ docker run -d \
 ```
 
 > 7.加入第三个节点：
+
 ```shell
 docker run -d \
   -e MYSQL_ROOT_PASSWORD=test1234# \
@@ -447,7 +470,9 @@ docker run -d \
 这个命令的作用就是运行一个新的Docker容器，然后在这个容器中运行Percona XtraDB Cluster节点，并将节点加入到指定的集群中。
 
 > 8.验证集群是否可用，可以通过访问MySQL客户端并查看wsrep状态变量：
+
 ```shell
 docker exec -it pxc-node1 /usr/bin/mysql -uroot -ptest1234# -e "show status like 'wsrep%';"
 ```
+
 这样，就在Docker中运行了一个使用SSL证书的Percona XtraDB Cluster。
