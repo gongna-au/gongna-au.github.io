@@ -19,8 +19,11 @@ tags: [Prometheus]
 
 Prometheus Server：负责收集和存储时间序列数据。
 > Prometheus Server又分为：Retrieval ,HTTPServer,TSDB
+
 > Retrieval：从被监控的服务中抓取指标。
+
 > HTTPServer：提供UI和API的访问点。
+
 > TSDB：负责存储数据(SSD/HDD)。
 
 Alertmanage：处理警报。
@@ -35,7 +38,7 @@ Gauge：表示单个数值，可以上下浮动，如内存使用量、CPU温度
 Histogram：用于统计观察值的分布，如请求持续时间。它提供了计数、总和、以及定义的分位数。
 Summary：与直方图类似，但也提供了计算百分比的能力。
 
-### 解释Prometheus的数据模型。
+### Prometheus的数据模型
 
 Prometheus的数据模型主要是时间序列数据。一个时间序列由一个指标名称和一组键/值对（标签）唯一标识。指标本身记录了在特定时间点的值。
 
@@ -149,14 +152,17 @@ sum(http_requests_total)
 ```
 
 > 列出过去5分钟内，所有HTTP请求的平均请求延迟。
+
 ```text
 rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])
 ```
+
 在这个例子中，`http_request_duration_seconds_sum[5m]`表示过去五分钟所有HTTP请求的总延迟时间，而`http_request_duration_seconds_count[5m]`表示过去五分钟内发生的HTTP请求的总数。将总延迟时间除以总请求数，就可以得到每个请求的平均延迟时间。
 
 而`rate()`函数则用于计算这两个指标在时间范围内的平均增长率。它返回的是每秒钟的平均增长值，这是一个即时向量。将http_request_duration_seconds_sum的增长率除以http_request_duration_seconds_count的增长率，结果就是每个请求的平均延迟。
 
-> 对过去1小时内的HTTP错误率（HTTP 5xx响应的数量/总HTTP请求数量）进行计算。
+> 对过去1小时内的HTTP错误率（HTTP 5xx响应的数量/总HTTP请求数量）进行计算
+
 ```text
 sum(rate(http_requests_total{status_code=~"5.."}[1h])) / sum(rate(http_requests_total[1h]))
 ```
@@ -170,6 +176,7 @@ sum(rate(http_requests_total{status_code=~"5.."}[1h])) / sum(rate(http_requests_
 所以我们需要将rate()函数应用于这两个范围向量，然后将结果相除，才能正确地计算出过去一小时内的HTTP错误率。
 
 > 使用PromQL的函数和操作符来预测接下来一小时内的HTTP请求的总数。
+
 ```text
 predict_linear(http_requests_total[1h], 3600)
 ```
