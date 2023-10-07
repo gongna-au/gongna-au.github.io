@@ -209,6 +209,7 @@ HorizontalPodAutoscaler 是 Kubernetes 的一个资源，它可以根据 CPU 利
 
 
 > 1.定义一个 CRD 来表示的事件。
+
 ```yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -259,6 +260,7 @@ spec:
 kubectl apply -f
 ```
 > 3.验证CRD的创建
+
 ```shell
 kubectl get crds
 ```
@@ -267,6 +269,7 @@ kubectl get crds
 > 4.定义控制器的行为
 
 需要定义控制器应该如何响应的自定义资源的变化。这通常涉及到编写一些代码，这些代码会监视的自定义资源，并在资源发生变化时执行相应的操作。
+
 ```go
 type CronJobReconciler struct {
 	client.Client
@@ -274,6 +277,7 @@ type CronJobReconciler struct {
 }
 ```
 定义了一个控制器，它是 CronJobReconciler 结构体,这个控制器的行为主要在 Reconcile 方法中定义。Reconcile 方法会在 Kubernetes API 中的 CronJob 对象发生变化时被调用。
+
 > 5.创建控制器
 
 一旦定义了控制器的行为，就可以创建控制器了。在 Kubernetes 中，控制器通常是一个运行在 Pod 中的程序，这个程序会持续运行并监视的自定义资源。可以使用各种语言和框架来创建控制器，包括 Go、Java、Python 等。有一些库和工具可以帮助创建控制器，例如 Operator SDK、Kubebuilder、Metacontroller 等。
@@ -281,6 +285,7 @@ type CronJobReconciler struct {
 以下是使用 Go 和 Kubebuilder 创建控制器的一个例子。这个例子是基于上面的的 CronTab CRD。
 
 - 首先，需要安装 Go 和 Kubebuilder。然后，可以创建一个新的 Kubebuilder 项目，并在其中添加的 CRD。
+
 ```shell
 go mod init cronjob
 kubebuilder init --domain example.com
@@ -344,7 +349,8 @@ func (r *CronJobReconciler) SetupWithManager(mgr ctrl.Manager) error {
 在这个例子中，Reconcile 方法会在 Kubernetes API 中的 CronJob 对象发生变化时被调用。可以在这个方法中添加的业务逻辑。SetupWithManager 方法告诉 controller-runtime 库的控制器需要监视哪些资源。在的例子中，的控制器将监视 CronJob 对象的变化。
 
 > 6.创建Dockerfile
-```makefile
+
+```text
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
@@ -405,6 +411,7 @@ spec:
 
 ```
 > 6.创建Deployment
+
 ```shell
 kubectl apply -f deployment.yaml
 ```
@@ -427,6 +434,7 @@ CronJob 在 Kubernetes 中扮演的角色主要有以下几点：
 工作流管理：CronJob 可以用来管理复杂的工作流。例如，可以创建一个 CronJob，它按照预定的时间表启动一个 Job，这个 Job 会启动一个 Pod，这个 Pod 会依次执行一系列的任务
 
 以下是一个 CronJob 的示例，它每分钟打印当前时间和一条问候消息：
+
 ```yaml
 apiVersion: batch/v1
 kind: CronJob
@@ -452,6 +460,7 @@ spec:
 在这个示例中，CronJob 的名称是 "hello"，它的时间表是 "* * * * *"，这意味着它会在每分钟的开始时启动一个 Job。Job 的任务是启动一个 Pod，Pod 中的容器运行 busybox:1.28 镜像，并执行一个命令来打印当前时间和一条问候消息。
 
 如果想在特定的时间（例如每天的特定时间）自动调整 Pod 的数量，可以创建一个类似的 CronJob。这个 CronJob 的 Job 会启动一个 Pod，这个 Pod 的任务是调整其他 Deployment 或 StatefulSet 的 Pod 数量。可以通过修改 Pod 的命令来实现这个功能。例如，可以使用 kubectl 命令来调整 Deployment 的 Pod 数量：
+
 ```shell
 kubectl scale deployment my-deployment --replicas=3
 ```
@@ -528,6 +537,7 @@ spec:
 在这个示例中，HPA 会尝试调整 my-deployment 的 Pod 数量，以保持每个 Pod 的 HTTP 请求速率为 10。
 
 > 3.将编写的HPA应用到集群
+
 ```shell
 kubectl apply -f my-hpa.yaml
 ```
@@ -613,6 +623,7 @@ Thanos Ruler：为基于长期数据的警报和规则评估提供支持。
 在 Kubernetes 中实现 Prometheus 的多租户监控，可以使用 Thanos 的多租户支持。Thanos 通过使用外部标签来支持多租户。对于这样的用例，推荐使用基于 Thanos Sidecar 的方法，配合分层的 Thanos Queriers。
 
 > 1.配置外部标签：在 Prometheus 的配置中，可以为每个租户定义一个唯一的外部标签。这个标签将被添加到该租户的所有指标中，从而使能够区分来自不同租户的指标。
+
 ```yaml
 global:
   external_labels:
@@ -621,6 +632,7 @@ global:
 ```
 
 > 配置 Thanos Sidecar：Thanos Sidecar 需要被配置为读取 Prometheus 的数据，并将数据上传到对象存储。需要为每个 Prometheus 实例配置一个 Thanos Sidecar。
+
 ```yaml
 containers:
 - args:
@@ -651,6 +663,7 @@ containers:
   - --selector.relabel-config=$(SELECTOR_RELABEL_CONFIG)
 
 ```
+
 > 配置 Thanos Compactor：Thanos Compactor 需要被配置为从对象存储中读取数据，并进行压缩和清理。需要为每个租户配置一个 Thanos Compactor，这样每个租户只能查询到自己的数据。
 
 ```yaml
@@ -661,6 +674,7 @@ containers:
   - --data-dir=/var/thanos/compact
   - --selector.relabel-config=$(SELECTOR_RELABEL_CONFIG)
 ```
+
 把以上添加到的 Kubernetes 配置
 
 ##### 利用 Thanos实现多集群监控
@@ -745,6 +759,7 @@ query-frontend-go-client-config.yaml: |
 ```
 
 > 2.指标降采样：并不需要保留原始分辨率的指标。当查询数据时，对特定时间范围内的总体视图和趋势感兴趣。使用 Thanos Compactor 对数据进行降采样和压缩。以下是 Zapier 使用的一些设置：
+
 ```yaml
 retentionResolutionRaw: 90d
 retentionResolution5m: 1y
@@ -817,6 +832,7 @@ spec:
 ```
 
 ##### 远程存储
+
 > 远程存储：Prometheus 支持将数据存储到远程存储系统，如 Thanos、Cortex、M3DB 等。这可以提供更长的数据保留期限，以及更好的查询性能和可用性。
 
 在 Prometheus 中配置远程存储，例如 Thanos，可以参考以下步骤：
@@ -829,6 +845,7 @@ spec:
 remote_write:
   - url: "http://<thanos-sidecar-address>:<port>/api/v1/receive"
 ```
+
 在这里，<thanos-sidecar-address>:<port> 是的 Thanos Sidecar 的地址和端口。
 
 > 3.配置 Thanos Sidecar：Thanos Sidecar 需要被配置为读取 Prometheus 的数据，并将数据上传到对象存储。可以在 Thanos Sidecar 的配置文件中指定的对象存储的详细信息。例如，如果使用 Amazon S3 作为的对象存储，的 Thanos Sidecar 配置可能看起来像这样：
@@ -879,6 +896,7 @@ scrape_configs:
 以下是从部署 Prometheus 集群到使用 Thanos 持久存储的完整步骤和实例代码：
 
 > 1.部署 Prometheus：首先，需要在的 Kubernetes 集群中部署 Prometheus。这可以通过使用 Helm chart、Operator 或者直接使用 Kubernetes manifest 来完成。以下是一个简单的 Prometheus 部署的 YAML 文件示例：
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1003,13 +1021,16 @@ scrape_configs:
       - 'my-service.example.com'
 ```
 持久化存储：Prometheus 默认将数据存储在本地磁盘上，但也可以配置 Prometheus 使用远程存储，如 S3、GCS 等。需要在 Prometheus 的配置文件中配置远程存储：
+
 ```yaml
 remote_write:
   - url: "http://my-remote-storage.example.com/write"
 remote_read:
   - url: "http://my-remote-storage.example.com/read"
 ```
+
 网络策略：可能需要配置网络策略来限制 Prometheus 的网络访问。例如，可以使用 Kubernetes 的 NetworkPolicy 来限制 Prometheus 只能访问特定的服务：
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
