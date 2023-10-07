@@ -256,7 +256,7 @@ func runServer(tracer opentracing.Tracer) {
 
 ## 5. 运行
 
-我假设你有一个 Go 1.7 的本地安装，以及一个正在运行的 Docker，我们将使用它来运行 Zipkin 服务器。
+我假设有一个 Go 1.7 的本地安装，以及一个正在运行的 Docker，我们将使用它来运行 Zipkin 服务器。
 
 演示项目使用[glide](https://github.com/Masterminds/glide)进行依赖管理，请先安装。例如，在 Mac OS 上，您可以执行以下操作：
 
@@ -288,7 +288,7 @@ Status: Downloaded newer image for openzipkin/zipkin:1.12.0
 da9353ac890e0c0b492ff4f52ff13a0dd12826a0b861a67cb044f5764195e005
 ```
 
-如果你没有 Docker，另一种运行 Zipkin 服务器的方法是直接从 jar 中：
+如果没有 Docker，另一种运行 Zipkin 服务器的方法是直接从 jar 中：
 
 ```
 $ wget -O zipkin.jar 'https://search.maven.org/remote_content?g=io.zipkin.java&a=zipkin-server&v=LATEST&c=exec' 

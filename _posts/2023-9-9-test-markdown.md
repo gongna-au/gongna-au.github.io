@@ -131,7 +131,7 @@ exit
 ```shell
 kubectl port-forward nginx-pod 4000:80
 ```
-这个命令的作用是在你的本地机器（kubectl 客户端）上创建一个到 nginx-pod 的 4000 到 80 的端口映射。这样你就可以通过访问本地的 4000 端口.虽然 YAML 文件中虽然没有明确指定 80 端口，但是 Nginx 服务器默认在 80 端口上运行，这是它的默认配置。
+这个命令的作用是在的本地机器（kubectl 客户端）上创建一个到 nginx-pod 的 4000 到 80 的端口映射。这样就可以通过访问本地的 4000 端口.虽然 YAML 文件中虽然没有明确指定 80 端口，但是 Nginx 服务器默认在 80 端口上运行，这是它的默认配置。
 
 > 访问测试
 
@@ -147,7 +147,7 @@ kubectl logs --follow nginx-pod
 ```shell
 kubectl logs  nginx-pod
 ```
-`kubectl logs --follow nginx-pod` 命令中的 `--follow` 参数使得命令不会立即返回，而是持续地输出 Pod 的日志，就像 `tail -f` 命令一样。当新的日志在 Pod 中生成时，这些日志会实时地在你的终端中显示。这对于跟踪和调试 Pod 的行为非常有用。如果不使用 `--follow` 参数，`kubectl logs` 命令只会打印出到目前为止已经生成的日志，然后命令就会返回。
+`kubectl logs --follow nginx-pod` 命令中的 `--follow` 参数使得命令不会立即返回，而是持续地输出 Pod 的日志，就像 `tail -f` 命令一样。当新的日志在 Pod 中生成时，这些日志会实时地在的终端中显示。这对于跟踪和调试 Pod 的行为非常有用。如果不使用 `--follow` 参数，`kubectl logs` 命令只会打印出到目前为止已经生成的日志，然后命令就会返回。
 
 
 > 在Pod的外部输入命令，让在Pod内部执行
@@ -157,7 +157,7 @@ kubectl exec nginx-pod -- ls
 ```
 `kubectl exec nginx-pod -- ls` 命令的作用是在名为 "nginx-pod" 的 Pod 中执行 `ls` 命令。
 
-在这里，`kubectl exec` 是执行命令的操作，`nginx-pod` 是你要在其中执行命令的 Pod 的名称，`--` 是一个分隔符，用于分隔 kubectl 命令的参数和你要在 Pod 中执行的命令，而 `ls` 是你要在 Pod 中执行的命令。
+在这里，`kubectl exec` 是执行命令的操作，`nginx-pod` 是要在其中执行命令的 Pod 的名称，`--` 是一个分隔符，用于分隔 kubectl 命令的参数和要在 Pod 中执行的命令，而 `ls` 是要在 Pod 中执行的命令。
 
 `ls` 命令是 Linux 中的一个常用命令，用于列出当前目录中的所有文件和目录。所以 `kubectl exec nginx-pod -- ls` 命令会打印出在 "nginx-pod" Pod 中的当前目录下的所有文件和目录。
 
@@ -787,7 +787,7 @@ curl   10.104.233.237:3000
 ```
 
 ClusterIP：通过集群的内部 IP 暴露服务，选择该值时服务只能够在集群内部访问。 这也是默认的 ServiceType。
-NodePort：通过每个节点上的 IP 和静态端口（NodePort）暴露服务。 NodePort 服务会路由到自动创建的 ClusterIP 服务。 通过请求 <节点 IP>:<节点端口>，你可以从集群的外部访问一个 NodePort 服务。
+NodePort：通过每个节点上的 IP 和静态端口（NodePort）暴露服务。 NodePort 服务会路由到自动创建的 ClusterIP 服务。 通过请求 <节点 IP>:<节点端口>，可以从集群的外部访问一个 NodePort 服务。
 LoadBalancer：使用云提供商的负载均衡器向外部暴露服务。 外部负载均衡器可以将流量路由到自动创建的 NodePort 服务和 ClusterIP 服务上。
 ExternalName：通过返回 CNAME 和对应值，可以将服务映射到 externalName 字段的内容（例如，foo.bar.example.com）。 无需创建任何类型代理。
 
@@ -815,11 +815,11 @@ spec:
     nodePort: 30000
 ```
 
-通过minikube 节点上的 IP 192.168.59.100 暴露服务。 NodePort 服务会路由到自动创建的 ClusterIP 服务。 通过请求 <节点 IP>:<节点端口> -- 192.168.59.100:30000，你可以从集群的外部访问一个 NodePort 服务，最终重定向到 hellok8s:v3 的 3000 端口。
+通过minikube 节点上的 IP 192.168.59.100 暴露服务。 NodePort 服务会路由到自动创建的 ClusterIP 服务。 通过请求 <节点 IP>:<节点端口> -- 192.168.59.100:30000，可以从集群的外部访问一个 NodePort 服务，最终重定向到 hellok8s:v3 的 3000 端口。
 
 ### LoadBalancer
 
-LoadBalancer 是使用云提供商的负载均衡器向外部暴露服务。 外部负载均衡器可以将流量路由到自动创建的 NodePort 服务和 ClusterIP 服务上，假如你在 AWS 的 EKS 集群上创建一个 Type 为 LoadBalancer 的 Service。它会自动创建一个 ELB (Elastic Load Balancer) ，并可以根据配置的 IP 池中自动分配一个独立的 IP 地址，可以供外部访问。
+LoadBalancer 是使用云提供商的负载均衡器向外部暴露服务。 外部负载均衡器可以将流量路由到自动创建的 NodePort 服务和 ClusterIP 服务上，假如在 AWS 的 EKS 集群上创建一个 Type 为 LoadBalancer 的 Service。它会自动创建一个 ELB (Elastic Load Balancer) ，并可以根据配置的 IP 池中自动分配一个独立的 IP 地址，可以供外部访问。
 
 
 ### Ingress
@@ -1027,7 +1027,7 @@ kubectl get pods -n dev
 
 例如不同环境的数据库的地址往往是不一样的，那么如果在代码中写同一个数据库的地址，就会出现问题。
 
-K8S 使用 ConfigMap 来将你的配置数据和应用程序代码分开，将非机密性的数据保存到键值对中。ConfigMap 在设计上不是用来保存大量数据的。在 ConfigMap 中保存的数据不可超过 1 MiB。如果你需要保存超出此尺寸限制的数据，你可能考虑挂载存储卷。
+K8S 使用 ConfigMap 来将的配置数据和应用程序代码分开，将非机密性的数据保存到键值对中。ConfigMap 在设计上不是用来保存大量数据的。在 ConfigMap 中保存的数据不可超过 1 MiB。如果需要保存超出此尺寸限制的数据，可能考虑挂载存储卷。
 > 编写需要从环境变量中读取数据的应用程序
 
 ```go
@@ -1265,7 +1265,7 @@ kubectl port-forward hellok8s-pod 3000:3000
 ### Job
 在实际的开发过程中，还有一类任务是之前的资源不能满足的，即一次性任务。例如常见的计算任务，只需要拿到相关数据计算后得出结果即可，无需一直运行。而处理这一类任务的资源就是 Job。
 
-一种简单的使用场景下，你会创建一个 Job 对象以便以一种可靠的方式运行某 Pod 直到完成。 当第一个 Pod 失败或者被删除（比如因为节点硬件失效或者重启）时，Job 对象会启动一个新的 Pod。
+一种简单的使用场景下，会创建一个 Job 对象以便以一种可靠的方式运行某 Pod 直到完成。 当第一个 Pod 失败或者被删除（比如因为节点硬件失效或者重启）时，Job 对象会启动一个新的 Pod。
 
 
 ```yaml
@@ -1308,11 +1308,11 @@ kubectl get pods
 kubectl logs -f  hello-job-2x9tm 
 ```
 
-Job 完成时不会再创建新的 Pod，不过已有的 Pod 通常也不会被删除。 保留这些 Pod 使得你可以查看已完成的 Pod 的日志输出，以便检查错误、警告或者其它诊断性输出。 可以使用 kubectl 来删除 Job（例如 kubectl delete -f hello-job.yaml)。当使用 kubectl 来删除 Job 时，该 Job 所创建的 Pod 也会被删除。
+Job 完成时不会再创建新的 Pod，不过已有的 Pod 通常也不会被删除。 保留这些 Pod 使得可以查看已完成的 Pod 的日志输出，以便检查错误、警告或者其它诊断性输出。 可以使用 kubectl 来删除 Job（例如 kubectl delete -f hello-job.yaml)。当使用 kubectl 来删除 Job 时，该 Job 所创建的 Pod 也会被删除。
 
 ### CronJob
 
-CronJob 用于执行周期性的动作，例如备份、报告生成等。 这些任务中的每一个都应该配置为周期性重复的（例如：每天/每周/每月一次）； 你可以定义任务开始执行的时间间隔。
+CronJob 用于执行周期性的动作，例如备份、报告生成等。 这些任务中的每一个都应该配置为周期性重复的（例如：每天/每周/每月一次）； 可以定义任务开始执行的时间间隔。
 
 ```text
 # ┌───────────── 分钟 (0 - 59)

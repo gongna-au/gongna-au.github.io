@@ -30,7 +30,7 @@ func CopyFile(dstName, srcName string) (written int64, err error) {
     return
 }
 //这有效，但有一个错误。如果对 os.Create 的调用失败，该函数将返回而不关闭源文件,但是可以通过在第二个return语句之前调用src.Close 来解决，但是如果函数更加的复杂，那么这个问题将不会轻易的被注意到，更加优雅的做法是，打开文件之后，我们在第一个return语句之后，（因为一旦返回，证明打开失败，就不需要关闭文件了）执行defer src.Close()来延迟关闭文件，它将会在第二个os.Create()语句失败之后，第二个语句return 语句返回之后执行关闭。
-//这也验证了那句话：一个defer语句推动一个函数调用的列表,保存的函数调用的列表，会在（周围）函数返回之后执行！！！这个周围二字你要慢慢体会，很精辟！！
+//这也验证了那句话：一个defer语句推动一个函数调用的列表,保存的函数调用的列表，会在（周围）函数返回之后执行！！！这个周围二字要慢慢体会，很精辟！！
 
 func CopyFile(dstName, srcName string) (written int64, err error) {
     src, err := os.Open(srcName)

@@ -14,7 +14,7 @@ service a调用 service b ，如果对service b 的调用失败，我们通常�
 retry 称为重试逻辑，开发人员通常在他们的代码库中有重试逻辑来处理这些类型的失败场景，这个逻辑可能在不同类型的
 服务和不同的编程语言。
 
-你在放弃之前重试了多少次，太多的重试逻辑在服务 a 和 b 之间造成的弊大于利怎么办？并且服务 b 必须具有关于
+在放弃之前重试了多少次，太多的重试逻辑在服务 a 和 b 之间造成的弊大于利怎么办？并且服务 b 必须具有关于
 如何处理身份验证的逻辑，所以代码库现在会增长并变得更加复杂 。我们可能还希望微服务之间的相互 tls 或 ssl 连接。我们可能不希望服务通过端口 80 进行通信，而是通过端口 443 安全地进行通信。这意味着：
 
 - 必须为每个服务颁发证书
@@ -61,7 +61,7 @@ service mesh的工作原理是它谨慎地将 proxy作为 sidecar 注入到每�
 
 
 我有 一个 kubernetes 文件夹，有一个带有自述文件的service mesh文件夹
-along in the service  我们将看一下 linkid 和 istio 。 现在的服务度量涵盖了我之前提到的各种功能，但是service mesh 的好处在于它不是你在cluster 集群中打开的东西。而是我建议
+along in the service  我们将看一下 linkid 和 istio 。 现在的服务度量涵盖了我之前提到的各种功能，但是service mesh 的好处在于它不是在cluster 集群中打开的东西。而是我建议
 
 - installing a service mesh 安装服务网格
 

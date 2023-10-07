@@ -171,7 +171,7 @@ func (s FactorString) Factor() string {
 	return string(s)
 }
 
-// 负载均衡器 Balancer 持有一组 Peers 然后实现Next函数，得到一个后端节点和Constrainable（目前先当作没有看到它叭～） 当你身为调度者时，想要调用 Next，却没有什么合适的“因素”提供的话，就提供 DummyFactor 好了。
+// 负载均衡器 Balancer 持有一组 Peers 然后实现Next函数，得到一个后端节点和Constrainable（目前先当作没有看到它叭～） 当身为调度者时，想要调用 Next，却没有什么合适的“因素”提供的话，就提供 DummyFactor 好了。
 type BalancerLite interface {
 	Next(factor Factor) (next Peer, c Constrainable)
 }
@@ -1091,7 +1091,7 @@ func adder(key Balancer.Peer, c Balancer.Constrainable, sum map[Balancer.Peer]in
 
 ```
 
-> 在早些年，没有区分微服务和单体应用的那些年，Hash 算法的负载均衡常常被当作神器，因为 session 保持经常是一个服务无法横向增长的关键因素，(这里就涉及到 Session 同步使得服务器可以横向扩展)而针对用户的 session-id 的 hash 值进行调度分配时，就能保证同样 session-id 的来源用户的 session 总是落到某一确定的后端服务器，从而确保了其 session 总是有效的。在 Hash 算法被扩展之后，很明显，可以用 客户端 IP 值，主机名，url 或者无论什么你想得到的东西去做 hash 计算，只要得到了 hashCode，就可以应用 Hash 算法了。而像诸如客户端 IP，客户端主机名之类的标识由于其相同的 hashCode 的原因，所以对应的后端 peer 也能保持一致，这就是 session 年代 hash 算法显得重要的原因。
+> 在早些年，没有区分微服务和单体应用的那些年，Hash 算法的负载均衡常常被当作神器，因为 session 保持经常是一个服务无法横向增长的关键因素，(这里就涉及到 Session 同步使得服务器可以横向扩展)而针对用户的 session-id 的 hash 值进行调度分配时，就能保证同样 session-id 的来源用户的 session 总是落到某一确定的后端服务器，从而确保了其 session 总是有效的。在 Hash 算法被扩展之后，很明显，可以用 客户端 IP 值，主机名，url 或者无论什么想得到的东西去做 hash 计算，只要得到了 hashCode，就可以应用 Hash 算法了。而像诸如客户端 IP，客户端主机名之类的标识由于其相同的 hashCode 的原因，所以对应的后端 peer 也能保持一致，这就是 session 年代 hash 算法显得重要的原因。
 
 > session 同步
 
@@ -1107,7 +1107,7 @@ web 集群时 session 同步的 3 种方法
 
 2.利用 cookie 同步 session
 
-**把 session 存在 cookie 里面里面** : session 是文件的形势存放在服务器端的，cookie 是文件的形势存在客户端的，怎么实现同步呢？方法很简单，就是把用户访问页面产生的 session 放到 cookie 里面，就是以 cookie 为中转站。你访问 web 服务器 A，产生了 session 把它放到 cookie 里面了，你访问被分配到 web 服务器 B，这个时候，web 服务器 B 先判断服务器有没有这个 session，如果没有，在去看看客户端的 cookie 里面有没有这个 session，如果也没有，说明 session 真的不存，如果 cookie 里面有，就把 cookie 里面的 sessoin 同步到 web 服务器 B，这样就可以实现 session 的同步了。
+**把 session 存在 cookie 里面里面** : session 是文件的形势存放在服务器端的，cookie 是文件的形势存在客户端的，怎么实现同步呢？方法很简单，就是把用户访问页面产生的 session 放到 cookie 里面，就是以 cookie 为中转站。访问 web 服务器 A，产生了 session 把它放到 cookie 里面了，访问被分配到 web 服务器 B，这个时候，web 服务器 B 先判断服务器有没有这个 session，如果没有，在去看看客户端的 cookie 里面有没有这个 session，如果也没有，说明 session 真的不存，如果 cookie 里面有，就把 cookie 里面的 sessoin 同步到 web 服务器 B，这样就可以实现 session 的同步了。
 
 说明：这种方法实现起来简单，方便，也不会加大数据库的负担，但是如果客户端把 cookie 禁掉了的话，那么 session 就无从同步了，这样会给网站带来损失；cookie 的安全性不高，虽然它已经加了密，但是还是可以伪造的。
 

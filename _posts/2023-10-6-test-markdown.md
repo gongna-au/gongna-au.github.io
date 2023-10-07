@@ -17,7 +17,7 @@ Gin 的主要特性包括：
 #### 中间件
 中间件支持：Gin 有一个中间件框架，可以处理 HTTP 请求的入口和出口。用户可以定义自己的中间件。
 
-在 Gin 中，中间件是一种函数，它可以在处理 HTTP 请求的过程中执行一些额外的操作，比如日志记录、用户验证、数据预处理等。中间件函数在 Gin 中是通过 gin.HandlerFunc 类型来定义的，它接受一个 gin.Context 参数，你可以用这个参数来控制 HTTP 请求的输入和输出。
+在 Gin 中，中间件是一种函数，它可以在处理 HTTP 请求的过程中执行一些额外的操作，比如日志记录、用户验证、数据预处理等。中间件函数在 Gin 中是通过 gin.HandlerFunc 类型来定义的，它接受一个 gin.Context 参数，可以用这个参数来控制 HTTP 请求的输入和输出。
 
 下面是一个中间件的例子，这个中间件会记录每个请求的处理时间：
 
@@ -34,8 +34,8 @@ func AuthMiddleware() gin.HandlerFunc {
             return
         }
 
-        // 解析 Token，这里假设你有一个名为 parseToken 的函数来进行解析
-        // 你需要替换成你实际的解析函数
+        // 解析 Token，这里假设有一个名为 parseToken 的函数来进行解析
+        // 需要替换成实际的解析函数
         user, err := parseToken(token)
         if err != nil {
             c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
@@ -58,16 +58,16 @@ func AuthMiddleware() gin.HandlerFunc {
 
 #### gin.Context
 
-gin.Context 是 Gin 框架中的一个关键类型，它封装了 Go net/http 中的 Request 和 ResponseWriter，并提供了许多用于 HTTP 请求处理和响应的便捷方法。例如，你可以使用 gin.Context 来读取请求参数，设置响应状态码，写入响应头和响应体等。
+gin.Context 是 Gin 框架中的一个关键类型，它封装了 Go net/http 中的 Request 和 ResponseWriter，并提供了许多用于 HTTP 请求处理和响应的便捷方法。例如，可以使用 gin.Context 来读取请求参数，设置响应状态码，写入响应头和响应体等。
 
 
 #### context.Context
 
 context.Context 是 Go 标准库中的一个接口类型，它用于跨 API 边界和协程之间传递 deadline、取消信号和其他请求相关的值。主要应用在同步操作如服务器的请求处理，以及并发操作如 goroutine 之间的同步等场景。
 
-这两个上下文在设计和使用上是互补的。在处理 HTTP 请求时，你可能会在 gin.Context 中使用 context.Context，以便传递跨请求的数据或者在需要的时候取消某些操作。
+这两个上下文在设计和使用上是互补的。在处理 HTTP 请求时，可能会在 gin.Context 中使用 context.Context，以便传递跨请求的数据或者在需要的时候取消某些操作。
 
-具体来说，gin.Context 中实际上也有一个 context.Context，你可以通过 gin.Context 的 Request.Context() 方法获取到。你也可以通过 gin.Context 的 Copy() 方法获取到一个包含 gin.Context 所有数据的 context.Context，但这个 context.Context 并不能用来取消操作，所以通常更推荐使用 Request.Context()。
+具体来说，gin.Context 中实际上也有一个 context.Context，可以通过 gin.Context 的 Request.Context() 方法获取到。也可以通过 gin.Context 的 Copy() 方法获取到一个包含 gin.Context 所有数据的 context.Context，但这个 context.Context 并不能用来取消操作，所以通常更推荐使用 Request.Context()。
 
 ```go
 package main
@@ -117,7 +117,7 @@ JSON 验证：Gin 可以方便地进行 JSON、XML 和 HTML 渲染。
 
 **多路复用 (Multiplexing)**
 
-HTTP/2的多路复用允许多个请求和响应在同一个TCP连接上并行交换。在HTTP/1.x中，如果你想并行发送多个请求，你需要使用多个TCP连接。这可能会导致效率低下的TCP连接使用，尤其是在高延迟环境中。但在HTTP/2中，因为多个请求可以在同一个TCP连接上并行发送，所以它可以更有效地使用TCP连接，提高性能。
+HTTP/2的多路复用允许多个请求和响应在同一个TCP连接上并行交换。在HTTP/1.x中，如果想并行发送多个请求，需要使用多个TCP连接。这可能会导致效率低下的TCP连接使用，尤其是在高延迟环境中。但在HTTP/2中，因为多个请求可以在同一个TCP连接上并行发送，所以它可以更有效地使用TCP连接，提高性能。
 
 此外，多路复用还解决了HTTP/1.x中的"队头阻塞"问题。在HTTP/1.x中，由于同一个TCP连接上的请求必须按顺序响应，所以一个缓慢的请求可能会阻塞后面的请求，即使后面的请求已经准备好发送了。而在HTTP/2中，因为响应可以在同一个连接上并行发送，所以一个缓慢的请求不会阻塞其他请求。
 

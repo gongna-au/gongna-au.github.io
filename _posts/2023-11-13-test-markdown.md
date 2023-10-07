@@ -219,7 +219,7 @@ Execute(sql string, maxRows int) 方法是对 directConnection.Execute() 的直�
 
 ```go
 // ResourcePool allows you to use a pool of resources.
-// ResourcePool允许你使用各种资源池，需要根据提供的factory创建特定的资源，比如连接
+// ResourcePool允许使用各种资源池，需要根据提供的factory创建特定的资源，比如连接
 type ResourcePool struct {
 	resources   chan resourceWrapper
 	factory     Factory
@@ -627,7 +627,7 @@ type Resource interface {
 }
 
 // ResourcePool allows you to use a pool of resources.
-// ResourcePool允许你使用各种资源池，需要根据提供的factory创建特定的资源，比如连接
+// ResourcePool允许使用各种资源池，需要根据提供的factory创建特定的资源，比如连接
 type ResourcePool struct {
 	resources   chan resourceWrapper
 	factory     Factory

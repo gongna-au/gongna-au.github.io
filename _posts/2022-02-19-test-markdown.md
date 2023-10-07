@@ -29,4 +29,4 @@ Model提供数据，View负责显示，Controller/Presenter负责逻辑的处理
 
 MVVM 模式将 Presenter 改名为 ViewModel，基本上与 MVP 模式完全一致.唯一的区别是，它采用双向绑定（data-binding）：View的变动，自动反映在 ViewModel，反之亦然;
 
-这种模式跟经典的MVP（Model-View-Presenter）模式很相似，除了你需要一个为View量身定制的model，这个model就是ViewModel.ViewModel包含所有由UI特定的接口和属性，并由一个 ViewModel 的视图的绑定属性，并可获得二者之间的松散耦合，所以需要在ViewModel 直接更新视图中编写相应代码.数据绑定系统还支持提供了标准化的方式传输到视图的验证错误的输入的验证.
+这种模式跟经典的MVP（Model-View-Presenter）模式很相似，除了需要一个为View量身定制的model，这个model就是ViewModel.ViewModel包含所有由UI特定的接口和属性，并由一个 ViewModel 的视图的绑定属性，并可获得二者之间的松散耦合，所以需要在ViewModel 直接更新视图中编写相应代码.数据绑定系统还支持提供了标准化的方式传输到视图的验证错误的输入的验证.

@@ -68,7 +68,7 @@ message HelloReply {
 
 ### 基本数据类型
 
-在生成了对应语言的 proto 文件后，需要注意的是 protobuf 所生成出来的数据类型并非与原始的类型完全一致，因此你需要有一个基本的了解，下面是我列举了的一些常见的类型映射，如下表：
+在生成了对应语言的 proto 文件后，需要注意的是 protobuf 所生成出来的数据类型并非与原始的类型完全一致，因此需要有一个基本的了解，下面是我列举了的一些常见的类型映射，如下表：
 
 | .proto Type | C++ Type | Java Type  | Go Type | PHP Type       |
 | ----------- | -------- | ---------- | ------- | -------------- |
@@ -233,7 +233,7 @@ var fileDescriptor_4d53fe9c48eadaad = []byte{
 }
 ```
 
-`fileDescriptor_4d53fe9c48eadaad` 表示的是一个经过编译后的 proto 文件，是对 proto 文件的整体描述，其包含了 proto 文件名、引用（import）内容、包（package）名、选项设置、所有定义的消息体（message）、所有定义的枚举（enum）、所有定义的服务（ service）、所有定义的方法（rpc method）等等内容，可以认为就是整个 proto 文件的信息你都能够取到。
+`fileDescriptor_4d53fe9c48eadaad` 表示的是一个经过编译后的 proto 文件，是对 proto 文件的整体描述，其包含了 proto 文件名、引用（import）内容、包（package）名、选项设置、所有定义的消息体（message）、所有定义的枚举（enum）、所有定义的服务（ service）、所有定义的方法（rpc method）等等内容，可以认为就是整个 proto 文件的信息都能够取到。
 
 同时在我们的每一个 Message Type 中都包含了 Descriptor 方法，Descriptor 代指对一个消息体（message）定义的描述，而这一个方法则会在 fileDescriptor 中寻找属于自己 Message Field 所在的位置再进行返回，如下：
 
@@ -326,7 +326,7 @@ message HelloRequest {
 
 ### Oneof
 
-如果你希望你的消息体可以包含多个字段，但前提条件是最多同时只允许设置一个字段，那么就可以使用 oneof 关键字来实现这个功能，如下：
+如果希望的消息体可以包含多个字段，但前提条件是最多同时只允许设置一个字段，那么就可以使用 oneof 关键字来实现这个功能，如下：
 
 ```
 message HelloRequest {
@@ -388,7 +388,7 @@ func init() {
 }
 ```
 
-我们下述的调用方法都是在 `server` 目录下的 server.go 和 `client` 目录的 client.go 中完成，需要注意的该两个文件的 package 名称应该为 main（IDE 默认会创建与目录名一致的 package 名称），这样子你的 main 方法才能够被调用，并且在**本章中我们的 proto 引用都会以引用别名 pb 来进行调用**。
+我们下述的调用方法都是在 `server` 目录下的 server.go 和 `client` 目录的 client.go 中完成，需要注意的该两个文件的 package 名称应该为 main（IDE 默认会创建与目录名一致的 package 名称），这样子的 main 方法才能够被调用，并且在**本章中我们的 proto 引用都会以引用别名 pb 来进行调用**。
 
 ###  Unary RPC：一元 RPC
 
@@ -419,7 +419,7 @@ func main() {
 }
 ```
 
-- **创建 gRPC Server 对象，你可以理解为它是 Server 端的抽象对象。**
+- **创建 gRPC Server 对象，可以理解为它是 Server 端的抽象对象。**
 - **将 GreeterServer（其包含需要被调用的服务端接口）注册到 gRPC Server。 的内部注册中心。这样可以在接受到请求时，通过内部的 “服务发现”，发现该服务端接口并转接进行逻辑处理。**
 - **创建 Listen，监听 TCP 端口。**
 - **gRPC Server 开始 lis.Accept，直到 Stop 或 GracefulStop。**
@@ -455,7 +455,7 @@ What is important?
   ```
 
 - ```
-  pb.RegisterGreetServer() 不仅需要一个grpc.NewServer()服务端，还需要你自己抽象出的服务端，&GreeterServer{}
+  pb.RegisterGreetServer() 不仅需要一个grpc.NewServer()服务端，还需要自己抽象出的服务端，&GreeterServer{}
   ```
 
 ### Server-side streaming RPC：服务端流式 RPC

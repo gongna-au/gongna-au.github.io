@@ -233,7 +233,7 @@ RFT脚本支持不同的任务，包括自动化测试执行、数据操纵、�
 
 #### Part 3 - Record script
 
-你好！我很乐意帮助您使用 IBM RFT 8.5 录制脚本。以下是步骤：
+好！我很乐意帮助您使用 IBM RFT 8.5 录制脚本。以下是步骤：
 
 1. 打开 IBM RFT 并通过选择 File > New > Test Script 创建一个新的测试脚本。
 2. 在对象查找器窗格中，选择要记录交互的应用程序或网页。
@@ -501,7 +501,7 @@ TestObject loginButton = find("loginButton");
    String varName = testObject().getProperty(".text").toString();
    ```
 
-   在这个例子中，“varName”是你想要保存文本值的变量名，而“testObject()”是你之前从Object Map中选择的应用程序对象。
+   在这个例子中，“varName”是想要保存文本值的变量名，而“testObject()”是之前从Object Map中选择的应用程序对象。
 
 7. 运行测试脚本并观察输出结果。变量"varName"中将包含选定对象的文本内容。
 
@@ -537,7 +537,7 @@ TestObject loginButton = find("loginButton");
 
 5. 运行测试脚本并观察输出结果。根据正则表达式是否与相应对象属性相匹配，输出应显示文本。
 
-在上面的代码片段中，“regex”是你定义的正则表达式字符串，而“testPropertyValue”是你想要测试的属性值。在这种情况下，“textMatches”变量将存储一个布尔值，指示对象属性是否与正则表达式匹配。
+在上面的代码片段中，“regex”是定义的正则表达式字符串，而“testPropertyValue”是想要测试的属性值。在这种情况下，“textMatches”变量将存储一个布尔值，指示对象属性是否与正则表达式匹配。
 
 需要注意的是，在使用正则表达式时，请确保在字符串中进行适当的转义和转义字符处理，以便有效地捕获特殊字符和模式匹配。
 

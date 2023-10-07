@@ -21,7 +21,7 @@ Kubernetes 正迅速成为在云中部署和管理软件的新标准。然而，
 
 A node is the smallest unit of computing hardware in Kubernetes. It is a representation of a single machine in your cluster. In most production systems, a node will likely be either a physical machine in a datacenter, or virtual machine hosted on a cloud provider like Google Cloud Platform Don’t let conventions limit you, however; in theory, you can make a node out of almost anything
 
-节点 是 Kubernetes 中计算硬件的最小单位。它是集群中单台机器的表示。在大多数生产系统中，节点可能是数据中心中的物理机，或者是托管在像 Google Cloud Platform 这样的云提供商上的虚拟机。但是，不要让约定限制您；理论上，你几乎可以用任何东西制作一个节点。
+节点 是 Kubernetes 中计算硬件的最小单位。它是集群中单台机器的表示。在大多数生产系统中，节点可能是数据中心中的物理机，或者是托管在像 Google Cloud Platform 这样的云提供商上的虚拟机。但是，不要让约定限制您；理论上，几乎可以用任何东西制作一个节点。
 
 Thinking of a machine as a “node” allows us to insert a layer of abstraction. Now, instead of worrying about the unique characteristics of any individual machine, we can instead simply view each machine as a set of CPU and RAM resources that can be utilized. In this way, any machine can substitute any other machine in a Kubernetes cluster.
 

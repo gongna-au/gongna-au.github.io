@@ -28,7 +28,7 @@ https://github.com/gongna-au/dubbo-go-pixiu.git
 git clone https://github.com/gongna-au/dubbo-go-pixiu.git
 ```
 
-> 不是你`要`fork的仓库，而是你fork到自己账户的仓库
+> 不是`要`fork的仓库，而是fork到自己账户的仓库
 
 ### 3.切一个新的开发分支
 
@@ -98,7 +98,7 @@ upstream        https://github.com/apache/dubbo-go-pixiu.git (push)
 
 ### 7.从上游仓库获取最新的代码
 
-确定好你修改好的代码是想要合并到上游仓库的哪个分支（一般开源仓库都是有很多的分支， 但你需要合并的往往只是特定的一个分支）
+确定好修改好的代码是想要合并到上游仓库的哪个分支（一般开源仓库都是有很多的分支， 但需要合并的往往只是特定的一个分支）
 
 这里选择我要合并的上游分支develop
 

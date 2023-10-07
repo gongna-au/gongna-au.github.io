@@ -548,7 +548,7 @@ distance(1, 2) + distance(1, 3) + distance(1, 4) + distance(1, 5) + distance(1, 
   4   5   6
      / \
     7   8
-    请你向这样画图让我理解
+    请向这样画图让我理解
      nodeNum[root] += nodeNum[v] + 1
     distSum[root] += distSum[v] + nodeNum[v] + 1
 
@@ -707,7 +707,7 @@ func DFS(root int ,father int){
 
        nodeNum[root] += nodeNum[v] + 1
        distSum[root] += distSum[v] + nodeNum[v] + 1
-       请你列出每个点对应的nodeNum和distSum
+       请列出每个点对应的nodeNum和distSum
        // 1 0
        // 2 1
        // 3 1
@@ -731,7 +731,7 @@ func DFS2(root int,father int){
     }
 }
 
-请你列出在DFS以及DFS2过程中nodeNum 以及 distSum
+请列出在DFS以及DFS2过程中nodeNum 以及 distSum
 ```
 
 ```text
@@ -941,7 +941,7 @@ func abs( a int) int{
 
 省份 是一组直接或间接相连的城市，组内不含其他没有相连的城市。
 
-给你一个 n x n 的矩阵 isConnected ，其中 isConnected[i][j] = 1 表示第 i 个城市和第 j 个城市直接相连，而 isConnected[i][j] = 0 表示二者不直接相连。
+给一个 n x n 的矩阵 isConnected ，其中 isConnected[i][j] = 1 表示第 i 个城市和第 j 个城市直接相连，而 isConnected[i][j] = 0 表示二者不直接相连。
 
 返回矩阵中 省份 的数量。/*
 

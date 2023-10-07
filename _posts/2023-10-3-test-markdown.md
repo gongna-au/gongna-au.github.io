@@ -47,7 +47,7 @@ http_requests_total{method="GET",status="200"} = 1000
 http_requests_total{method="POST",status="200"} = 500
 http_requests_total{method="GET",status="500"} = 20
 ```
-这些**数据点**都属于**http_requests_total**这个指标，但是每一个都记录了不同的HTTP请求类型（GET或POST）和状态码（200或500）的请求总数。如果你直接查询http_requests_total，Prometheus会返回所有这些不同的数据点。
+这些**数据点**都属于**http_requests_total**这个指标，但是每一个都记录了不同的HTTP请求类型（GET或POST）和状态码（200或500）的请求总数。如果直接查询http_requests_total，Prometheus会返回所有这些不同的数据点。
 
 ##### 时间序列
 
@@ -55,15 +55,15 @@ http_requests_total{method="GET",status="500"} = 20
 
 在Prometheus中，每个时间序列数据都有两个主要的组成部分：指标名称和标签。
 
-指标名称（Metric Name）：这是用来描述所观察或测量数据的名称。比如，你可能有一个名为http_requests_total的指标，它用来记录你的服务器收到的HTTP请求的总数。
+指标名称（Metric Name）：这是用来描述所观察或测量数据的名称。比如，可能有一个名为http_requests_total的指标，它用来记录的服务器收到的HTTP请求的总数。
 
-标签（Labels）：标签是键值对，用来进一步描述你的指标。比如，你的http_requests_total指标可能有一个名为method的标签，其值可能是GET，POST等，用以区分不同类型的HTTP请求。你还可以有另一个名为status的标签，其值可能是200，404等，以区分返回的HTTP状态代码。
+标签（Labels）：标签是键值对，用来进一步描述的指标。比如，的http_requests_total指标可能有一个名为method的标签，其值可能是GET，POST等，用以区分不同类型的HTTP请求。还可以有另一个名为status的标签，其值可能是200，404等，以区分返回的HTTP状态代码。
 
 > 并不是每分钟都新建一个http_requests_total{method="GET", status="200"}指标。而是有一个http_requests_total{method="GET", status="200"}指标存在，它的值会随着收到满足条件的HTTP请求而递增，而Prometheus每分钟读取一次这个值，并将读取的值作为一个新的数据点存储到TSDB中。
 
 > 每一个这样的数据点包括两个部分：一个时间戳（表示这个值是何时读取的），和一个值（表示在该时间戳时，该指标的值是多少）。这样一系列的数据点就构成了一个时间序列。
 
-每个时间序列数据由指标名称和标签的组合唯一标识。例如，你可能有以下两个时间序列：
+每个时间序列数据由指标名称和标签的组合唯一标识。例如，可能有以下两个时间序列：
 
 ```shell
 http_requests_total{method="GET", status="200"}
@@ -116,22 +116,22 @@ http_requests_total{method="POST", status="404"}
 #### PromQL数据类型
 
 
-Instant vector（即时向量）：即时向量是指在某一个特定的时间点，所有时间序列的值的集合。比如，如果你有一个监控CPU使用率的指标，那么在某一特定时间点（比如现在），所有CPU的使用率就构成一个即时向量。
+Instant vector（即时向量）：即时向量是指在某一个特定的时间点，所有时间序列的值的集合。比如，如果有一个监控CPU使用率的指标，那么在某一特定时间点（比如现在），所有CPU的使用率就构成一个即时向量。
 
 例子：`http_requests_total` 这个表达式返回的就是一个即时向量，包含了所有时刻下的"http_requests_total"的时间序列的最新值。
 
-在Prometheus中，http_requests_total是一个指标，它的每一个实例（也就是具有不同标签组合的数据点）都记录了相应实例的HTTP请求总数。例如，你可能有这样的数据点：
+在Prometheus中，http_requests_total是一个指标，它的每一个实例（也就是具有不同标签组合的数据点）都记录了相应实例的HTTP请求总数。例如，可能有这样的数据点：
 
 ```lua
 http_requests_total{method="GET",status="200"} = 1000
 http_requests_total{method="POST",status="200"} = 500
 http_requests_total{method="GET",status="500"} = 20
 ```
-这些数据点都属于http_requests_total这个指标，但是每一个都记录了不同的HTTP请求类型（GET或POST）和状态码（200或500）的请求总数。如果你直接查询http_requests_total，Prometheus会返回所有这些不同的数据点。
+这些数据点都属于http_requests_total这个指标，但是每一个都记录了不同的HTTP请求类型（GET或POST）和状态码（200或500）的请求总数。如果直接查询http_requests_total，Prometheus会返回所有这些不同的数据点。
 
-然而，如果你想要获取系统中所有HTTP请求的总数，你需要把所有这些不同的数据点加起来。这就是为什么你需要sum(http_requests_total)。sum函数会将所有具有相同指标名称但具有不同标签组合的数据点值相加，得到一个总的请求数量。
+然而，如果想要获取系统中所有HTTP请求的总数，需要把所有这些不同的数据点加起来。这就是为什么需要sum(http_requests_total)。sum函数会将所有具有相同指标名称但具有不同标签组合的数据点值相加，得到一个总的请求数量。
 
-Range vector（范围向量）：范围向量是指在某一个时间范围内，所有时间序列的值的集合。比如，你可能想看过去5分钟内，所有CPU的使用率，那么你得到的就是一个范围向量。
+Range vector（范围向量）：范围向量是指在某一个时间范围内，所有时间序列的值的集合。比如，可能想看过去5分钟内，所有CPU的使用率，那么得到的就是一个范围向量。
 
 例子：`http_requests_total[5m]` 这个表达式返回的就是一个范围向量，它包含了过去5分钟内所有"http_requests_total"的时间序列的值。
 
@@ -169,9 +169,9 @@ sum(rate(http_requests_total{status_code=~"5.."}[1h])) / sum(rate(http_requests_
 
 在Prometheus中，rate()函数是用来计算一个范围向量（range vector）在指定的时间范围内的平均增长率的。它返回的结果是一个即时向量（instant vector），即在最近的时间点上的值。
 
-如果你直接使用sum(http_requests_total{status_code=~"5.."}[1h]) / sum(http_requests_total[1h])，那么你将试图将一个范围向量除以另一个范围向量，这在Prometheus的数据模型中是不被允许的。
+如果直接使用sum(http_requests_total{status_code=~"5.."}[1h]) / sum(http_requests_total[1h])，那么将试图将一个范围向量除以另一个范围向量，这在Prometheus的数据模型中是不被允许的。
 
-而将rate()函数应用于每一个范围向量，你会得到在过去一小时内每秒钟HTTP 5xx错误的平均增长率，以及每秒钟所有HTTP请求的平均增长率。将这两个结果相除，你就能得到过去一小时内每秒钟的HTTP错误率，这是一个合理和有用的指标。
+而将rate()函数应用于每一个范围向量，会得到在过去一小时内每秒钟HTTP 5xx错误的平均增长率，以及每秒钟所有HTTP请求的平均增长率。将这两个结果相除，就能得到过去一小时内每秒钟的HTTP错误率，这是一个合理和有用的指标。
 
 所以我们需要将rate()函数应用于这两个范围向量，然后将结果相除，才能正确地计算出过去一小时内的HTTP错误率。
 

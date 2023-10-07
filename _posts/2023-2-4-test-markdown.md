@@ -154,7 +154,7 @@ mysql> select count(*) from tradelog where month(t_modified)=7;
 
 对索引字段做函数操作，可能会破坏索引值的有序性，因此优化器就决定放弃走树搜索功能,优化器可以选择遍历主键索引，也可以选择遍历索引 t_modified，优化器对比索引大小后发现，索引 t_modified 更小，遍历这个索引比遍历主键索引来得更快。因此最终还是会选择索引 t_modified。
 
-对于 `select * from tradelog where id + 1 = 10000`这个 SQL 语句，这个加 1 操作并不会改变有序性，但是 MySQL 优化器还是不能用 id 索引快速定位到 9999 这一行。所以，需要你在写 SQL 语句的时候，手动改写成 where id = 10000 -1 才可以。
+对于 `select * from tradelog where id + 1 = 10000`这个 SQL 语句，这个加 1 操作并不会改变有序性，但是 MySQL 优化器还是不能用 id 索引快速定位到 9999 这一行。所以，需要在写 SQL 语句的时候，手动改写成 where id = 10000 -1 才可以。
 
 ### 隐式类型转化
 
@@ -248,7 +248,7 @@ show processlist;
 select * from information_schema.innodb_trx \G
 ```
 
-information_schema.innodb_trx 查询事务状态.trx_mysql_thread_id=4，表示 id=4 的线程还处在事务中。因此，如果是连接数过多，你可以优先断开事务外空闲太久的连接；如果这样还不够，再考虑断开事务内空闲太久的连接。
+information_schema.innodb_trx 查询事务状态.trx_mysql_thread_id=4，表示 id=4 的线程还处在事务中。因此，如果是连接数过多，可以优先断开事务外空闲太久的连接；如果这样还不够，再考虑断开事务内空闲太久的连接。
 
 #### 慢查询的问题
 
@@ -260,7 +260,7 @@ MySQL 选错了索引。
 
 语句错误（语句重写）：
 
-比如，语句被错误地写成了 `select * from t where id + 1 = 10000`，你可以通过下面的方式，增加一个语句改写规则。
+比如，语句被错误地写成了 `select * from t where id + 1 = 10000`，可以通过下面的方式，增加一个语句改写规则。
 
 ```sql
 mysql> insert into query_rewrite.rewrite_rules(pattern, replacement, pattern_database) values ("select * from t where id + 1 = ?", "select * from t where id = ? - 1", "db1");

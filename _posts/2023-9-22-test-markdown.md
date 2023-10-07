@@ -9,13 +9,13 @@ comments: true
 ## 容器术语解析
 容器（Container）：容器是一种轻量级、可移植、自包含的软件包装方式，它包含了运行一个软件所需要的所有内容，包括代码、运行时环境、库、环境变量和配置文件。
 
-镜像（Image）：镜像是创建容器的模板，它是一个只读的文件，包含了运行一个容器所需要的代码以及依赖的环境。你可以把它理解为容器的“蓝图”。
+镜像（Image）：镜像是创建容器的模板，它是一个只读的文件，包含了运行一个容器所需要的代码以及依赖的环境。可以把它理解为容器的“蓝图”。
 
 容器镜像（Container Image）：这是“镜像”和“容器”两个概念的结合，指的是用来创建容器的镜像。
 
 镜像层（Image Layer）：Docker使用联合文件系统（Union File System）来构建一个镜像，每一层都是只读的，每一层都代表镜像构建过程的一部分。每一层都会增加镜像的大小。
 
-注册中心（Registry）：注册中心是存储镜像的地方。Docker Hub是最常用的公开注册中心，你也可以设置私有注册中心。
+注册中心（Registry）：注册中心是存储镜像的地方。Docker Hub是最常用的公开注册中心，也可以设置私有注册中心。
 
 仓库（Repository）：在特定的注册中心中，仓库是用来存储和组织镜像的地方。一个仓库可以包含多个版本的同一个镜像，每个版本都有一个不同的标签。
 
@@ -93,13 +93,13 @@ Docker可以使用NFS卷来挂载NFS共享到容器中，这样可以让容器�
 
 以下是使用Docker NFS卷来挂载NFS共享到容器的步骤：
 
-首先，你需要在宿主机上安装NFS客户端。在Ubuntu上，你可以使用以下命令来安装：
+首先，需要在宿主机上安装NFS客户端。在Ubuntu上，可以使用以下命令来安装：
 
 ```shell
 sudo apt-get update
 sudo apt-get install nfs-common
 ```
-然后，你需要创建一个Docker卷来挂载NFS共享。你可以使用docker volume create命令来创建一个NFS卷：
+然后，需要创建一个Docker卷来挂载NFS共享。可以使用docker volume create命令来创建一个NFS卷：
 
 ```
 docker volume create --driver local \
@@ -108,16 +108,16 @@ docker volume create --driver local \
     --opt device=:/path/to/dir \
     nfs_volume
 ```
-这个命令会创建一个名为`nfs_volume`的Docker卷，这个卷会挂载NFS服务器上的`/path/to/dir`目录。你需要将nfs_server和/path/to/dir替换为实际的NFS服务器地址和目录。
+这个命令会创建一个名为`nfs_volume`的Docker卷，这个卷会挂载NFS服务器上的`/path/to/dir`目录。需要将nfs_server和/path/to/dir替换为实际的NFS服务器地址和目录。
 
-最后，你可以在创建容器时使用-v参数来挂载这个NFS卷：
+最后，可以在创建容器时使用-v参数来挂载这个NFS卷：
 
 ```shell
 docker run -d -v nfs_volume:/data some_image
 ```
 这个命令会启动一个新的容器，这个容器会挂载nfs_volume卷到/data目录。容器中的应用可以通过/data目录来访问NFS共享中的文件和目录。
 
-这样做的原因是，使用NFS卷可以让容器直接访问NFS共享中的文件和目录，而不需要将这些文件和目录复制到容器中。这样可以让多个容器共享同一份数据，或者让容器和宿主机共享数据。此外，使用NFS卷还可以让你在不修改容器的情况下，动态地改变容器可以访问的文件和目录。
+这样做的原因是，使用NFS卷可以让容器直接访问NFS共享中的文件和目录，而不需要将这些文件和目录复制到容器中。这样可以让多个容器共享同一份数据，或者让容器和宿主机共享数据。此外，使用NFS卷还可以让在不修改容器的情况下，动态地改变容器可以访问的文件和目录。
 
 
 

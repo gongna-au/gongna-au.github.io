@@ -23,9 +23,9 @@ comments: true
 ```shell
 echo 'export PATH="/opt/homebrew/opt/node@18/bin:$PATH"' >> ~/.zshrc
 ```
-此命令将 export PATH=... 添加到你的 ~/.zshrc 文件中，以确保 node@18 的二进制文件在你的路径中优先被找到。
+此命令将 export PATH=... 添加到的 ~/.zshrc 文件中，以确保 node@18 的二进制文件在的路径中优先被找到。
 
-另外，为了让编译器能找到 node@18，你可能需要设置以下环境变量：
+另外，为了让编译器能找到 node@18，可能需要设置以下环境变量：
 
 
 ```shell
@@ -37,7 +37,7 @@ export CPPFLAGS="-I/opt/homebrew/opt/node@18/include"
 
 
 ## 更换Homebrew的镜像源
-你可以通过以下步骤来更换Homebrew的镜像源：
+可以通过以下步骤来更换Homebrew的镜像源：
 1. **更换Homebrew的formula源**：
 
 ```shell
@@ -49,7 +49,7 @@ git remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew
 
 1. **更换Homebrew的bottle源**：
 
-在你的shell配置文件（比如`~/.bash_profile`或者`~/.zshrc`）中添加以下行：
+在的shell配置文件（比如`~/.bash_profile`或者`~/.zshrc`）中添加以下行：
 
 ```shell
 export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles
@@ -67,7 +67,7 @@ cd "$(brew --repo)/Library/Taps/homebrew/homebrew-core"
 git remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git
 ```
 
-以上步骤将Homebrew的源更换为了清华大学的镜像站点，你可以根据需要更换为其他的镜像站点。
+以上步骤将Homebrew的源更换为了清华大学的镜像站点，可以根据需要更换为其他的镜像站点。
 
 注意：如果在更换源之后遇到了问题，可以通过运行以上命令并将URL更换为官方源的URL来恢复到官方源。官方源的URL分别为：
 

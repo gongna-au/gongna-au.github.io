@@ -70,14 +70,14 @@ kubectl cluster-info
 
 问题1：请解释Kubernetes中ConfigMaps和Secrets的主要区别。
 
-答案：ConfigMaps允许你将配置项分离出来，不与应用代码混在一起，而Secrets主要用于存储敏感信息，如密码、密钥等。二者最大的区别是，Secrets中的数据在传输和存储时都是加密的，而ConfigMaps则不是。
+答案：ConfigMaps允许将配置项分离出来，不与应用代码混在一起，而Secrets主要用于存储敏感信息，如密码、密钥等。二者最大的区别是，Secrets中的数据在传输和存储时都是加密的，而ConfigMaps则不是。
 
 
-问题2：你如何使用Helm在Kubernetes中管理复杂应用？
+问题2：如何使用Helm在Kubernetes中管理复杂应用？
 
 答案：Helm是Kubernetes的包管理器，类似于Linux的apt或yum。它可以让用户更加方便地部署和管理Kubernetes应用。Helm提供了一种称为Chart的打包格式，用户可以将一个复杂的应用，包括其所有的依赖服务、配置等，打包为一个Chart。然后用户可以一键部署这个Chart到任何Kubernetes集群。同时，Helm也提供了升级、回滚、版本管理等功能，使得管理Kubernetes应用更为方便。
 
-问题3：在Kubernetes中，你如何将敏感数据（例如密码、密钥）从应用代码中分离出来？
+问题3：在Kubernetes中，如何将敏感数据（例如密码、密钥）从应用代码中分离出来？
 
 答案：在Kubernetes中，我们通常使用Secrets来管理敏感数据。Secrets可以用来存储和管理敏感信息，如密码、OAuth 令牌、ssh key等。在Pod中，Secrets可以被以数据卷或者环境变量的形式使用.
 
@@ -134,7 +134,7 @@ spec:
         matchLabels:
           role: frontend
 ```
-要使网络策略生效，你的 Kubernetes 集群必须运行支持网络策略的网络插件，如 Calico、Cilium、Weave 等。
+要使网络策略生效，的 Kubernetes 集群必须运行支持网络策略的网络插件，如 Calico、Cilium、Weave 等。
 
 ## 5.存储
 
@@ -160,9 +160,9 @@ spec:
 
 > **kube-apiserver**：它是 Kubernetes 集群的前端，提供了 REST 接口，所有的管理操作和命令都是通过 kube-apiserver 来处理的。kube-apiserver 验证用户请求，处理这些请求，然后更新相应的对象状态或者返回查询结果。另外，它也负责在集群各个组件间进行数据协调和状态同步。
 
-> **kube-scheduler**：当你创建一个 Pod 时，kube-scheduler 负责决定这个 Pod 在哪个 Node 上运行。kube-scheduler 会基于集群的当前状态和 Pod 的需求，如资源请求、数据位置、工作负载、策略等因素，进行调度决策。
+> **kube-scheduler**：当创建一个 Pod 时，kube-scheduler 负责决定这个 Pod 在哪个 Node 上运行。kube-scheduler 会基于集群的当前状态和 Pod 的需求，如资源请求、数据位置、工作负载、策略等因素，进行调度决策。
 
-> **kube-controller-manager**：在 Kubernetes 中，Controller 是用来处理集群中的各种动态变化的。例如，如果你设置了某个 Deployment 的副本数为 3，那么 Replication Controller 会确保始终有 3 个 Pod 在运行。如果少于 3 个，Controller 会创建更多的 Pod，如果多于 3 个，它会删除多余的 Pod。kube-controller-manager 是这些 Controller 的主运行环境，它运行了包括 Replication Controller、Endpoint Controller、Namespace Controller 和 ServiceAccount Controller 等多个核心的 Controller。
+> **kube-controller-manager**：在 Kubernetes 中，Controller 是用来处理集群中的各种动态变化的。例如，如果设置了某个 Deployment 的副本数为 3，那么 Replication Controller 会确保始终有 3 个 Pod 在运行。如果少于 3 个，Controller 会创建更多的 Pod，如果多于 3 个，它会删除多余的 Pod。kube-controller-manager 是这些 Controller 的主运行环境，它运行了包括 Replication Controller、Endpoint Controller、Namespace Controller 和 ServiceAccount Controller 等多个核心的 Controller。
 
 以上三个组件都是 Kubernetes 集群控制平面的重要组成部分，协同工作以保证集群的正常运行。
 
@@ -192,7 +192,7 @@ spec:
 **1.1.1 基本环境配置：**
 - 安装操作系统（Ubuntu, CentOS, RedHat等）并确保网络通畅。
 - 确保所有机器的主机名、MAC 地址和 product_uuid 是唯一的。
-- 禁用 Swap：你可以通过 `sudo swapoff -a` 来临时禁用 swap。
+- 禁用 Swap：可以通过 `sudo swapoff -a` 来临时禁用 swap。
 - 确保机器上安装了 iptables 并已开启 IP Forwarding。
 - 确保 SELinux 已禁用或设置为 permissive mode。
 
@@ -293,7 +293,7 @@ USER
 ```
 在 Dockerfile 中，每一个指令都有其特定的意义：
 
-- **FROM：** 定义了用于构建新镜像的基础镜像。例如，`FROM ubuntu:18.04` 表示你将基于 Ubuntu 18.04 镜像来创建新的镜像。
+- **FROM：** 定义了用于构建新镜像的基础镜像。例如，`FROM ubuntu:18.04` 表示将基于 Ubuntu 18.04 镜像来创建新的镜像。
 
 - **RUN：** 在镜像内部运行一个命令。它通常用于安装软件或其他包。
 
@@ -343,9 +343,9 @@ ENTRYPOINT ["/main"]
 
 ### 实战场景中的Dockerfile
 
-MySQL 数据库运行在同一台 Docker 主机的另一个容器中，你可以使用 Docker 的网络功能来使这两个容器互相通信。例如，你可以创建一个 Docker 网络，然后在这个网络上启动你的应用容器和 MySQL 容器。
+MySQL 数据库运行在同一台 Docker 主机的另一个容器中，可以使用 Docker 的网络功能来使这两个容器互相通信。例如，可以创建一个 Docker 网络，然后在这个网络上启动的应用容器和 MySQL 容器。
 
-运行你的应用和 MySQL 的命令可能如下：
+运行的应用和 MySQL 的命令可能如下：
 
 ```shell
 # 创建一个 Docker 网络
@@ -366,15 +366,15 @@ docker run --network=mynetwork -e DB_HOST=mymysql -p 8080:8080 -d myapp
 `docker run [OPTIONS] IMAGE [COMMAND] [ARG...]`
 以下是命令 `docker run --network=mynetwork -e DB_HOST=mymysql -p 8080:8080 -d myapp` 中各部分的含义：
 - `--network=mynetwork`: 这部分指定了容器运行在哪个网络上。在这个例子中，容器运行在名为 "mynetwork" 的网络上。这意味着这个容器可以访问在同一个网络上的其他容器。
-- `-e DB_HOST=mymysql`: 这部分设置了一个环境变量 `DB_HOST`，它的值为 "mymysql"。你的应用程序可以读取这个环境变量，以得知数据库的地址。
+- `-e DB_HOST=mymysql`: 这部分设置了一个环境变量 `DB_HOST`，它的值为 "mymysql"。的应用程序可以读取这个环境变量，以得知数据库的地址。
 - `-p 8080:8080`: 这部分映射了容器的端口到宿主机的端口。在这个例子中，容器的 8080 端口被映射到宿主机的 8080 端口。这样，我们可以通过访问宿主机的 8080 端口来访问容器的 8080 端口。
 - `-d`: 这个选项让容器在后台运行，并返回容器的 ID。
-- `myapp`: 这是你要运行的 Docker 镜像的名称。
+- `myapp`: 这是要运行的 Docker 镜像的名称。
 
 
-在 `docker run` 命令中，你已经将 MySQL 容器的 3306 端口映射到了宿主机的 8806 端口，同时你还将 MySQL 容器加入到了 `mynetwork` 网络。那么在同一网络中的其他容器就可以使用你给 MySQL 容器命名的名字（在这里是 `mymysql`）作为主机名来访问 MySQL 服务。
+在 `docker run` 命令中，已经将 MySQL 容器的 3306 端口映射到了宿主机的 8806 端口，同时还将 MySQL 容器加入到了 `mynetwork` 网络。那么在同一网络中的其他容器就可以使用给 MySQL 容器命名的名字（在这里是 `mymysql`）作为主机名来访问 MySQL 服务。
 
-所以你需要将 Go 应用程序的配置文件中的 `ip` 字段修改为 `mymysql`。你的新的 `config.toml` 配置文件应该是这样的：
+所以需要将 Go 应用程序的配置文件中的 `ip` 字段修改为 `mymysql`。的新的 `config.toml` 配置文件应该是这样的：
 
 ```toml
 [mysql]
@@ -385,9 +385,9 @@ docker run --network=mynetwork -e DB_HOST=mymysql -p 8080:8080 -d myapp
   user = "root"
 ```
 
-注意：这里的端口已经改为 `3306`，因为现在你是在 Docker 的内部网络中访问 MySQL 容器，而不是通过宿主机的端口。
+注意：这里的端口已经改为 `3306`，因为现在是在 Docker 的内部网络中访问 MySQL 容器，而不是通过宿主机的端口。
 
-用Dockerfile 来构建你的 Go 应用程序的 Docker 镜像
+用Dockerfile 来构建的 Go 应用程序的 Docker 镜像
 ```dockerfile
 # 使用官方的 Golang 镜像作为构建环境
 FROM golang:1.16 as builder
@@ -479,7 +479,7 @@ kube-proxy的ipvs模式：
 如何配置kube-proxy使用IPVS或iptables模式：
 通过命令行参数：当启动kube-proxy时，可以使用--proxy-mode参数来指定使用的模式，例如--proxy-mode=ipvs或--proxy-mode=iptables。
 
-通过Kubernetes配置文件：如果你使用的是Kubeadm来部署Kubernetes，可以在kube-proxy的ConfigMap中设置mode字段来选择模式。
+通过Kubernetes配置文件：如果使用的是Kubeadm来部署Kubernetes，可以在kube-proxy的ConfigMap中设置mode字段来选择模式。
 
 - Calico：符合CNI标准的网络插件，给每个Pod生成一个唯一的IP地址，并且把每个节点当做一个路由器。Cilium
 - CoreDNS：用于Kubernetes集群内部Service的解析，可以让Pod把Service名称解析成IP地址，然后通过Service的IP地址进行连接到对应的应用上。
@@ -498,23 +498,23 @@ ClusterIP/NodePort/LoadBalancer/ExternalName
 
 当我们说“只有集群内的其他Pod才能访问这种类型的服务”时，我们是指以下几点：
 
-集群内部的IP：当你创建一个默认的ServiceType（即ClusterIP）的Kubernetes服务时，该服务会被分配一个唯一的IP地址，这个地址只在Kubernetes集群内部可用。这意味着这个IP地址对于集群外部的任何实体（例如，外部的服务器、客户端或你的本地机器）都是不可达的。
+集群内部的IP：当创建一个默认的ServiceType（即ClusterIP）的Kubernetes服务时，该服务会被分配一个唯一的IP地址，这个地址只在Kubernetes集群内部可用。这意味着这个IP地址对于集群外部的任何实体（例如，外部的服务器、客户端或的本地机器）都是不可达的。
 
 Pod之间的通信：在Kubernetes集群中，Pods可以与其他Pods通信，无论它们是否在同一节点上。当一个Pod想要与另一个服务通信时，它可以使用该服务的ClusterIP和服务端口。由于ClusterIP只在集群内部可用，只有集群内的Pods才能使用这个IP地址来访问服务。
 
-集群外部的访问：如果你想从集群外部访问一个服务，你不能使用ClusterIP类型的服务。相反，你需要使用其他类型的服务，如NodePort或LoadBalancer，这些服务类型提供了从集群外部访问服务的方法。
+集群外部的访问：如果想从集群外部访问一个服务，不能使用ClusterIP类型的服务。相反，需要使用其他类型的服务，如NodePort或LoadBalancer，这些服务类型提供了从集群外部访问服务的方法。
 
 
-`NodePort`：这种类型的服务是在每个节点的 IP 和一个静态端口（也就是 NodePort）上暴露服务。这意味着如果你知道任意一个节点的 IP 和服务的 NodePort，就可以从集群的外部访问服务。在内部，Kubernetes 将 NodePort 服务路由到自动创建的 ClusterIP 服务。
+`NodePort`：这种类型的服务是在每个节点的 IP 和一个静态端口（也就是 NodePort）上暴露服务。这意味着如果知道任意一个节点的 IP 和服务的 NodePort，就可以从集群的外部访问服务。在内部，Kubernetes 将 NodePort 服务路由到自动创建的 ClusterIP 服务。
 
 
-当你创建一个NodePort类型的服务时，Kubernetes实际上会为你执行两个操作：
+当创建一个NodePort类型的服务时，Kubernetes实际上会为执行两个操作：
 
-创建一个ClusterIP服务：首先，Kubernetes会为该服务自动创建一个ClusterIP，这是一个只能在集群内部访问的IP地址。这意味着，即使你明确地创建了一个NodePort服务，你仍然会得到一个与该服务关联的ClusterIP。
+创建一个ClusterIP服务：首先，Kubernetes会为该服务自动创建一个ClusterIP，这是一个只能在集群内部访问的IP地址。这意味着，即使明确地创建了一个NodePort服务，仍然会得到一个与该服务关联的ClusterIP。
 
 在每个节点上开放一个端口（NodePort）：Kubernetes会在每个集群节点上的指定端口（即NodePort）上开放该服务。任何到达节点上这个端口的流量都会被自动转发到该服务的ClusterIP，然后再路由到后端的Pods。
 
-这种设计的好处是，你可以在集群内部使用ClusterIP来访问服务（就像任何其他ClusterIP服务一样），同时还可以从集群外部通过NodePort来访问该服务。
+这种设计的好处是，可以在集群内部使用ClusterIP来访问服务（就像任何其他ClusterIP服务一样），同时还可以从集群外部通过NodePort来访问该服务。
 
 所以，当我们说“在内部，Kubernetes将NodePort服务路由到自动创建的ClusterIP服务”时，我们是指：从外部到达NodePort的流量首先被转发到该服务的ClusterIP，然后再由ClusterIP路由到后端的Pods。这是Kubernetes如何处理NodePort服务的流量的内部机制。
 
@@ -523,7 +523,7 @@ Pod之间的通信：在Kubernetes集群中，Pods可以与其他Pods通信，�
 
 
 LoadBalancer服务类型：
-外部负载均衡器：当你在支持的云提供商环境中创建一个LoadBalancer类型的服务时，Kubernetes会自动为你配置云提供商的外部负载均衡器。
+外部负载均衡器：当在支持的云提供商环境中创建一个LoadBalancer类型的服务时，Kubernetes会自动为配置云提供商的外部负载均衡器。
 
 与NodePort和ClusterIP的关联：
 
@@ -546,8 +546,8 @@ LoadBalancer服务类型：
 
 使用场景：
 
-假设你的Kubernetes集群内部的应用需要访问一个位于集群外部的数据库，例如database.external.com。
-你可以创建一个ExternalName服务，名为database-service，其externalName字段设置为database.external.com。
+假设的Kubernetes集群内部的应用需要访问一个位于集群外部的数据库，例如database.external.com。
+可以创建一个ExternalName服务，名为database-service，其externalName字段设置为database.external.com。
 现在，集群内的应用可以简单地连接到database-service。但在DNS解析时，它实际上会被解析为database.external.com。
 无代理和负载均衡：由于ExternalName只是返回CNAME，所以没有涉及到流量代理或负载均衡。它只是一个DNS级别的别名或引用。
 
@@ -567,37 +567,37 @@ spec:
 
 > k8s的节点挂掉，如何处理
 
-当Kubernetes中的一个节点（Node）挂掉时，Kubernetes会采取一系列的自动化步骤来恢复工作负载和服务的可用性。但作为集群管理员或操作员，你也可以采取一些手动步骤来确保系统的健康和稳定性。以下是当K8s的节点挂掉时的处理步骤：
+当Kubernetes中的一个节点（Node）挂掉时，Kubernetes会采取一系列的自动化步骤来恢复工作负载和服务的可用性。但作为集群管理员或操作员，也可以采取一些手动步骤来确保系统的健康和稳定性。以下是当K8s的节点挂掉时的处理步骤：
 
 1. **确认节点状态**:
    - 使用`kubectl get nodes`检查节点的状态。如果节点挂掉，它的状态可能会显示为`NotReady`。
 
 2. **检查节点日志和监控**:
-   - 如果你有对节点的SSH访问权限，尝试登录并检查系统日志、kubelet日志等，以确定导致节点故障的原因。
+   - 如果有对节点的SSH访问权限，尝试登录并检查系统日志、kubelet日志等，以确定导致节点故障的原因。
    - 查看任何已部署的监控和警报系统（如Prometheus）以获取更多信息。
 
 3. **等待自动恢复**:
    - 如果节点在短时间内没有恢复，Kubernetes的控制平面将开始重新调度该节点上的Pods到其他健康的节点。
-   - 如果你的工作负载使用了持久性存储，如PersistentVolumeClaims (PVCs)，确保存储系统支持多节点访问或正确处理节点故障。
+   - 如果的工作负载使用了持久性存储，如PersistentVolumeClaims (PVCs)，确保存储系统支持多节点访问或正确处理节点故障。
 
 4. **手动干预**:
-   - 如果节点长时间处于`NotReady`状态，并且自动恢复没有成功，你可能需要手动干预。
-   - 你可以尝试重启节点或修复任何已知的硬件/软件问题。
+   - 如果节点长时间处于`NotReady`状态，并且自动恢复没有成功，可能需要手动干预。
+   - 可以尝试重启节点或修复任何已知的硬件/软件问题。
    - 如果节点无法恢复，考虑替换它。在云环境中，这通常意味着终止有问题的实例并启动一个新的实例。
 
 5. **清理和维护**:
-   - 如果你决定永久删除一个节点，确保首先使用`kubectl drain <node-name>`来安全地从节点中移除所有工作负载。
-   - 然后，你可以使用`kubectl delete node <node-name>`从集群中删除该节点。
+   - 如果决定永久删除一个节点，确保首先使用`kubectl drain <node-name>`来安全地从节点中移除所有工作负载。
+   - 然后，可以使用`kubectl delete node <node-name>`从集群中删除该节点。
 
 6. **预防措施**:
    - 考虑使用自动扩展组或类似机制来自动替换失败的节点。
-   - 确保你的集群有足够的冗余，以便在一个或多个节点失败时仍然可以继续运行。
+   - 确保的集群有足够的冗余，以便在一个或多个节点失败时仍然可以继续运行。
    - 定期备份集群的状态和数据，以便在灾难恢复时使用。
 
 
 > Kubernetes如何查看节点的信息？
 
-在Kubernetes中，你可以使用kubectl命令行工具来查看节点的信息。以下是一些常用的命令来查看和获取节点相关的信息：
+在Kubernetes中，可以使用kubectl命令行工具来查看节点的信息。以下是一些常用的命令来查看和获取节点相关的信息：
 
 查看所有节点的简要信息:
 
@@ -618,7 +618,7 @@ kubectl describe nodes
 ```
 
 获取节点的原始YAML或JSON格式的配置:
-这可以帮助你查看节点的完整配置和状态。
+这可以帮助查看节点的完整配置和状态。
 
 ```shell
 kubectl get node <node-name> -o yaml
@@ -634,7 +634,7 @@ kubectl get nodes --show-labels
 ```
 
 使用标签选择器查看特定的节点:
-例如，如果你想查看所有标记为env=production的节点。
+例如，如果想查看所有标记为env=production的节点。
 ```shell
 kubectl get nodes -l env=production
 ```
@@ -647,7 +647,7 @@ kubectl top node
 ```
 > 获取公网的IP地址
 
-在Kubernetes中，节点的公网IP不是默认的信息，因为Kubernetes主要关注的是集群内部的通信。但是，根据你的云提供商和网络设置，公网IP可能会作为节点的一个注解或标签存在。
+在Kubernetes中，节点的公网IP不是默认的信息，因为Kubernetes主要关注的是集群内部的通信。但是，根据的云提供商和网络设置，公网IP可能会作为节点的一个注解或标签存在。
 
 以下是一些常见的方法来尝试获取节点的公网IP：
 
@@ -665,20 +665,20 @@ kubectl get node <node-name> -o yaml
 在输出中查找公网IP。它可能存在于`status.addresses`部分，并标记为`ExternalIP`。
 
 **云提供商的CLI工具**:
-如果你在云环境（如AWS、GCP、Azure等）中运行Kubernetes，你可以使用云提供商的CLI工具来获取实例的公网IP。例如，在AWS中，你可以使用`aws ec2 describe-instances`来获取实例的详细信息，其中包括公网IP。
+如果在云环境（如AWS、GCP、Azure等）中运行Kubernetes，可以使用云提供商的CLI工具来获取实例的公网IP。例如，在AWS中，可以使用`aws ec2 describe-instances`来获取实例的详细信息，其中包括公网IP。
 
 **使用标签或注解**:
-有些云提供商或网络插件可能会将公网IP作为节点的一个标签或注解添加。你可以检查节点的标签和注解来查找这些信息。
+有些云提供商或网络插件可能会将公网IP作为节点的一个标签或注解添加。可以检查节点的标签和注解来查找这些信息。
 
 **自定义脚本或工具**:
-如果你经常需要这些信息，可以考虑编写一个小脚本或工具，结合`kubectl`和云提供商的CLI，自动获取所有节点的公网IP。
+如果经常需要这些信息，可以考虑编写一个小脚本或工具，结合`kubectl`和云提供商的CLI，自动获取所有节点的公网IP。
 
 请注意，不是所有的Kubernetes节点都有公网IP。在某些环境中，节点可能只有私有IP，而公网访问是通过负载均衡器或其他网络设备实现的。
 
 
 > 查看所有节点的InternalIP查看所有节点的InternalIP
 
-要查看Kubernetes集群中所有节点的`InternalIP`，你可以使用`kubectl`命令行工具配合`jsonpath`来提取这些信息。以下是如何做到这一点的命令：
+要查看Kubernetes集群中所有节点的`InternalIP`，可以使用`kubectl`命令行工具配合`jsonpath`来提取这些信息。以下是如何做到这一点的命令：
 
 ```bash
 kubectl get nodes -o=jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}'

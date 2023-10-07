@@ -494,7 +494,7 @@ func HandleQuery(query string) {
 ### 集成调用
 
 #### pkg/executor
-pkg/executor：这个包可能包含了执行数据库查询的代码。你可以在这里收集关于查询性能的指标，如QPS、TPS和查询延迟。
+pkg/executor：这个包可能包含了执行数据库查询的代码。可以在这里收集关于查询性能的指标，如QPS、TPS和查询延迟。
 
 在pkg/executor目录下，我发现了两个Go文件：redirect.go和redirect_test.go。根据文件名，redirect.go包含了重定向数据库查询的逻辑，而redirect_test.go则包含了对应的测试代码。
 
@@ -580,11 +580,11 @@ func (r *RedirectExecutor) doExecutorComQuery(ctx *proto.Context, act ast.StmtNo
 }
 ```
 
-在这个示例中，QueryTotal、QueryErrors 和 QuerySuccess 是你定义的指标，可以根据需要替换它们。Inc() 是一个函数，用于增加指标的计数。
+在这个示例中，QueryTotal、QueryErrors 和 QuerySuccess 是定义的指标，可以根据需要替换它们。Inc() 是一个函数，用于增加指标的计数。
 
 类似地，可以在 ExecutorComStmtExecute 函数中添加类似的代码来更新指标。
 
-这只是一个基本的示例，可能需要根据你的实际需求来调整代码。例如，你可能想要记录更多的信息，如查询的类型、查询的执行时间等。你也可能需要处理并发问题，因为你的代码可能会在多个 goroutine 中同时运行。
+这只是一个基本的示例，可能需要根据的实际需求来调整代码。例如，可能想要记录更多的信息，如查询的类型、查询的执行时间等。也可能需要处理并发问题，因为的代码可能会在多个 goroutine 中同时运行。
 
 在Go中，Prometheus客户端库已经处理了并发问题。可以在多个goroutine中安全地更新同一个指标，而不需要使用锁或其他并发控制机制。这是因为Prometheus客户端库内部使用了原子操作来更新指标。
 
@@ -610,12 +610,12 @@ go func() {
 
 总的来说，应该尽量避免在更新指标时使用锁或其他并发控制机制，因为这可能会影响性能。如果必须使用这些机制，那么应该尽量减小它们的影响范围，并确保代码是线程安全的。
 
-如果想在执行数据库操作后更新指标，你可能需要在 doExecutorComQuery 和 ExecutorComStmtExecute 函数中添加你的代码，因为这两个函数是处理数据库查询的主要地方。具体的位置取决于你想要在何时更新指标（例如，是在查询执行前还是执行后，或者是在出现错误时）。
+如果想在执行数据库操作后更新指标，可能需要在 doExecutorComQuery 和 ExecutorComStmtExecute 函数中添加的代码，因为这两个函数是处理数据库查询的主要地方。具体的位置取决于想要在何时更新指标（例如，是在查询执行前还是执行后，或者是在出现错误时）。
 
 
 如果想记录更多的信息，如查询的类型和查询的执行时间，可以使用Prometheus的Histogram或Summary类型的指标。
 
-Histogram允许你计算观察值的分布（例如，请求持续时间或响应大小）。它还提供了一个总数和所有观察值的总和。
+Histogram允许计算观察值的分布（例如，请求持续时间或响应大小）。它还提供了一个总数和所有观察值的总和。
 
 Summary和Histogram类似，但是它可以计算滑动时间窗口的百分位数。
 
@@ -684,12 +684,12 @@ func (r *RedirectExecutor) ExecutorComStmtExecute(ctx *proto.Context) (proto.Res
 }
 ```
 
-在这个示例中，QueryDuration、QueryErrors 和 QuerySuccess 是你定义的指标，可以根据你的需要替换它们。WithLabelValues 函数用于为指标添加标签，Observe 函数用于为Histogram或Summary类型的指标添加观察值，Inc 函数用于增加指标的计数。
+在这个示例中，QueryDuration、QueryErrors 和 QuerySuccess 是定义的指标，可以根据的需要替换它们。WithLabelValues 函数用于为指标添加标签，Observe 函数用于为Histogram或Summary类型的指标添加观察值，Inc 函数用于增加指标的计数。
 
 
 ### pkg/server
 
-pkg/server：这个包可能包含了服务器的主要代码。你可以在这里收集关于服务器状态的指标，如CPU使用率、内存使用率和磁盘使用率。
+pkg/server：这个包可能包含了服务器的主要代码。可以在这里收集关于服务器状态的指标，如CPU使用率、内存使用率和磁盘使用率。
 它是 Arana 数据库代理的一部分。这个文件主要处理了服务器的启动和监听。以下是一些主要的函数和它们的功能：
 ```text
 NewServer() *Server：创建一个新的服务器实例。
@@ -697,7 +697,7 @@ AddListener(listener proto.Listener)：添加一个监听器到服务器。
 Start()：启动服务器并开始监听。
 ```
 
-如果想在服务器运行期间收集关于服务器状态的指标，如CPU使用率、内存使用率和磁盘使用率，可能需要在 Start 函数中添加你的代码，因为这个函数是服务器开始运行的地方。具体的位置取决于想要在何时开始收集指标（例如，是在服务器启动前还是启动后，或者是在出现错误时）。
+如果想在服务器运行期间收集关于服务器状态的指标，如CPU使用率、内存使用率和磁盘使用率，可能需要在 Start 函数中添加的代码，因为这个函数是服务器开始运行的地方。具体的位置取决于想要在何时开始收集指标（例如，是在服务器启动前还是启动后，或者是在出现错误时）。
 
 这是一个在 Start 函数中添加代码的示例：
 
@@ -754,13 +754,13 @@ func startMonitoring() {
 
 ```
 
-在这个示例中，MemoryUsage、CPUUsage 和 DiskUsage 是定义的指标，可以根据你的需要替换它们。Set 函数用于设置指标的值。
+在这个示例中，MemoryUsage、CPUUsage 和 DiskUsage 是定义的指标，可以根据的需要替换它们。Set 函数用于设置指标的值。
 
 
 ### pkg/merge
 
 
-pkg/merge：这个包可能包含了合并查询结果的代码。你可以在这里收集关于查询结果合并性能的指标。
+pkg/merge：这个包可能包含了合并查询结果的代码。可以在这里收集关于查询结果合并性能的指标。
 
 在 merge_rows.go 文件中，主要处理了如何合并多个数据源返回的行数据。以下是一些主要的函数和它们的功能：
 ```text
@@ -773,9 +773,9 @@ GetCurrentRow() proto.Row：获取当前行数据。
 在这个文件中，可能想要收集以下类型的指标：
 
 合并行的数量：可以在 NewMergeRows 和 NewMergeRowses 函数中添加代码来收集这个指标。
-Next 函数的调用次数：你可以在 Next 函数中添加代码来收集这个指标。
-HasNext 函数的调用次数：你可以在 HasNext 函数中添加代码来收集这个指标。
-GetCurrentRow 函数的调用次数：你可以在 GetCurrentRow 函数中添加代码来收集这个指标。
+Next 函数的调用次数：可以在 Next 函数中添加代码来收集这个指标。
+HasNext 函数的调用次数：可以在 HasNext 函数中添加代码来收集这个指标。
+GetCurrentRow 函数的调用次数：可以在 GetCurrentRow 函数中添加代码来收集这个指标。
 以下是一个在 NewMergeRows 函数中添加代码的示例：
 
 ```go
@@ -786,7 +786,7 @@ func NewMergeRows(rows []proto.Row) *MergeRows {
     return &MergeRows{rows: rows, currentRowIndex: -1}
 }
 ```
-在这个示例中，MergeRowsCount 是定义的指标，可以根据你的需要替换它。Add 函数用于增加指标的值。
+在这个示例中，MergeRowsCount 是定义的指标，可以根据的需要替换它。Add 函数用于增加指标的值。
 
 
 ### pkg/admin
@@ -951,16 +951,16 @@ func UpdateMetrics(serviceInstance *base.ServiceInstance) error {
 
 ### pkg/runtime
 
-根据你的需求，可能需要在runtime.go文件中的defaultRuntime结构体或者AtomDB结构体中添加指标更新的函数。
+根据的需求，可能需要在runtime.go文件中的defaultRuntime结构体或者AtomDB结构体中添加指标更新的函数。
 
 如果想要跟踪每次数据库查询的执行时间，可能需要在defaultRuntime中添加一个函数来更新这个指标。
 ```go
 func (r *defaultRuntime) UpdateQueryExecutionTimeMetric(duration time.Duration) {
     // 这里是更新指标的代码
-    // 可能需要使用一些第三方库来帮助你记录和更新这些指标
+    // 可能需要使用一些第三方库来帮助记录和更新这些指标
 }
 ```
-然后，在执行数据库查询的地方，可以调用这个函数来更新指标。例如，如果在Execute函数中执行查询，你可以在查询执行完成后调用这个函数：
+然后，在执行数据库查询的地方，可以调用这个函数来更新指标。例如，如果在Execute函数中执行查询，可以在查询执行完成后调用这个函数：
 
 ```go
 func (r *defaultRuntime) Execute(ctx context.Context, query string, bindVars map[string]*querypb.BindVariable, isStreaming bool, options *querypb.ExecuteOptions) (*sqltypes.Result, error) {

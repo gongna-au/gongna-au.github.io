@@ -21,7 +21,7 @@ docker pull wurstmeister/kafka
 - 维护集群状态：例如 broker 的加入和退出、分区 leader 的选举等，都需要 Zookeeper 来帮助维护状态和通知相关的 broker。
 - 动态配置：Kafka 的某些配置可以在不重启 broker 的情况下动态更改，这些动态配置的信息也是存储在 Zookeeper 中的。
 - 消费者偏移量：早期版本的 Kafka 使用 Zookeeper 来保存消费者的偏移量。尽管在后续版本中，这个功能被移到 Kafka 自己的内部主题 (__consumer_offsets) 中，但在一些老的 Kafka 集群中，Zookeeper 仍然扮演这个角色。
-因为 Zookeeper 在 Kafka 的运作中起到了如此关键的作用，所以当你部署一个 Kafka 集群时，通常也需要部署一个 Zookeeper 集群来与之配合。
+因为 Zookeeper 在 Kafka 的运作中起到了如此关键的作用，所以当部署一个 Kafka 集群时，通常也需要部署一个 Zookeeper 集群来与之配合。
 
 #### 使用docker-compose启动Kafka:
 创建一个docker-compose.yml文件，并输入以下内容：
@@ -97,7 +97,7 @@ kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --par
 - `kafka-topics.sh`：这是Kafka提供的一个shell脚本工具，用于管理Kafka topics。
 - `--create`：这个标识表示我们要创建一个新的topic。
 - `--zookeeper zookeeper:2181`：指定Zookeeper的地址和端口。Kafka使用Zookeeper来存储集群元数据和topic的配置信息。在这里，zookeeper:2181表示Zookeeper服务运行在名为zookeeper的容器上，并监听2181端口。
-- `--replication-factor 1`：定义了这个topic的每个partition应该有多少个replica（副本）。在这里，我们设置为1，意味着每个partition只有一个副本。在生产环境中，你可能会希望有更多的副本来增加数据的可靠性。
+- `--replication-factor 1`：定义了这个topic的每个partition应该有多少个replica（副本）。在这里，我们设置为1，意味着每个partition只有一个副本。在生产环境中，可能会希望有更多的副本来增加数据的可靠性。
 - `--partitions 1`：定义了这个topic应该有多少个partitions（分区）。
 - `--topic test`：定义了新创建的topic的名称，这里是test。
 - 这条命令创建了一个名为test的新topic，这个topic有1个partition和1个replica，并存储在运行在zookeeper:2181上的Zookeeper中。
@@ -108,11 +108,11 @@ kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --par
 ```shell
 kafka-console-producer.sh --broker-list kafka:9093 --topic test
 ```
-- `kafka-console-producer.sh`：这是Kafka提供的一个shell脚本工具，用于启动一个控制台生产者。这个生产者允许你通过控制台手动输入并发送消息到Kafka。
+- `kafka-console-producer.sh`：这是Kafka提供的一个shell脚本工具，用于启动一个控制台生产者。这个生产者允许通过控制台手动输入并发送消息到Kafka。
 - `--broker-list kafka:9093`：这个参数指定了Kafka broker的地址和端口。在这里，我们指定的是运行在名为kafka的容器上的broker，监听9093端口。注意，这里的9093端口是在Docker容器内部使用的端口，与我们在docker-compose.yml文件中设置的外部端口9092不同。
 - `--topic test`：这个参数指定了消息应该发送到哪个Kafka topic。在这里，我们选择发送到名为test的topic。
 
-当你运行这个命令后，你会进入一个控制台界面。在这个控制台，你可以手动输入消息，每输入一条消息并按下回车，这条消息就会被发送到test topic。这是一个非常有用的工具，特别是当你想要在没有编写生产者代码的情况下，手动测试Kafka消费者或整个系统的功能时。
+当运行这个命令后，会进入一个控制台界面。在这个控制台，可以手动输入消息，每输入一条消息并按下回车，这条消息就会被发送到test topic。这是一个非常有用的工具，特别是当想要在没有编写生产者代码的情况下，手动测试Kafka消费者或整个系统的功能时。
 然后，您可以键入消息并按Enter发送。
 
 ```shell
@@ -127,14 +127,14 @@ root@1e35c5fa5306:/# kafka-console-producer.sh --broker-list kafka:9093 --topic 
 kafka-console-consumer.sh --bootstrap-server kafka:9093 --topic test --from-beginning
 ```
 
-- kafka-console-consumer.sh: 这是Kafka的命令行消费者工具，它允许你从指定的topic中读取数据。
+- kafka-console-consumer.sh: 这是Kafka的命令行消费者工具，它允许从指定的topic中读取数据。
 - --bootstrap-server kafka:9093:
 - --bootstrap-server是指定要连接的Kafka broker或bootstrap服务器的参数。
-- kafka:9093表示消费者应该连接到名为kafka的服务器上的9093端口。这里，kafka是你Docker Compose文件中定义的Kafka服务的名称。在Docker网络中，你可以使用服务名称作为其主机名。
+- kafka:9093表示消费者应该连接到名为kafka的服务器上的9093端口。这里，kafka是Docker Compose文件中定义的Kafka服务的名称。在Docker网络中，可以使用服务名称作为其主机名。
 - --topic test:
 - --topic是指定要从中读取数据的topic的参数。
-- test是你之前创建的topic的名称。
-- --from-beginning: 这个参数表示消费者从topic的开始位置读取数据，而不是从最新的位置。换句话说，使用这个参数，你会看到topic中存储的所有消息，从最早的消息开始。
+- test是之前创建的topic的名称。
+- --from-beginning: 这个参数表示消费者从topic的开始位置读取数据，而不是从最新的位置。换句话说，使用这个参数，会看到topic中存储的所有消息，从最早的消息开始。
 此时，您应该能在消费者终端看到在生产者终端输入的消息。
 
 ```shell
@@ -196,8 +196,8 @@ func main() {
 - 在Kafka的上下文中，一个broker是一个单独的Kafka服务器实例，负责存储数据并为生产者和消费者服务。一个Kafka集群通常由多个brokers组成，这样可以确保数据的可用性和容错性。
 - 为什么叫“broker”呢？因为在许多系统中，broker是一个中介或协调者，帮助生产者和消费者之间的交互。在Kafka中，brokers确保数据的持久化、冗余存储和分发给消费者。
 - 当在代码中指定"bootstrap.servers": broker，实际上是在告诉Kafka生产者客户端在哪里可以找到集群的一个或多个broker以连接到整个Kafka集群。
-- bootstrap.servers可以是Kafka集群中的一个或多个broker的地址。你不需要列出集群中的所有broker，因为一旦客户端连接到一个broker，它就会发现集群中的其他brokers。但是，通常建议列出多个brokers以增加初始连接的可靠性。
-综上所述，你可以将broker视为Kafka的单个服务器实例，它存储数据并处理客户端请求。当你的生产者或消费者代码连接到localhost:9092时，它实际上是在连接到运行在该地址的Kafka broker。如果你有一个包含多个brokers的Kafka集群，你的bootstrap.servers配置可能会看起来像这样：broker1:9092,broker2:9092,broker3:9092。
+- bootstrap.servers可以是Kafka集群中的一个或多个broker的地址。不需要列出集群中的所有broker，因为一旦客户端连接到一个broker，它就会发现集群中的其他brokers。但是，通常建议列出多个brokers以增加初始连接的可靠性。
+综上所述，可以将broker视为Kafka的单个服务器实例，它存储数据并处理客户端请求。当的生产者或消费者代码连接到localhost:9092时，它实际上是在连接到运行在该地址的Kafka broker。如果有一个包含多个brokers的Kafka集群，的bootstrap.servers配置可能会看起来像这样：broker1:9092,broker2:9092,broker3:9092。
 编写消费者代码：
 ```go
 package main
@@ -246,19 +246,19 @@ func main() {
 ```
 - Group ID: Kafka消费者使用group.id进行分组。这允许多个消费者实例共同协作并共享处理主题的分区。Kafka保证每条消息只会被每个消费者组中的一个消费者实例消费。group.id 是用来标识这些消费者属于哪个消费者组的。当多个消费者有相同的 group.id 时，他们属于同一个消费者组。
 - auto.offset.reset: 这告诉消费者从哪里开始读取消息。earliest表示从起始位置开始，latest表示只读取新消息。Kafka中的每条消息在其所属的分区内都有一个唯一的序号，称为offset。消费者在消费消息后会存储它已经消费到的位置信息（offset）。如果消费者是首次启动并且之前没有offset记录，auto.offset.reset 决定了它从哪里开始消费。设置为 earliest 会从最早的可用消息开始消费，而 latest 会从新的消息开始消费。
-- 为了运行这个代码，你需要确保Kafka broker正在运行、可以从你的Go应用程序访问，而且主题中有消息（你可以使用上面的生产者代码来产生消息）。
+- 为了运行这个代码，需要确保Kafka broker正在运行、可以从的Go应用程序访问，而且主题中有消息（可以使用上面的生产者代码来产生消息）。
 Kafka的基本架构：
 - Producer：生产者，发送消息到Kafka主题。
 - Topic：消息的分类和来源，可以视为消息队列或日志的名称。
 
 Topic（主题）:
-  - Kafka 中的 Topic 是一个消息流的分类或名称的标识。你可以把它看作是一个消息的类别或者分类，比如"用户注册"、"订单支付"等。（同类数据单元）
-  - 你可以认为 Topic 就像是一个数据库中的表（但它的行为和特性与数据库表是不同的）。
+  - Kafka 中的 Topic 是一个消息流的分类或名称的标识。可以把它看作是一个消息的类别或者分类，比如"用户注册"、"订单支付"等。（同类数据单元）
+  - 可以认为 Topic 就像是一个数据库中的表（但它的行为和特性与数据库表是不同的）。
   - 一个 Topic 可以有多个 Partition（分区）。
 消息（Message）:
   - Message 是发送或写入 Kafka 的数据单元。
   - 每条 Message 包含一个 key 和一个 value。key 通常用于决定消息应该写入哪个 Partition。
-  - 你可以认为 Message 就像数据库表中的一行记录。
+  - 可以认为 Message 就像数据库表中的一行记录。
 Partition（分区）:
   - Partition 是 Kafka 提供数据冗余和扩展性的方法。每个 Topic 可以被分为多个 Partition，每个 Partition 是一个有序的、不可变的消息序列。
   - Partition 允许 Kafka 在多个服务器上存储、处理和复制数据，从而提供了数据冗余和高可用性。每个 Partition 会在 Kafka 集群中的多台机器上进行复制。

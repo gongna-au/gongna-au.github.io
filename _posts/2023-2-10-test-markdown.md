@@ -287,7 +287,7 @@ Service
 
 #### 5.1 ClusterIP Services
 
-这个是默认的服务类型。这意味着当你创建服务而不指定类型的时候，就会自动把集群 IP 作为类型。
+这个是默认的服务类型。这意味着当创建服务而不指定类型的时候，就会自动把集群 IP 作为类型。
 
 假设：
 
@@ -666,11 +666,11 @@ ReplicaSet 控制器可以控制 Pod 的可用数量始终保持在想要数量�
 ### StatefulSet
 
 
-StatefulSet，是在Deployment的基础上扩展出来的控制器。使用Deployment时多数时候你不会在意Pod的调度方式。但当你需要调度有拓扑状态的应用时，就需要关心Pod的部署顺序、对应的持久化存储、 Pod 在集群内拥有固定的网络标识（即使重启或者重新调度后也不会变）这些文图，这个时候，就需要 StatefulSet 控制器实现调度目标。
+StatefulSet，是在Deployment的基础上扩展出来的控制器。使用Deployment时多数时候不会在意Pod的调度方式。但当需要调度有拓扑状态的应用时，就需要关心Pod的部署顺序、对应的持久化存储、 Pod 在集群内拥有固定的网络标识（即使重启或者重新调度后也不会变）这些文图，这个时候，就需要 StatefulSet 控制器实现调度目标。
 
-StatefulSet 是 Kubernetes 中的一种工作负载 API 对象，用于管理有状态应用。相比于 Deployment，StatefulSet 为每个 Pod 提供了一个持久且唯一的标识，这使得你可以在分布式或集群环境中部署和扩展有状态应用。
+StatefulSet 是 Kubernetes 中的一种工作负载 API 对象，用于管理有状态应用。相比于 Deployment，StatefulSet 为每个 Pod 提供了一个持久且唯一的标识，这使得可以在分布式或集群环境中部署和扩展有状态应用。
 
-例如，假设你正在运行一个分布式数据库，如 MongoDB 或 Cassandra，这些数据库需要在多个 Pod 之间同步数据。在这种情况下，每个 Pod 都需要有一个稳定的网络标识，以便其他 Pod 可以找到它并与之通信。此外，每个 Pod 可能还需要连接到一个持久的存储卷，以便在 Pod 重启或迁移时保留其数据。
+例如，假设正在运行一个分布式数据库，如 MongoDB 或 Cassandra，这些数据库需要在多个 Pod 之间同步数据。在这种情况下，每个 Pod 都需要有一个稳定的网络标识，以便其他 Pod 可以找到它并与之通信。此外，每个 Pod 可能还需要连接到一个持久的存储卷，以便在 Pod 重启或迁移时保留其数据。
 
 以下是一个 StatefulSet 的 YAML 配置示例，用于部署一个简单的 MongoDB 集群：
 
@@ -745,7 +745,7 @@ spec:
 
 
 ### ClusterIP Service
-ClusterIP: 这是默认的 Service 类型。当你创建一个 Service 时，Kubernetes 会为该 Service 分配一个唯一的 IP 地址，这个地址在整个集群内部都可以访问。但是，这个 IP 地址**不能从集群外部访问**。这种类型的 Service 适合在集群内部进行通信，例如一个前端应用访问一个后端服务。
+ClusterIP: 这是默认的 Service 类型。当创建一个 Service 时，Kubernetes 会为该 Service 分配一个唯一的 IP 地址，这个地址在整个集群内部都可以访问。但是，这个 IP 地址**不能从集群外部访问**。这种类型的 Service 适合在集群内部进行通信，例如一个前端应用访问一个后端服务。
 
 ### NodePort Service
 NodePort: 这种类型的 Service 在 ClusterIP 的基础上增加了一层，除了在集群内部提供一个 IP 地址让集群内的 Pod 访问外，还在每个节点上开放一个端口（30000-32767），并将所有到这个端口的请求转发到该 Service。这样，即使 Service 后端的 Pod 在不同的节点上，外部的客户端也可以通过 `<NodeIP>:<NodePort>` 的方式访问该 Service。这种类型的 Service 适合需要从集群外部访问的服务。
