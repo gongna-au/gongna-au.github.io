@@ -74,3 +74,32 @@ git commit -m"fix:555"
 ```shell
 git push origin my-feature7
 ```
+
+
+## 常见问题
+
+当你在本地有更改，但是想丢弃所有的这些更改的时候：
+
+首先，需要处理当前分支（feat_shard_join）上的未暂存的更改。有几个选项：
+
+提交这些更改：
+```shell
+git add -A && git commit -m "你的提交信息"
+```
+撤销这些更改：
+```shell
+git restore .
+```
+确保所有的更改已处理后，你可以切换到 develop 分支：
+
+```shell
+git checkout develop
+```
+同步远程的 develop 分支更新到你的本地：
+
+```shell
+git pull origin develop
+```
+这样，你就成功切换到了 develop 分支并与远程仓库同步。请注意，在执行这些操作之前最好备份你的代码，以防意外发生。
+
+

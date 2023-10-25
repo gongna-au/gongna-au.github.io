@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 记一些踩坑....
+title: Bugs:记一些踩坑....
 subtitle:
 tags: [bug]
 comments: true
