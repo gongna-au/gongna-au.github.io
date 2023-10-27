@@ -6,6 +6,7 @@ tags: [go]
 comments: true
 ---
 
+任务分发与任务消费
 
 
 ```go
