@@ -6,7 +6,10 @@ tags: [Prometheus]
 comments: true
 ---
 
-接口 qps 看图绘图
+## 1.PromQL 语法
+
+接口 qps 看图绘图：
+
 ```text
 // 过去1分钟 每秒请求 qps 
 // sum  求和函数
@@ -16,8 +19,9 @@ comments: true
 sum(rate(api_request_alert_counter{service_name="gateway", subject="total"}[1m])) by (subject)
 ```
 
-接口可用性看图绘图
+接口可用性看图绘图：
 接口可用性就是验证当前接口在单位时间内的处理正确的请求数目比上总体的请求数目，在打点的时候也讲到，我们业务代码 0 代表着正确返回，非 0 的代表着存在问题，这样就可以很简单的算出来接口的可用性。
+
 ```text
 // 过去1分钟 每秒接口可用性
 // sum  求和函数
@@ -33,7 +37,7 @@ sum(rate(api_request_cost_status_count{service_name="gateway", code!="0"}[1m])) 
 ) * 100.0 
 ```
 
-接口 Pxx 耗时统计看图绘图
+接口 Pxx 耗时统计看图绘图：
 接口耗时统计打点依赖 prometheus api 中的 histogram 实现，在呈现打点耗时的时候有时候局部的某个耗时过长并不能进行直接反应整体的，我们只需要关注 SLO （服务级别目标）目标下是否达标即可。
 
 ```shell
@@ -43,7 +47,7 @@ sum(rate(api_request_cost_status_count{service_name="gateway", code!="0"}[1m])) 
 by (handler, le))
 ```
 
-## Histogram:
+## 2.Histogram:
 
 在Prometheus中，Histogram是一种指标类型，用于观察数据的分布情况。Histogram会将观察到的值放入配置的桶中。每个桶都有一个上界（le标签表示），并累计观察到的值落入该桶的次数。
 `api_request_cost_status_bucket`:
@@ -62,8 +66,9 @@ by (handler, le))
 
 这可能是一个单位转换，例如将秒转换为毫秒。
 
-## 使用 Prometheus 的 Alert Manager 就可以对服务进行报警，但是如何及时又准确的报警，以及如何合理设置报警
+## 3.Alert Manager 
 
+使用 Prometheus 的 Alert Manager 就可以对服务进行报警，但是如何及时又准确的报警，以及如何合理设置报警？
 
 定义清晰的SLI/SLO/SLA:
 
@@ -86,7 +91,7 @@ SLA (Service Level Agreement):
 这三个概念之间的关系可以这样理解：使用SLI来衡量服务的实际性能，设置SLO作为希望达到的目标，然后与客户签订SLA作为对服务性能的正式承诺。
 
 
-## 可能遇到的问题
+## 4.可能遇到的问题
 
 收集指标过大拉取超时
 
@@ -99,10 +104,9 @@ SLA (Service Level Agreement):
 采用分布式：
 采用 prometheus 联邦集群的方式来解决指标收集过大的问题，采用了分布式，就可以将机器分组收集汇总，之后就可以成倍速的缩小 prometheus 拉取的压力。
 
-
 Prometheus联邦集群是一种解决大规模指标收集问题的方法。通过联邦集群，可以有多个Prometheus服务器，其中一个或多个Prometheus实例作为全局或中央实例，从其他Prometheus实例中拉取预先聚合的数据。这样，可以在不同的层次和粒度上收集和存储数据，从而减少中央Prometheus实例的负载和存储需求。
 
-## Prometheus联邦集群如何使用
+## 5.Prometheus联邦集群如何使用
 
 以下是使用Prometheus联邦集群来解决指标收集过大问题的具体步骤：
 
@@ -155,7 +159,7 @@ scrape_configs:
 配置警报，以便在任何Prometheus实例遇到问题时立即收到通知。
 通过这种方式，Prometheus联邦集群可以帮助在大规模环境中有效地收集、存储和查询指标，同时确保每个Prometheus实例的负载保持在可管理的水平。
 
-## 如何监控一个集群？
+## 6.如何监控一个集群？
 
 监控一个网关集群需要考虑多个方面，包括数据的粒度、高可用性、故障恢复等。以下是一个推荐的步骤和策略，用于部署Prometheus来监控整个网关集群：
 
@@ -191,9 +195,6 @@ Prometheus Server部署：
 
 扩展性：
 根据需要扩展的Prometheus部署。随着的网关集群的增长，可能需要添加更多的Prometheus实例或增加存储容量。
-
-
-
 
 定义指标:
 
