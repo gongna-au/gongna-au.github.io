@@ -62,9 +62,6 @@ by (handler, le))
 `histogram_quantile(0.95, ...):`
 
 这个函数计算Histogram的分位数。在这里，我们计算95%分位数，这意味着95%的观察值都小于或等于这个值。换句话说，这是过去1分钟内95%的请求的最大耗时。
-1000*:
-
-这可能是一个单位转换，例如将秒转换为毫秒。
 
 ## 3.Alert Manager 
 
@@ -110,17 +107,18 @@ Prometheus联邦集群是一种解决大规模指标收集问题的方法。通�
 
 以下是使用Prometheus联邦集群来解决指标收集过大问题的具体步骤：
 
-分组和分层：
+> 分组和分层
 
 将的基础设施分成逻辑组或层。例如，按地理位置、服务类型或团队进行分组。
 为每个组或层配置一个Prometheus实例。这些实例将只从其分配的组或层收集指标。
 
-预先聚合数据：
+> 预先聚合数据
+
 在每个Prometheus实例中，使用Recording Rules预先聚合数据。这样，可以减少需要从子实例到中央实例传输的数据量。
 
-配置联邦：
-在中央或全局Prometheus实例中，配置联邦，使其从每个子Prometheus实例中拉取预先聚合的数据。
-在prometheus.yml配置文件中，使用federation_config部分指定要从哪些子实例中拉取数据，并使用match参数指定要拉取哪些指标。
+> 配置联邦
+
+在中央或全局Prometheus实例中，配置联邦，使其从每个子Prometheus实例中拉取预先聚合的数据。在prometheus.yml配置文件中，使用federation_config部分指定要从哪些子实例中拉取数据，并使用match参数指定要拉取哪些指标。
 
 ```yaml
 scrape_configs:
@@ -150,11 +148,13 @@ scrape_configs:
 ```
 在上述配置中，我们为生产和开发环境的Prometheus实例定义了两个不同的scrape_configs。我们使用/federate作为metrics_path，这是Prometheus联邦的默认端点。通过match[]参数，我们指定了我们想从子Prometheus实例中拉取的指标，这里我们选择了api和database两个job的指标。
 
-优化存储和保留策略：
+> 优化存储和保留策略
+
 考虑在中央Prometheus实例中使用远程存储解决方案，如Thanos或Cortex，以提供更长时间的指标保留和更高的可用性。
 调整每个Prometheus实例的数据保留策略，以便在子实例中保留更短时间的数据，而在中央实例中保留更长时间的数据。
 
-监控和警报：
+> 监控和警报
+
 监控每个Prometheus实例的性能和健康状况，确保所有实例都正常工作。
 配置警报，以便在任何Prometheus实例遇到问题时立即收到通知。
 通过这种方式，Prometheus联邦集群可以帮助在大规模环境中有效地收集、存储和查询指标，同时确保每个Prometheus实例的负载保持在可管理的水平。
@@ -163,10 +163,12 @@ scrape_configs:
 
 监控一个网关集群需要考虑多个方面，包括数据的粒度、高可用性、故障恢复等。以下是一个推荐的步骤和策略，用于部署Prometheus来监控整个网关集群：
 
-Prometheus Server部署：
 
-分布式监控：考虑为每个网关或每个网关的子集部署一个Prometheus实例。这样可以分散抓取的负载，并减少单个Prometheus实例的数据量。
-高可用性：为每个Prometheus实例部署一个副本。这样，如果一个实例出现问题，另一个可以继续工作。
+分布式监控：
+考虑为每个网关或每个网关的子集部署一个Prometheus实例。这样可以分散抓取的负载，并减少单个Prometheus实例的数据量。
+
+高可用性：
+为每个Prometheus实例部署一个副本。这样，如果一个实例出现问题，另一个可以继续工作。
 
 服务发现：
 使用Prometheus的服务发现功能自动发现新的网关实例。例如，如果的网关在Kubernetes上，Prometheus可以自动发现新的Pods和Endpoints。
