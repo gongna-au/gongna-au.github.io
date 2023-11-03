@@ -130,4 +130,3 @@ Vitess 提供了大量的性能和诊断指标，下面列举了其中一部分�
 
 - `Errors`: 错误数
 - `InternalErrors`: 内部错误数
-- `

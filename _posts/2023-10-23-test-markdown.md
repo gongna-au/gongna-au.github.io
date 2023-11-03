@@ -1,13 +1,10 @@
 ---
 layout: post
-title: Gaea中的并发
+title: 任务分发与任务消费
 subtitle:
 tags: [go]
 comments: true
 ---
-
-任务分发与任务消费
-
 
 ```go
 package main
