@@ -6,6 +6,7 @@ tags: [go]
 comments: true
 ---
 
+简单的例子：
 ```go
 package main
 

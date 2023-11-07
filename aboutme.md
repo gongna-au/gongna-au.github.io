@@ -2,6 +2,7 @@
 layout: page
 title: About me
 subtitle: Why you'd want to go on a date with me
+cover-img: ["/assets/img/backend5.jpg":]
 ---
 
 I have the following qualities:
