@@ -2,7 +2,7 @@
 layout: page
 title: 发疯文学实录
 subtitle: 生活杂记
-cover-img: ["/assets/img/backend6.jpg":]
+cover-img: ["/assets/img/backend8.jpg":]
 ---
 
 > 2023.10.26 
