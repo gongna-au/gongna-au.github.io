@@ -1,13 +1,10 @@
 ---
 layout: post
-title: Prometheus
+title: Go Map底层实现
 subtitle:
 tags: [Metric]
 comments: true
 ---
-
-show global variables like '%timeout';
-show global status like 'uptime';
 
 
 Go 中的 `map` 是一个无序的键值对集合，其底层实现是哈希表。以下是 Go 中 `map` 的底层实现的详细描述：
@@ -263,7 +260,6 @@ P与M的绑定: 在GMP模型中，每个M在执行Goroutines之前都会先获�
 动态调整: GMP模型允许动态地增加或减少M和P的数量，以适应不同的工作负载。
 
 通过这些改进，GMP模型解决了早期GM模型中的全局锁争用和其他问题，同时提供了更高效和更灵活的调度机制。
-
 
 
 
