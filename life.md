@@ -5,6 +5,10 @@ subtitle: 生活杂记
 cover-img: ["/assets/img/backend9.jpg":]
 ---
 
+> 2024.1.1
+
+新年快乐！
+
 > 2023.10.26 
 
 终于，终于
