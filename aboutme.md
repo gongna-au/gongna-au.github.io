@@ -7,7 +7,7 @@ cover-img: ["/assets/img/backend7.jpg":]
 
 Hello there! 👋
 
-Welcome to my GitHub profile! I'm a fitness enthusiast and a budding backend developer, constantly expanding my horizons in the captivating world of coding. Studying at a prestigious 211 university in Wuhan, I'm surrounded by an inspiring academic environment that feeds my passion for technology and continuous learning.
+Welcome to my profile! I'm a fitness enthusiast and a budding backend developer, constantly expanding my horizons in the captivating world of coding. Studying at a prestigious 211 university in Wuhan, I'm surrounded by an inspiring academic environment that feeds my passion for technology and continuous learning.
 
 My journey in backend development has been thrilling, as I delve into the intricacies of server-side applications and explore cutting-edge technologies and frameworks. But life isn't just about coding!
 
