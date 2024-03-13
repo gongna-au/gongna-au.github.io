@@ -70,11 +70,7 @@ pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
 如果经常需要使用不同的Python项目，可以考虑使用pipx来管理全局安装的Python应用，或者为每个项目使用单独的虚拟环境。
 记得在完成工作后通过运行deactivate命令来退出虚拟环境。
 
-
-
-
-Message ChatGPT…
-
-
-ChatGPT can make mistakes. Consider checking important information.
+```shell
+pip install paddleocr
+```
 
