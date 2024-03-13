@@ -6,6 +6,12 @@ tags: [python]
 comments: true
 --- 
 
+## 背景PaddleOCR快速开始
+
+```shell
+https://github.com/gongna-au/PaddleOCR/blob/release/2.7/doc/doc_ch/quickstart.md
+```
+
 ### 1.错误
 
 ```shell
