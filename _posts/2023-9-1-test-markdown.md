@@ -65,9 +65,8 @@ comments: true
 14-问题：解释一下Docker和Kubernetes之间的关系。
 期待的答案：Docker是一种容器化技术，可以把应用程序及其依赖项打包在一起，形成可以在任何环境中一致运行的容器。而Kubernetes是一个容器编排平台，用于管理和调度这些容器。简单地说，Docker提供了创建和运行容器的能力，而Kubernetes负责管理这些容器。
 
-15-问题：解释一下什么是持续集成/持续部署（CI/CD），以及它们在云原生环境中的作用。
-期待的答案：持续集成（CI）是一种开发实践，开发者
-11-描述一下Kubernetes的服务、部署、副本集、Pod的理解，并解释他们之间的关系,并写出简单的yaml 文件帮助我理解
+
+15-描述一下Kubernetes的服务、部署、副本集、Pod的理解，并解释他们之间的关系,并写出简单的yaml
 - 答案：Pod是Kubernetes中部署容器的最小单元，每个Pod可以包含一个或多个紧密关联的容器。副本集保证了指定数量的Pod副本运行在集群中。部署是对副本集的一层封装，提供了滚动更新和版本回滚等高级特性。服务是定义了一种访问一组Pod的策略，它可以提供一个固定的IP地址和DNS名，以及负载均衡。
 
 基本的Kubernetes组件：
@@ -118,63 +117,17 @@ spec:
 
 这些都是为了更好地支持容器化应用程序并优化其部署和运行。
 
-让我们看一个更完整的例子，包括配置映射（ConfigMap）：
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nginx-conf
-data:
-  nginx.conf: |
-    user  nginx;
-    worker_processes  1;
-
-    error_log  /var/log/nginx/error.log warn;
-    pid        /var/run/nginx.pid;
-
-    events {
-      worker_connections 1024;
-    }
-
-    http {
-      include       /etc/nginx/mime.types;
-      default_type  application/octet-stream;
-
-      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                        '$status $body_bytes_sent "$http_referer" '
-                        '"$http_user_agent" "$http_x_forwarded_for"';
-
-      access_log  /var/log/nginx/access.log  main;
-
-      sendfile        on;
-      keepalive_timeout  65;
-
-      server {
-        listen 80;
-        server_name localhost;
-
-        location / {
-          return 200 'Hello from nginx!\n';
-        }
-
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-          root   /usr/share/nginx/html;
-        }
-      }
-    }
-```
 
 
-12- 在微服务架构中，如何实现服务发现？
-   - 答案：服务注册和服务查找，注册中心
+16- 在微服务架构中，如何实现服务发现？
 
-13.-**问题**：简要描述一下Prometheus是什么，以及它的主要用途。
+答案：服务注册和服务查找，注册中心
+
+17-**问题**：简要描述一下Prometheus是什么，以及它的主要用途。
 
 **答案**：Prometheus是一个开源的系统监控和警告工具包，它原始设计用于在容器和微服务架构中收集和处理指标。Prometheus可以用于收集各种度量信息，包括但不限于硬件和操作系统指标、应用程序性能数据、以及业务相关的自定义指标。
 
-14-**问题**：Prometheus有哪些核心组件，它们各自的作用是什么？
+18-**问题**：Prometheus有哪些核心组件，它们各自的作用是什么？
 
 **答案**：Prometheus的核心组件主要有：Prometheus Server（主要负责数据采集和存储）、Exporters（用于暴露常见服务的指标，以供Prometheus Server抓取）、Pushgateway（用于短期的、临时的作业，它们无法长期存在以让Prometheus Server主动抓取）、Alertmanager（处理Alerts，并将其推送给用户）、以及客户端库（提供简单的API来帮助用户定义他们自己的指标）。
 
@@ -189,86 +142,86 @@ Alertmanager：Alertmanager 是用于处理 Alerts 的组件，它可以从 Prom
 客户端库：客户端库是用于帮助用户定义自己的指标和采集数据的库。Prometheus 社区提供了各种语言的客户端库，包括 Go、Java、Python 等等。
 
 
-15-**问题**：Prometheus如何收集数据？
+19-**问题**：Prometheus如何收集数据？
 
 **答案**：Prometheus主要通过HTTP协议周期性地从配置的目标位置拉取数据。这种机制被称为“pull model”。这些位置通常是各种服务或应用程序暴露的HTTP端点（通常为/metrics），数据格式为Prometheus可理解的格式。
 
-16-**问题**：请描述一下Prometheus的数据存储方式。
+20-**问题**：请描述一下Prometheus的数据存储方式。
    
 **答案**：Prometheus将所有收集到的指标数据存储在本地的磁盘中，并且以时间序列的方式进行存储。数据结构为：一个时间戳和一个标签集配对的浮点值。Prometheus的存储是一个时间序列数据库。
 
-17-**问题**：Prometheus 如何处理告警？
+21-**问题**：Prometheus 如何处理告警？
    
 **答案**：Prometheus通过Alertmanager组件来处理告警。用户可以在Prometheus中定义告警规则，一旦满足这些规则，Prometheus就会将警报发送到Alertmanager。Alertmanager则负责对这些警报进行去重、分组，并将警报路由到正确的接收器，如电子邮件、PagerDuty等。
 
-19-**问题**：能描述一下Prometheus和OpenTelemetry之间的关系吗？
+22-**问题**：能描述一下Prometheus和OpenTelemetry之间的关系吗？
 
 **答案**：OpenTelemetry是一个开源项目，目标是为观察性提供一组统一的、高效的、自动化的API和工具。它提供了追踪、度量和日志数据的标准定义，以及将数据发送到任何后端的工具。Prometheus可以作为OpenTelemetry的后端之一，收集和处理由OpenTelemetry生成的指标数据。
 
-20-**问题**：如果我有一个服务，我希望让Prometheus来监控它，我应该怎么做？
+23-**问题**：如果我有一个服务，我希望让Prometheus来监控它，我应该怎么做？
 
 **答案**：首先，需要在服务中暴露一个/metrics HTTP端点，然后在此端点上提供Prometheus可以理解的度量数据。可以使用Prometheus提供的客户端库来帮助生成这些度量数据。然后，需要在Prometheus的配置文件中添加这个服务作为一个新的抓取目标。一旦配置文件更新，Prometheus就会开始定期从新服务的/metrics端点拉取数据。
 
-21-**问题**：Prometheus如何处理高可用性（High Availability）？
+24-**问题**：Prometheus如何处理高可用性（High Availability）？
 **答案**：为了提供高可用性，可以运行多个相同实例。
 
 
-22-**问题**：什么是Prometheus的导出器（exporter）？举一个例子。
+25-**问题**：什么是Prometheus的导出器（exporter）？举一个例子。
 
 **答案**：Prometheus的导出器是用来暴露一些不原生支持Prometheus的服务的指标的。例如，Node Exporter是一个常用的导出器，它能够暴露出主机级别的指标，比如CPU、内存、磁盘IO、网络IO等指标。
 
-23-**问题**：Prometheus如何支持服务发现？
+26-**问题**：Prometheus如何支持服务发现？
 
 **答案**：Prometheus支持多种服务发现机制，例如静态配置、DNS、Consul等。在Kubernetes环境中，Prometheus可以自动发现服务，无需用户手动配置，Prometheus将会周期性地拉取Kubernetes API获取服务列表，然后自动更新抓取目标。
 
-24-**问题**：如何配置Prometheus以在一个应用的多个实例之间分发负载？
+27-**问题**：如何配置Prometheus以在一个应用的多个实例之间分发负载？
 
 **答案**：Prometheus的一个实例可以配置多个抓取目标。这样，Prometheus实例会轮流从每个目标抓取指标。也可以运行多个Prometheus实例，并将的应用实例分布到不同的Prometheus实例中，从而分发负载。
 
-25-**问题**：如何在Prometheus中设置告警？
+28-**问题**：如何在Prometheus中设置告警？
 
 **答案**：在Prometheus中设置告警需要在Prometheus的配置文件中定义告警规则。告警规则是基于PromQL表达式的，当这个表达式的结果超过了定义的阈值，Prometheus就会发送警报到Alertmanager。
 
-26-**问题**：在一个高流量的生产环境中，会如何优化Prometheus的性能？
+29-**问题**：在一个高流量的生产环境中，会如何优化Prometheus的性能？
 
 **答案**：对于高流量的生产环境，可以考虑以下优化措施：a) 根据需要调整抓取间隔，避免过度负载；b) 使用更强大的硬件（CPU、内存和存储）；c) 使用高性能的存储系统，如SSD，以提高存储的写入和查询性能；d) 对于大规模的监控目标，可以使用分片，将目标分配给多个Prometheus实例；e) 对于长期存储和全局视图，可以使用Thanos或Cortex等解决方案。
 
-27-**问题**：如果需要监控多个不同的集群，会怎么设计监控系统？
+30-**问题**：如果需要监控多个不同的集群，会怎么设计监控系统？
 
 **答案**：对于多集群监控，可以为每个集群部署一个Prometheus实例，用于监控该集群内的服务。
 
-28-**问题**：Prometheus是如何存储数据的？
+31-**问题**：Prometheus是如何存储数据的？
 **答案**：Prometheus在本地文件系统中存储时间序列数据，使用一种自定义的、高效的格式。每个时间序列都以块的形式写入，每块包含了一个固定时间范围内的样本。当数据写入磁盘时，Prometheus也会在内存中维护一个索引，以方便查询。
 
-29-**问题**：在Prometheus中，什么是抓取（scraping）？
+32-**问题**：在Prometheus中，什么是抓取（scraping）？
 
 **答案**：在Prometheus中，抓取是指从监控目标（比如应用服务或者导出器）获取指标数据的过程。Prometheus定期抓取每个监控目标，并将获取的样本添加到其本地数据库中。
 
-30-**问题**：Prometheus如何进行数据压缩？
+33-**问题**：Prometheus如何进行数据压缩？
 
 **答案**：Prometheus使用了几种技术来压缩数据。首先，Prometheus使用Delta编码来存储时间戳，因为相邻的时间戳通常非常接近。其次，Prometheus使用Gorilla压缩算法来存储样本值。Gorilla是一种专为时间序列数据设计的高效压缩算法。
 
-31- **问题**：简要描述一下Prometheus是什么，以及它的主要用途。
+34- **问题**：简要描述一下Prometheus是什么，以及它的主要用途。
 
 **答案**：Prometheus是一个开源的系统监控和警告工具包，它原始设计用于在容器和微服务架构中收集和处理指标。Prometheus可以用于收集各种度量信息，包括但不限于硬件和操作系统指标、应用程序性能数据、以及业务相关的自定义指标。
 
-32-**问题**：Prometheus有哪些核心组件，它们各自的作用是什么？
+35-**问题**：Prometheus有哪些核心组件，它们各自的作用是什么？
 
 **答案**：Prometheus的核心组件主要有：Prometheus Server（主要负责数据采集和存储）、Exporters（用于暴露常见服务的指标，以供Prometheus Server抓取）、Pushgateway（用于短期的、临时的作业，它们无法长期存在以让Prometheus Server主动抓取）、Alertmanager（处理Alerts，并将其推送给用户）、以及客户端库（提供简单的API来帮助用户定义他们自己的指标）。
 
-33-**问题**：Prometheus如何收集数据？
+36-**问题**：Prometheus如何收集数据？
 
  **答案**：Prometheus主要通过HTTP协议周期性地从配置的目标位置拉取数据。这种机制被称为“pull model”。这些位置通常是各种服务或应用程序暴露的HTTP端点（通常为/metrics），数据格式为Prometheus可理解的格式。
 
-34-**问题**：请描述一下Prometheus的数据存储方式。
+37-**问题**：请描述一下Prometheus的数据存储方式。
 
 **答案**：Prometheus将所有收集到的指标数据存储在本地的磁盘中，并且以时间序列的方式进行存储。数据结构为：一个时间戳和一个标签集配对的浮点值。Prometheus的存储是一个时间序列数据库。
 
-35-**问题**：Prometheus和Grafana有什么关系？
+38-**问题**：Prometheus和Grafana有什么关系？
 
 **答案**：Grafana是一个开源的度量分析和可视化套件。虽然Prometheus提供了一种表达式浏览器来可视化数据，但是Grafana提供了更强大和灵活的图形选项。Prometheus可以作为Grafana的数据源，使用户可以使用Grafana创建图表、仪表盘等来可视化Prometheus收集的数据。
 
-36- **问题**：Prometheus使用哪种查询语言？
+39- **问题**：Prometheus使用哪种查询语言？
 
 **答案**：Prometheus使用PromQL，即Prometheus查询语言。PromQL允许用户在Prometheus数据库中选择和聚合时间序列数据，并生成新的结果。
 
@@ -280,31 +233,20 @@ sum(rate(http_requests_total{job="myapp", status="200"}[5m])) by (instance)
 这个查询的含义是：在过去的 5 分钟内，统计 myapp 服务中返回状态码为 200 的 HTTP 请求的速率，并按照 instance（即服务实例）进行聚合。
 
 
-37-**问题**：Prometheus的“Pull”模型和传统的“Push”模型有什么优点和缺点？
+40-**问题**：Prometheus的“Pull”模型和传统的“Push”模型有什么优点和缺点？
 
 **答案**：Prometheus采用Pull模型，优点是能更好地适应动态的、短暂的服务，如在Kubernetes上运行的服务。Prometheus可以定期从服务中提取指标，而无需知道服务何时启动或停止。Pull模型也使得服务实例的生命周期管理和监控解耦，简化了操作。另外，对于可能会产生大量数据的监控目标，Pull模型能够通过调整抓取频率来防止DDoS自己的监控系统。
 
 但Pull模型也有缺点，比如对于分布在多个网络区域的服务，如果所有的服务都由一个中心位置的Prometheus来抓取，可能会有网络延迟或者防火墙访问的问题。另外，短暂的作业，例如批处理任务，可能在Prometheus抓取之间开始和结束，因此可能无法被Prometheus正确抓取。
 
-38-**问题**：如何扩展Prometheus？
+41-**问题**：如何扩展Prometheus？
 
 **答案**：由于Prometheus设计上是无状态的，用户可以简单地通过运行多个Prometheus服务器来实现扩展。但是这样做并不能实现全局视图或长期存储，为此，社区提供了Cortex、Thanos等解决方案。例如，Thanos可以提供全局查询视图，无限制的历史数据，并且可以将数据存储在像Amazon S3或Google Cloud Storage这样的对象存储服务。
 
-39-**问题**：Prometheus能否进行长期的数据存储？
+42-**问题**：Prometheus能否进行长期的数据存储？
 
 **答案**：默认情况下，Prometheus并不直接支持长期存储，它的本地存储仅旨在满足短期（例如：15天）的数据保留需求。然而，通过接入远程存储系统，比如Thanos或Cortex，可以实现长期的数据存储。
 
-40-**问题**：Prometheus 如何处理告警？
-
-**答案**：Prometheus通过Alertmanager组件来处理告警。用户可以在Prometheus中定义告警规则，一旦满足这些规则，Prometheus就会将警报发送到Alertmanager。Alertmanager则负责对这些警报进行去重、分组，并将警报路由到正确的接收器，如电子邮件、PagerDuty等。
-
-41-**问题**：能描述一下Prometheus和OpenTelemetry之间的关系吗？
-
-**答案**：OpenTelemetry是一个开源项目，目标是为观察性提供一组统一的、高效的、自动化的API和工具。它提供了追踪、度量和日志数据的标准定义，以及将数据发送到任何后端的工具。Prometheus可以作为OpenTelemetry的后端之一，收集和处理由OpenTelemetry生成的指标数据。
-
-42-**问题**：如果我有一个服务，我希望让Prometheus来监控它，我应该怎么做？
-
-**答案**：首先，需要在服务中暴露一个/metrics HTTP端点，然后在此端点上提供Prometheus可以理解的度量数据。可以使用Prometheus提供的客户端库来帮助生成这些度量数据。然后，需要在Prometheus的配置文件中添加这个服务作为一个新的抓取目标。一旦配置文件更新，Prometheus就会开始定期从新服务的/metrics端点拉取数据。
 
 43- **问题**：Prometheus如何处理高可用性（High Availability）？
 
