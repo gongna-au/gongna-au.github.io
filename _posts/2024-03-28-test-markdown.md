@@ -58,7 +58,7 @@ mysql -utestuser -p123456 -h127.0.0.1 -P3306
 $ docker run --name master --network=host \
 -e MYSQL_ROOT_PASSWORD=123456 \
 -p 3306:3306 \
--v ./my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \ 
+-v ./my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \
 -d mysql:latest
 ```
 
