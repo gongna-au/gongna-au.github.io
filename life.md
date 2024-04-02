@@ -4,6 +4,10 @@ title: 发疯文学实录
 subtitle: 生活杂记
 cover-img: ["/assets/img/backend9.jpg":]
 ---
+
+> 2024.3.27
+INFJ适合出家，真的😢
+
 > 2024.2.27
 
 天杀的机器学习!!!😢
