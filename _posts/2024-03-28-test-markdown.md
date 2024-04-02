@@ -78,6 +78,28 @@ CREATE TABLE IF NOT EXISTS sensor_logs (
 );
 ```
 
+最最简单的运行独立Mysql的方式
+```shell
+docker run --name test -p 3308:3306 -e MYSQL_ROOT_PASSWORD=public -d mysql
+```
+
+```shell
+mysql -uroot -ppublic -h127.0.0.1 -P3308                
+               
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.3.0 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+```     
+
+
+
 # 2 本地部署Mysql 集群
 
 ## 2.1 编辑配置文件
