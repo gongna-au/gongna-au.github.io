@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 使用虚拟环境开发Python项目🤣
+title: 使用虚拟环境开发Python项目
 subtitle:
 tags: [python]
 comments: true

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Mac Docker 搭建Mysql集群🤣
+title: Mac Docker 搭建Mysql集群
 subtitle:
 tags: [Docker]
 comments: true
