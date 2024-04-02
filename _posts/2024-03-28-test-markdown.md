@@ -6,9 +6,9 @@ tags: [Docker]
 comments: true
 --- 
 
-# 本地运行独立的Mysql
+# 1.本地运行独立的Mysql
 
-## 编辑配置文件设置默认密码插件
+## 1.1 编辑配置文件设置默认密码插件
 
 ```shell
 vim my3319.cnf
@@ -25,22 +25,63 @@ local-infile=1
 
 vim 保存并且退出
 
-## Docker一键运行
+## 1.2 Docker一键运行
 
 ```shell
-$ docker run --name master \              
+$ docker run --name master --network=host \
 -e MYSQL_ROOT_PASSWORD=123456 \
 -e MYSQL_USER=testuser \
 -e MYSQL_PASSWORD=123456 \
 -p 3306:3306 \
--v my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \
+-v ./my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \ 
+-d mysql:latest
+```
+两个用户都可以登录
+
+```shell
+mysql -uroot -p123456 -h127.0.0.1 -P3306  
+```
+
+登录root用户后给testuser用户给权限
+```shell
+GRANT ALL PRIVILEGES ON *.* TO 'testuser'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+```
+然后可以登录testuser 创建数据库了。刚开始的时候，testuser没有足够的权限在MySQL中创建数据库。当通过docker run命令创建MySQL容器并设置MYSQL_USER和MYSQL_PASSWORD环境变量时，这会创建一个用户，但是这个用户默认并没有权限创建新的数据库。这个用户只能访问它已经被授权的数据库。所以需要登录root用户后给权限。
+
+```shell
+mysql -utestuser -p123456 -h127.0.0.1 -P3306  
+```
+
+或者仅仅改名root用户的密码
+```shell
+$ docker run --name master --network=host \
+-e MYSQL_ROOT_PASSWORD=123456 \
+-p 3306:3306 \
+-v ./my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \ 
 -d mysql:latest
 ```
 
+## 1.3 登录
+```shell
+mysql -uroot-p123456 -h127.0.0.1 -P3306  
+```
+## 1.4 创建数据库
+```shell
+CREATE DATABASE IF NOT EXISTS sensor_data;
+USE sensor_data;
+CREATE TABLE IF NOT EXISTS sensor_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sensor_id VARCHAR(255) NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    timestamp DATETIME NOT NULL
+);
+```
 
-# 本地部署Mysql 集群
+# 2 本地部署Mysql 集群
 
-### my3319.cnf文件
+## 2.1 编辑配置文件
+### 2.1.1 my3319.cnf文件
 ```shell
 [mysqld]
 server-id=33319
@@ -50,7 +91,7 @@ default-authentication-plugin=mysql_native_password
 local-infile=1
 ```
 
-### my3329.cnf文件
+### 2.1.2 my3329.cnf文件
 ```shell
 [mysqld]
 server-id=33329
@@ -60,7 +101,7 @@ default-authentication-plugin=mysql_native_password
 local-infile=1        
 ```
 
-###  my3339.cnf文件
+### 2.1.3 my3339.cnf文件
 ```shell
 [mysqld]
 server-id=33339
@@ -70,7 +111,8 @@ local-infile=1
 default-authentication-plugin=mysql_native_password   
 ```
 
-### 搭建集群的完整脚本
+## 2.2 完整的脚本
+### 2.2.1 搭建集群的完整脚本
 ```shell
 #!/bin/bash
 docker network rm
