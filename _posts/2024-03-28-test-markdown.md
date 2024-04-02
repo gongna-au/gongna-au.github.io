@@ -64,7 +64,7 @@ $ docker run --name master --network=host \
 
 ## 1.3 登录
 ```shell
-mysql -uroot-p123456 -h127.0.0.1 -P3306  
+mysql -uroot -p123456 -h127.0.0.1 -P3306  
 ```
 ## 1.4 创建数据库
 ```shell
