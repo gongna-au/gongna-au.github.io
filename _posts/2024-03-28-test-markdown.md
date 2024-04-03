@@ -32,8 +32,7 @@ $ docker run --name master --network=host \
 -e MYSQL_ROOT_PASSWORD=123456 \
 -e MYSQL_USER=testuser \
 -e MYSQL_PASSWORD=123456 \
--p 3306:3306 \
--v ./my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \ 
+-v ./my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \
 -d mysql:latest
 ```
 两个用户都可以登录
@@ -41,6 +40,7 @@ $ docker run --name master --network=host \
 ```shell
 mysql -uroot -p123456 -h127.0.0.1 -P3306  
 ```
+默认是3306
 
 登录root用户后给testuser用户给权限
 ```shell
@@ -53,14 +53,16 @@ FLUSH PRIVILEGES;
 mysql -utestuser -p123456 -h127.0.0.1 -P3306  
 ```
 
+
 或者仅仅改名root用户的密码
 ```shell
 $ docker run --name master --network=host \
 -e MYSQL_ROOT_PASSWORD=123456 \
--p 3306:3306 \
 -v ./my3319.cnf:/etc/mysql/mysql.conf.d/my.cnf \
 -d mysql:latest
 ```
+
+> 当使用宿主机网络模式（--network host）运行mysql容器时，与之前相同，-p或--publish参数不会被使用，因为容器将直接使用宿主机的网络，不需要进行端口映射。因此，应该移除-p 3307:3306部分。
 
 ## 1.3 登录
 ```shell

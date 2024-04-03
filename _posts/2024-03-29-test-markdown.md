@@ -1,77 +1,116 @@
 ---
 layout: post
 title: EMQX 集成 Mysql
-subtitle:
+subtitle: Docker 网络下的容器通信
 tags: [EMQX]
 comments: true
 --- 
 
-## 适用于 Docker 的 EMQX Enterprise 5.6.0
+# 创建Docker 网络运行
 
-## 获取Docker镜像
+## 拉取镜像
+
 ```shell
 docker pull emqx/emqx-enterprise:5.6.0
 ```
 
-## 启动Docker容器
+## 创建Docker网络
+
 ```shell
-docker run -d --name emqx-enterprise -p 1883:1883 -p 8083:8083 -p 8084:8084 -p 8883:8883 -p 18083:18083 emqx/emqx-enterprise:5.6.0
+docker network create my-network
+```
+
+## 运行emqx
+
+```shell
+docker run -d --name emqx-enterprise --network my-network -p 1883:1883 -p 8083:8083 -p 8084:8084 -p 8883:8883 -p 18083:18083 emqx/emqx-enterprise:5.6.0
 ```
 
 ## 运行Mysql
 
-参考：`https://www.emqx.io/docs/zh/latest/data-integration/data-bridge-mysql.html`
+```shell
+docker run --name mysql --network my-network -p 3307:3306 -e MYSQL_ROOT_PASSWORD=public -d mysql
+```
 
-### 启动一个 MySQL 容器并设置密码为 public
-docker run --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=public -d mysql
+## 创建数据库和表
 
-### 进入容器
+```shell
 docker exec -it mysql bash
+```
 
-### 在容器中连接到 MySQL 服务器，需要输入预设的密码
-mysql -u root -p
+```shell
+mysql -u root -ppublic
+```
 
-### 创建并选择数据库
+```shell
 CREATE DATABASE emqx_data CHARACTER SET utf8mb4;
 use emqx_data;
-
-
-在 MySQL 中创建两张表：
-
-数据表 emqx_messages 存储每条消息的发布者客户端 ID、主题、Payload 以及发布时间：
-```sql
-CREATE TABLE emqx_messages (
-id INT AUTO_INCREMENT PRIMARY KEY,
-clientid VARCHAR(255),
-topic VARCHAR(255),
-payload BLOB,
-created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-数据表 emqx_client_events 存储上下线的客户端 ID、事件类型以及事件发生时间：
-
-```sql
-CREATE TABLE emqx_client_events (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  clientid VARCHAR(255),
-  event VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE TABLE emqx_messages (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARCHAR(255),topic VARCHAR(255),payload BLOB,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE emqx_client_events (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARCHAR(255), event VARCHAR(255),created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 ```
 
+## 仪表盘连接
 
-## 创建连接器
+配置的Mysql地址为mysql而不是`127.0.0.1:3307`
+至此访问`http://localhost:18083/#/connector/create`
+可以成功创建Mysql连接器
 
-在创建 MySQL Sink 之前，需要创建一个 MySQL 连接器，以便 EMQX 与 MySQL 服务建立连接。以下示例假定在本地机器上同时运行 EMQX 和 MySQL。如果在远程运行 MySQL 和 EMQX，请相应地调整设置。
-转到 Dashboard 集成 -> 连接器 页面。点击页面右上角的创建。
-在连接器类型中选择 MySQL，点击下一步。
-在 配置 步骤，配置以下信息：
-```text
-连接器名称：应为大写和小写字母及数字的组合，例如：my_mysql。
-服务器地址：填写 127.0.0.1:3306。
-数据库名字：填写 emqx_data。
-用户名：填写 root。
-密码：填写 public。
-点击创建按钮完成连接器创建。
-在弹出的创建成功对话框中您可以点击创建规则，继续创建规则以指定需要写入 MySQL 的数据和需要记录的客户端事件。您也可以按照创建消息存储 Sink 规则和创建事件记录 Sink 规则章节的步骤来创建规则。
+或者通过下面的命令获取Docker网络内部Mysql的Ip地址
+
+```shell
+docker inspect  -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql
 ```
+然后配置的Mysql地址为inspect 的结果+`:3306`；例如：`192.168.228.3:3306`至此可以成功创建Mysql连接器。
+
+
+# 在宿主机直接运行
+
+## 拉取镜像
+
+```shell
+docker pull emqx/emqx-enterprise:5.6.0
+```
+
+## 运行emqx
+
+```shell
+docker run -d --name emqx-enterprise --network host emqx/emqx-enterprise:5.6.0
+```
+
+## 运行Mysql
+
+```shell
+docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=public -d mysql
+```
+
+## 创建数据库和表
+
+```shell
+docker exec -it mysql bash
+```
+
+```shell
+mysql -u root -ppublic
+```
+
+```shell
+CREATE DATABASE emqx_data CHARACTER SET utf8mb4;
+use emqx_data;
+CREATE TABLE emqx_messages (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARCHAR(255),topic VARCHAR(255),payload BLOB,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE emqx_client_events (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARCHAR(255), event VARCHAR(255),created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+```
+
+## 仪表盘连接
+
+配置的Mysql地址为mysql而不是`127.0.0.1:3306`
+至此访问`http://localhost:18083/#/connector/create`
+可以成功创建Mysql连接器
+
+当使用--network host参数运行Docker容器时，容器会直接使用host的网络命名空间。这意味着容器中的应用程序将直接在宿主机的网络上运行，而不是在Docker自己的虚拟网络中因此，使用--network host时指定的任何如图所示的端口映射（-p或--publish参数）都将被忽略。
+
+或者通过下面的命令获取Docker网络内部Mysql的Ip地址
+
+```shell
+docker inspect  -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql
+```
+然后配置的Mysql地址为inspect 的结果+`:3306`；例如：`192.168.228.3:3306`至此可以成功创建Mysql连接器。
