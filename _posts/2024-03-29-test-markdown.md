@@ -51,7 +51,7 @@ CREATE TABLE emqx_client_events (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARC
 
 ## 仪表盘连接
 
-配置的Mysql地址为mysql而不是`127.0.0.1:3307`
+配置的Mysql地址为`mysql`而不是`127.0.0.1:3307`
 至此访问`http://localhost:18083/#/connector/create`
 可以成功创建Mysql连接器
 
