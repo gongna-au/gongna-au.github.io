@@ -105,9 +105,22 @@ CREATE TABLE emqx_client_events (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARC
 
 当使用--network host参数运行Docker容器时，容器会直接使用host的网络命名空间。这意味着容器中的应用程序将直接在宿主机的网络上运行，而不是在Docker自己的虚拟网络中因此，使用--network host时指定的任何如图所示的端口映射（-p或--publish参数）都将被忽略。
 
-或者通过下面的命令获取Docker网络内部Mysql的Ip地址
+## 安装emqx-cli
+
+### Homebrew
+```shell
+brew install emqx/mqttx/mqttx-cli
+```
+
+### Intel Chip
+```shell
+curl -LO https://www.emqx.com/zh/downloads/MQTTX/v1.9.10/mqttx-cli-macos-x64
+sudo install ./mqttx-cli-macos-x64 /usr/local/bin/mqttx
+```
+
+### Apple Silicon
 
 ```shell
-docker inspect  -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql
+curl -LO https://www.emqx.com/zh/downloads/MQTTX/v1.9.10/mqttx-cli-macos-arm64
+sudo install ./mqttx-cli-macos-arm64 /usr/local/bin/mqttx
 ```
-然后配置的Mysql地址为inspect 的结果+`:3306`；例如：`192.168.228.3:3306`至此可以成功创建Mysql连接器。
