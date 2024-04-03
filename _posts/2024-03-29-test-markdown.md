@@ -55,11 +55,8 @@ CREATE TABLE emqx_client_events (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARC
 至此访问`http://localhost:18083/#/connector/create`
 可以成功创建Mysql连接器
 
-或者通过下面的命令获取Docker网络内部Mysql的Ip地址
+或者通过下面的命令获取Docker网络内部Mysql的Ip地址`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql`
 
-```shell
-docker inspect  -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql
-```
 然后配置的Mysql地址为inspect 的结果+`:3306`；例如：`192.168.228.3:3306`至此可以成功创建Mysql连接器。
 
 
