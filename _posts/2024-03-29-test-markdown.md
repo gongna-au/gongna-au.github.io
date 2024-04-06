@@ -124,3 +124,53 @@ sudo install ./mqttx-cli-macos-x64 /usr/local/bin/mqttx
 curl -LO https://www.emqx.com/zh/downloads/MQTTX/v1.9.10/mqttx-cli-macos-arm64
 sudo install ./mqttx-cli-macos-arm64 /usr/local/bin/mqttx
 ```
+
+
+
+## EMQX 集成Mysql直接写入数据到Mysql
+
+
+### Mysql 创建表
+
+```shell
+CREATE TABLE `emqx_messages` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `clientid` varchar(255) DEFAULT NULL,
+  `topic` varchar(255) DEFAULT NULL,
+  `msg` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+```
+
+### 配置EMQX Dashboard Rule
+```shell
+SELECT
+  clientid as clientid,
+    payload.msg as msg,
+    topic as topic,
+    timestamp as timestamp
+FROM
+  "t/1"
+```
+
+通过 `payload.msg as msg`来提取出发送到主题的信息的具体的内容
+
+### 配置EMQX Dashboard Action
+
+```shell
+INSERT INTO emqx_messages(clientid, topic, msg, created_at  ) VALUES(
+  ${clientid},
+  ${topic},
+  ${msg},
+  FROM_UNIXTIME(${timestamp}/1000)
+)
+```
+
+### 往主题发送消息
+
+```shell
+mqttx pub -i emqx_c -t t/1 -m '{ "msg": "hello MySQL" }'
+```
+
