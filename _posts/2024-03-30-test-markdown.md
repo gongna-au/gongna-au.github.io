@@ -57,10 +57,10 @@ sequenceDiagram
     MQTT Broker->>数据库: 插入车辆入场信息
     数据库-->>MQTT Broker: 确认入场信息已保存
     MQTT Broker->>后端服务器: 触发服务判断车辆是否预定
-    alt 车辆预定
+    alt 预定了车位
         后端服务器->>数据库: 更新订单状态为完成
         数据库-->>后端服务器: 确认订单已更新
-    else 无预定
+    else 未预定
         Note over 后端服务器,数据库: 无需操作
     end
    
