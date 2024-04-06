@@ -82,6 +82,7 @@ docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=public -d mysql
 
 ## 创建数据库和表
 
+进入容器后登录
 ```shell
 docker exec -it mysql bash
 ```
@@ -90,10 +91,23 @@ docker exec -it mysql bash
 mysql -u root -ppublic
 ```
 
+或者直接在宿主机登录
+```shell
+mysql -h127.0.0.1 -P3306 -u root -ppublic
+```
+
 ```shell
 CREATE DATABASE emqx_data CHARACTER SET utf8mb4;
 use emqx_data;
-CREATE TABLE emqx_messages (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARCHAR(255),topic VARCHAR(255),payload BLOB,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE `emqx_messages` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `clientid` varchar(255) DEFAULT NULL,
+  `topic` varchar(255) DEFAULT NULL,
+  `msg` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE emqx_client_events (id INT AUTO_INCREMENT PRIMARY KEY,clientid VARCHAR(255), event VARCHAR(255),created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 ```
 
@@ -174,3 +188,21 @@ INSERT INTO emqx_messages(clientid, topic, msg, created_at  ) VALUES(
 mqttx pub -i emqx_c -t t/1 -m '{ "msg": "hello MySQL" }'
 ```
 
+登录Mysql查看数据是否被插入
+```shell
+mysql -h127.0.0.1 -P3306 -u root -ppublic
+```
+
+```shell
+use emqx_data;
+```
+
+```shell
+select * from emqx_messages;
+```
+
+
+## EMQX 配置Hook
+
+> 参考https://www.emqx.io/docs/en/latest/data-integration/webhook.html
+> 注意：Hook服务必须要和EMQX/MySQL在同一个容器网络下（或者三者都是在宿主机）
