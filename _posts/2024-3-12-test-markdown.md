@@ -72,11 +72,10 @@ pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
 
 ### 3.其他
 
-使用虚拟环境是Python项目开发的最佳实践之一，它帮助管理项目依赖并避免版本冲突。
 如果经常需要使用不同的Python项目，可以考虑使用pipx来管理全局安装的Python应用，或者为每个项目使用单独的虚拟环境。
 记得在完成工作后通过运行deactivate命令来退出虚拟环境。
 
 ```shell
-pip install paddleocr
+$ deactivate
 ```
 
