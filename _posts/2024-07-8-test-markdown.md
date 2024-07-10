@@ -9,7 +9,7 @@ comments: true
 
 > Mysql 镜像版本 mysql:8.0.30 更高版本不支持show master status\G
 
-Vim 3349.cnf
+> Vim 3349.cnf
 
 ```shell
 [mysqld]
@@ -21,7 +21,8 @@ log-bin=mysql-bin
 default-authentication-plugin=mysql_native_password
 ```
 
-Vim 3359.cnf
+> Vim 3359.cnf
+
 ```shell
 [mysqld]
 server-id=33359
@@ -32,6 +33,7 @@ log-bin=mysql-bin
 default-authentication-plugin=mysql_native_password
 ```
 
+> Vim 3369.cnf
 
 ```shell
 [mysqld]
@@ -42,6 +44,8 @@ local-infile=1
 log-bin=mysql-bin
 default-authentication-plugin=mysql_native_password
 ```
+
+> 集群脚本
 
 ```shell
 #!/bin/bash

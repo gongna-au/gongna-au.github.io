@@ -9,7 +9,7 @@ comments: true
 
 > Mysql 镜像版本: ibex/debian-mysql-server-5.7
 
-vim my3319.cnf 
+> vim my3319.cnf 
 
 ```shell
 [mysqld]
@@ -21,7 +21,7 @@ default-authentication-plugin=mysql_native_password
 log-bin=mysql-bin
 ```
 
-vim my3329.cnf 
+> vim my3329.cnf 
 
 ```shell
 [mysqld]
@@ -33,7 +33,7 @@ default-authentication-plugin=mysql_native_password
 log-bin=mysql-bin
 ```
 
-vim my3339.cnf 
+> vim my3339.cnf 
 
 ```shell
 [mysqld]
@@ -44,6 +44,8 @@ local-infile=1
 default-authentication-plugin=mysql_native_password
 log-bin=mysql-bin
 ```
+
+> 集群脚本
 
 ```shell
 #!/bin/bash
