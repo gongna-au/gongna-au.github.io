@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 本地搭建Mysql8集群
+title:  Docker本地搭建Mysql8集群
 subtitle: 
 tags: [Mysql]
 comments: true

@@ -35,7 +35,7 @@ log-bin=mysql-bin
 
 > vim my3339.cnf 
 
-```shell
+```shell 
 [mysqld]
 server-id=33339
 general_log=ON
