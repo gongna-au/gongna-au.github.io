@@ -6,10 +6,10 @@ tags: [kafka]
 comments: true
 ---
 
-## 使用Docker安装Kafka
+## 1.使用Docker安装Kafka
 首先，确保已经安装了Docker和Docker Compose。
 
-#### 获取Kafka Docker镜像:
+#### 1.1 获取Kafka Docker镜像:
 
 使用wurstmeister/kafka这个流行的Docker镜像。这个镜像也包含了Zookeeper，因为Kafka依赖于Zookeeper。
 ```shell
@@ -23,7 +23,8 @@ docker pull wurstmeister/kafka
 - 消费者偏移量：早期版本的 Kafka 使用 Zookeeper 来保存消费者的偏移量。尽管在后续版本中，这个功能被移到 Kafka 自己的内部主题 (__consumer_offsets) 中，但在一些老的 Kafka 集群中，Zookeeper 仍然扮演这个角色。
 因为 Zookeeper 在 Kafka 的运作中起到了如此关键的作用，所以当部署一个 Kafka 集群时，通常也需要部署一个 Zookeeper 集群来与之配合。
 
-#### 使用docker-compose启动Kafka:
+#### 1.2 使用docker-compose启动Kafka:
+
 创建一个docker-compose.yml文件，并输入以下内容：
 ```yaml
 version: '2'
@@ -45,6 +46,7 @@ services:
     volumes:
      - /var/run/docker.sock:/var/run/docker.sock
 ```
+
 - version: 这指定了docker-compose的版本。版本'2'是一个相对较早的版本，但它足够满足我们的需求。
 - services: 定义了要启动的所有服务容器。这里，我们有两个服务：zookeeper和kafka。
 - zookeeper:
@@ -63,6 +65,7 @@ services:
 从这个配置中，Kafka容器的broker的具体配置主要在environment部分。这里定义了它的监听器、安全协议以及如何连接到Zookeeper。这些配置都将在启动Kafka容器时传递给Kafka进程。
 
 运行以下命令来启动Kafka和Zookeeper：
+
 ```shell
 docker-compose up -d
 WARN[0000] Found multiple config files with supported names: /Users/gongna/docker-compose.yml, /Users/gongna/docker-compose.yaml 
@@ -75,9 +78,9 @@ WARN[0000] Using /Users/gongna/docker-compose.yml
 ```
 看到以上消息代表已经成功的启动了。
 
-#### 使用Kafka
+#### 1.3 使用Kafka
 
-##### 创建主题:
+##### 1.3.1 创建主题:
 
 查找容器ID
 
@@ -102,7 +105,7 @@ kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --par
 - `--topic test`：定义了新创建的topic的名称，这里是test。
 - 这条命令创建了一个名为test的新topic，这个topic有1个partition和1个replica，并存储在运行在zookeeper:2181上的Zookeeper中。
 
-##### 生产消息:
+##### 1.3.2 生产消息:
 使用Kafka的命令行生产者工具发送消息：
 
 ```shell
@@ -121,7 +124,7 @@ root@1e35c5fa5306:/# kafka-console-producer.sh --broker-list kafka:9093 --topic 
 > hello world
 ```
 
-##### 消费消息:
+##### 1.3.3 消费消息:
 在另一个终端或者容器内，使用Kafka的命令行消费者工具来接收消息：
 ```shell
 kafka-console-consumer.sh --bootstrap-server kafka:9093 --topic test --from-beginning
@@ -144,14 +147,14 @@ hello world
 ```
 似不似很简单！！🎉🎉🎉
 
-#### Kafka的实际使用场景
+#### 1.4 Kafka的实际使用场景
 现在已经了解了Kafka的基础操作，这里是一些Kafka的典型使用场景：
 1. 日志聚合：将分布式系统中的各种日志汇总到一个集中的日志系统。
 2. 流处理：使用Kafka Streams或其他流处理框架实时处理数据。
 3. 事件源：记录系统中发生的每一个状态变化，以支持事务和系统状态的恢复。
 4. 集成与解耦：在微服务架构中，使用Kafka作为各个微服务之间的中间件，确保它们之间的解耦。
 
-#### 编码实现
+#### 1.5 编码实现
 
 安装库:
 ```shell
