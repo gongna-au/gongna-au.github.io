@@ -193,12 +193,14 @@ func main() {
     producer.Flush(15 * 1000)
 }
 ```
+
 - 在Kafka的上下文中，一个broker是一个单独的Kafka服务器实例，负责存储数据并为生产者和消费者服务。一个Kafka集群通常由多个brokers组成，这样可以确保数据的可用性和容错性。
 - 为什么叫“broker”呢？因为在许多系统中，broker是一个中介或协调者，帮助生产者和消费者之间的交互。在Kafka中，brokers确保数据的持久化、冗余存储和分发给消费者。
 - 当在代码中指定"bootstrap.servers": broker，实际上是在告诉Kafka生产者客户端在哪里可以找到集群的一个或多个broker以连接到整个Kafka集群。
 - bootstrap.servers可以是Kafka集群中的一个或多个broker的地址。不需要列出集群中的所有broker，因为一旦客户端连接到一个broker，它就会发现集群中的其他brokers。但是，通常建议列出多个brokers以增加初始连接的可靠性。
 综上所述，可以将broker视为Kafka的单个服务器实例，它存储数据并处理客户端请求。当的生产者或消费者代码连接到localhost:9092时，它实际上是在连接到运行在该地址的Kafka broker。如果有一个包含多个brokers的Kafka集群，的bootstrap.servers配置可能会看起来像这样：broker1:9092,broker2:9092,broker3:9092。
 编写消费者代码：
+
 ```go
 package main
 
