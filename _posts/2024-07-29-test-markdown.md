@@ -15,7 +15,7 @@ comments: true
 
 在 Apple M1 计算机上为 ARM 架构构建 Docker 镜像的具体步骤：
 
-- 安装并配置 Docker Buildx
+#### 安装并配置 Docker Buildx
 
 首先，确保Docker 版本是最新的，因为 Docker Desktop for Mac（尤其是针对 M1 芯片的版本）通常已经包含了 Docker Buildx。通过version命令检查 Buildx 是否已安装：
 
@@ -28,12 +28,12 @@ docker buildx version
 brew install docker-buildx
 ```
 
-- 创建新的构建实例
+#### 创建新的构建实例
 
 为了确保可以进行跨平台构建，需要创建一个新的 Buildx 构建实例。通过docker buildx create以下命令创建：
 docker buildx create --name mybuilder --use
 
-- 启动并检查构建实例
+#### 启动并检查构建实例
 
 使用以下命令启动构建实例并检查是否支持多平台构建：
 
@@ -57,7 +57,7 @@ docker buildx inspect --bootstrap
 - linux/arm/v7：适用于 32 位的 ARM 架构，常见于较老的 ARM 设备和一些嵌入式系统。
 - linux/arm/v6：适用于更早版本的 ARM 设备，如早期版本的 Raspberry Pi。
 
-### 构建 ARM 架构镜像
+#### 构建 ARM 架构镜像
 
 使用 Docker Buildx 构建 ARM 架构的镜像。如果 Dockerfile 位于当前目录：
 
@@ -67,7 +67,7 @@ docker buildx build --platform linux/arm64 -t your-image-name:your-tag .
 
 这里 --platform linux/arm64 指定了目标平台是 ARM64，这适用于 Apple M1 芯片。
 
-### 使用镜像
+#### 使用镜像
 
 构建完成后，可以像往常一样使用这个镜像。如果需要将镜像推送到 Docker Hub 或其他容器镜像仓库，请添加 --push 标志到构建命令中。
 注意
@@ -86,8 +86,9 @@ docker buildx build --platform linux/arm64 -t your-image-name:your-tag .
 ```
 
 
-## 使用orb
+## 2. 其他
 
+#### 2.1 使用机器
 ```shell
 orb create --arch amd64 ubuntu new-ubuntu
 orb -m new-ubuntu exec
@@ -95,6 +96,7 @@ orb -m new-ubuntu
 FROM centos:centos7
 ```
 
-## 参考
+#### 2.2 参考
 
  - [docker buildx](https://github.com/docker/buildx)
+
