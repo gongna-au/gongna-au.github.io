@@ -12,7 +12,7 @@ Welcome to my Github page! I am GongNa, a graduate from a 211 university in Wuha
 
 
 #### 🚀 Things I am currently working on: 
-- Completing my Computer Engineering Bachelor's degree.
+
 - Diving deep into the cloud native domain.
 - [My Study Notes](https://gongna-au.github.io/)
 
