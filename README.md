@@ -7,9 +7,8 @@
 [![Github](https://img.shields.io/badge/-Github-000?style=flat&logo=Github&logoColor=white)](https://github.com/gongna-au)
 [![Gmail](https://img.shields.io/badge/-Gmail-c14438?style=flat&logo=Gmail&logoColor=white)](mailto:mrtnsnrasmus@gmail.com)
 
-Welcome to my Github page! I am GongNa, a software engineering student at Central China Normal University. Passionate about technology, I am on a journey to master the art of backend development and cloud native solutions.  
 
-
+Welcome to my Github page! I am GongNa, a graduate from a 211 university in Wuhan. Passionate about technology, I am on a journey to master the art of backend development, focusing primarily on middleware, PaaS platforms, containerization, and Kubernetes.
 
 
 #### 🚀 Things I am currently working on: 
