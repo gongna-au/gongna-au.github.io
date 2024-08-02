@@ -20,9 +20,12 @@ Welcome to my Github page! I am GongNa, a software engineering student at Centra
 #### :muscle: Things I am challenging myself with:
 - Embracing early mornings for a productive start.
 - Dedication to coding at least 4 hours daily.
-- Committing to a healthy lifestyle with 5 days of exercise per week.
-- Enhancing my CV with practical skills beyond university education.
-
+- Committing to a healthy lifestyle with 2 days of exercise per week (weekend workouts), making up for the weekdays I missed.
+- Continuing to learn about Kubernetes and its applications.
+- Currently researching middleware and PaaS platforms in my job.
+- A passionate Canon photography enthusiast, capturing moments wherever I go.
+- Exploring the art of food photography, combining my love for cooking and visual storytelling.
+- Always on the lookout for the next great hiking trail to conquer and photograph!
 
 #### :computer: Programming languages and tools: 
 [![Skills](https://skillicons.dev/icons?i=go,python,docker,linux)](https://github.com/AndriiMaliuta)
