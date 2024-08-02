@@ -2,7 +2,7 @@
 layout: post
 title: 关于Metrics, tracing, and logging 的不同
 subtitle: 从本质来看........
-tags: [Metric]
+tags: [监控]
 ---
 # 关于Metrics, tracing, and logging 的不同
 

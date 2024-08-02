@@ -2,7 +2,7 @@
 layout: post
 title: 使用 OpenTelemetry 构建可观测性
 subtitle:
-tags: [可观测性]
+tags: [监控]
 comments: true
 ---
 

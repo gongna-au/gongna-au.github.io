@@ -2,7 +2,7 @@
 layout: post
 title: OpenTelemetry和Jaeger进行分布式追踪
 subtitle: 
-tags: [OpenTelemetry]
+tags: [监控]
 comments: true
 ---
 

@@ -13,7 +13,7 @@ Welcome to my Github page! I am GongNa, a software engineering student at Centra
 
 
 #### 🚀 Things I am currently working on: 
-- Completing my Computer Engineering Bachelor's degree.
+
 - Diving deep into the cloud native domain.
 - [My Study Notes](https://gongna-au.github.io/)
 
