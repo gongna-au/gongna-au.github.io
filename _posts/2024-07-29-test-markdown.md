@@ -73,12 +73,27 @@ docker buildx build --platform linux/arm64 -t your-image-name:your-tag .
 注意
 - 在 Apple M1 上，默认构建的镜像是 ARM 架构的
 - 如果需要构建适用于不同架构（如 amd64）的镜像，需要在 Buildx 命令中指定相应的平台。
+
 ```shell
  docker buildx build --platform linux/arm64 -t test:v1.2 .
  docker buildx build --platform linux/arm64 -t test:v1.2 . --load
 ```
 
+```shell
+docker run --privileged -it --platform linux/arm64 -v $(pwd):/demo  test:v1.2 /bin/bash
+```
+
+```shell
+ docker buildx build --platform linux/amd64 -t test:v1.2 .
+ docker buildx build --platform linux/amd64 -t test:v1.2 . --load
+```
+
+```shell
+docker run --privileged -it --platform linux/amd64 -v $(pwd):/demo  test:v1.2 /bin/bash
+```
+
 没有加--load参数的时候，不会把镜保存到本地🤣，所以我一般都是用第二个命令。
+一个完整的用例如下:
 
 ```shell
  docker buildx build --platform linux/amd64 -t test:v1.2 . --load
