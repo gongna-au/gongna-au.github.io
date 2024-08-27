@@ -2,7 +2,7 @@
 layout: post
 title: Prometheus 实践
 subtitle:
-tags: [Prometheus]
+tags: [监控]
 ---
 
 # 1.基于Prometheus的业务指标弹性伸缩

@@ -2,7 +2,7 @@
 layout: post
 title: Prometheus
 subtitle: 
-tags: [Prometheus]
+tags: [监控]
 comments: true
 ---
 
