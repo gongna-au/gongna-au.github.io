@@ -7,7 +7,6 @@ comments: true
 ---
 
 
-
 grep "^sql:" yourfile.sql
 这个 grep 命令用于查找所有以 "sql:" 开头的行。
 
