@@ -74,19 +74,27 @@ docker buildx build --platform linux/arm64 -t your-image-name:your-tag .
 - 在 Apple M1 上，默认构建的镜像是 ARM 架构的
 - 如果需要构建适用于不同架构（如 amd64）的镜像，需要在 Buildx 命令中指定相应的平台。
 
+ARM64 架构的镜像：
+
 ```shell
- docker buildx build --platform linux/arm64 -t test:v1.2 .
- docker buildx build --platform linux/arm64 -t test:v1.2 . --load
+docker buildx build --platform linux/arm64 -t test:v1.2 .
+docker buildx build --platform linux/arm64 -t test:v1.2 . --load
 ```
+
+运行镜像：
 
 ```shell
 docker run --privileged -it --platform linux/arm64 -v $(pwd):/demo  test:v1.2 /bin/bash
 ```
 
+AMD64 架构的镜像：
+
 ```shell
- docker buildx build --platform linux/amd64 -t test:v1.2 .
- docker buildx build --platform linux/amd64 -t test:v1.2 . --load
+docker buildx build --platform linux/amd64 -t test:v1.2 .
+docker buildx build --platform linux/amd64 -t test:v1.2 . --load
 ```
+
+运行镜像：
 
 ```shell
 docker run --privileged -it --platform linux/amd64 -v $(pwd):/demo  test:v1.2 /bin/bash
