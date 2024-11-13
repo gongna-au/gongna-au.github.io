@@ -25,7 +25,7 @@ make: *** [gaea] Error 1
 
 #### 办法1
 
-> 相关Issue:https://github.com/shirou/gopsutil/issues/149
+> 相关Issue: [gopsutil Issue #149](https://github.com/shirou/gopsutil/issues/149)
 > If you copy process_darwin_amd64.go to process_darwin_386.go, you can build. But it might be not work because struct size is different.
 > Since I can not get i386/darwin machine, I can not get struct size on 386 environment. FreeBSD/Linux on i386 can be get from AWS, but no darwin.
 > I can just add process_darwin_386.go to the repository, with warning comment. Do you really needs to darwin/386?
@@ -36,7 +36,7 @@ make: *** [gaea] Error 1
 
 #### 办法2
 
-如果make时出现关于这个包的错误https://github.com/shirou/gopsutil，在go.mod 和go.sum 下删除gopsutil包后重新go mod tidy 后就可以解决了
+如果make时出现关于这个包的错误[gopsutil](https://github.com/shirou/gopsutil)，在go.mod 和go.sum 下删除 gopsutil 包后重新 `go mod tidy` 后就可以解决了
 
 ```shell
 -       github.com/shirou/gopsutil v2.16.13-0.20170208025555-b62e301a8b99+incompatible
