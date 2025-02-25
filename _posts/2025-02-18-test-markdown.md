@@ -34,6 +34,13 @@ brew install lrzsz
 
 > 路径后续修改modem脚本会用到
 
+```shell
+$ which sz
+/opt/homebrew/bin/sz
+$ which rz
+/opt/homebrew/bin/rz
+```
+
 
 ```shell
 brew list lrzsz
@@ -97,9 +104,72 @@ Parameters: /usr/local/bin/iterm2-recv-zmodem.sh
 ```
 
 
-> 使用方法
 
-将文件传到远端服务器
+## 报错排查
+
+> command not found 那么需要配置else 那里的 路径为which的路径 `/opt/homebrew/bin/sz`
+
+
+>  `cat iterm2-send-zmodem.sh`
+
+```shell
+#!/bin/bash
+# 这个脚本来自 github，删掉了一些 ** 言论。
+
+osascript -e 'tell application "iTerm2" to version' > /dev/null 2>&1 && NAME=iTerm2 || NAME=iTerm
+if [[ $NAME = "iTerm" ]]; then
+        FILE=`osascript -e 'tell application "iTerm" to activate' -e 'tell application "iTerm" to set thefile to choose file with prompt "Choose a file to send"' -e "do shell script (\"echo \"&(quoted form of POSIX path of thefile as Unicode text)&\"\")"`
+else
+        FILE=`osascript -e 'tell application "iTerm2" to activate' -e 'tell application "iTerm2" to set thefile to choose file with prompt "Choose a file to send"' -e "do shell script (\"echo \"&(quoted form of POSIX path of thefile as Unicode text)&\"\")"`
+fi
+if [[ $FILE = "" ]]; then
+        echo Cancelled.
+        # Send ZModem cancel
+        echo -e \\x18\\x18\\x18\\x18\\x18
+        sleep 1
+        echo
+        echo \# Cancelled transfer
+else
+        /opt/homebrew/bin/sz "$FILE" --escape --binary --bufsize 4096
+        sleep 1
+        echo
+        echo \# Received $FILE
+fi
+```
+
+>  `cat iterm2-recv-zmodem.sh`
+
+```shell
+#!/bin/bash
+# 这个脚本来自 github，删掉了一些 ** 言论。
+
+osascript -e 'tell application "iTerm2" to version' > /dev/null 2>&1 && NAME=iTerm2 || NAME=iTerm
+if [[ $NAME = "iTerm" ]]; then
+        FILE=$(osascript -e 'tell application "iTerm" to activate' -e 'tell application "iTerm" to set thefile to choose folder with prompt "Choose a folder to place received files in"' -e "do shell script (\"echo \"&(quoted form of POSIX path of thefile as Unicode text)&\"\")")
+else
+        FILE=$(osascript -e 'tell application "iTerm2" to activate' -e 'tell application "iTerm2" to set thefile to choose folder with prompt "Choose a folder to place received files in"' -e "do shell script (\"echo \"&(quoted form of POSIX path of thefile as Unicode text)&\"\")")
+fi
+
+if [[ $FILE = "" ]]; then
+        echo Cancelled.
+        # Send ZModem cancel
+        echo -e \\x18\\x18\\x18\\x18\\x18
+        sleep 1
+        echo
+        echo \# Cancelled transfer
+else
+        cd "$FILE"
+        /opt/homebrew/bin/rz -E -e -b --bufsize 4096
+        sleep 1
+        echo
+        echo
+        echo \# Sent \-\> $FILE
+fi
+```
+
+## 使用方法
+
+> 将文件传到远端服务器
 
 在远端服务器上输入 rz ，回车
 选择本地要上传的文件
@@ -110,3 +180,4 @@ Parameters: /usr/local/bin/iterm2-recv-zmodem.sh
 在远端服务器输入 sz filename filename1 ... filenameN
 选择本地的存储目录
 等待下载
+
