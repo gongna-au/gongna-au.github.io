@@ -190,3 +190,4 @@ nohup etcd --data-dir ./data/etcd --auth-token=jwt > etcd.log 2>&1 &
 ```shell
 etcdctl --user root:root get /foo
 ```
+
