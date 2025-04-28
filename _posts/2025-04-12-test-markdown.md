@@ -59,10 +59,11 @@ go tool pprof -http=:8080 cpu.prof
 ```
 
 ```shell
-菜单选项	功能描述
-VIEW > Flame Graph	经典火焰图模式
-VIEW > Top	函数耗时排序
-SAMPLE > CPU	切换采样类型
+| 菜单选项            | 功能描述       |
+| ------------------ | --------------|
+| VIEW > Flame Graph | 经典火焰图模式 |
+| VIEW > Top         | 函数耗时排序   |
+| SAMPLE > CPU       | 切换采样类型   |
 ```
 
 ## 3.2 火焰图解读要点：
