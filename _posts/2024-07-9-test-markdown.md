@@ -13,6 +13,9 @@ comments: true
 
 ```shell
 [mysqld]
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+init-connect='SET NAMES utf8mb4'
 server-id=33319
 general_log=ON
 log_output=FILE
@@ -25,6 +28,9 @@ log-bin=mysql-bin
 
 ```shell
 [mysqld]
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+init-connect='SET NAMES utf8mb4'
 server-id=33329
 general_log=ON
 log_output=FILE
@@ -37,6 +43,9 @@ log-bin=mysql-bin
 
 ```shell 
 [mysqld]
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+init-connect='SET NAMES utf8mb4'
 server-id=33339
 general_log=ON
 log_output=FILE
