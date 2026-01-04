@@ -132,7 +132,49 @@ func fourSum(nums []int, target int) [][]int {
 (min(leftMax,rightMax)-num[i])*1
 ```
 
+
 #### 模板化思考
+问题分析：明确问题需要的信息（如接雨水中每个位置需要左右最大值）。
+方法选择：
+如果需要多次使用相同子问题的结果，选择递推公式（预处理）或动态规划。
+如果可以通过一次遍历（或从两端向中间遍历）动态维护所需信息，选择双指针。
 
 #### 实现代码
+
+```go
+func trap(height []int) int {
+	if len(height) <= 2 {
+		return 0
+	}
+	n := len(height)
+	res := 0
+	var leftMax = make([]int, n)
+	var rightMax = make([]int, n)
+	leftMax[0], rightMax[n-1] = height[0], height[n-1]
+	for i := 1; i < n; i++ {
+		leftMax[i] = max(leftMax[i-1], height[i])
+	}
+	for i := n - 2; i > 0; i-- {
+		rightMax[i] = max(rightMax[i+1], height[i])
+	}
+	for i := 1; i < n-1; i++ {
+		res += min(leftMax[i], rightMax[i]) - height[i]
+	}
+	return res
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+```
 
