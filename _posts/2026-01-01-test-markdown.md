@@ -47,6 +47,8 @@ func (u *UserManager) UpdateDataGood(data []byte) {
 - 反模式：持有锁的时候去通知别人。
 
 - 优化：改完状态立刻解锁，然后去通知。
+
+
 ```go
 // ❌ 粒度过大：Notify 需要网络请求，会阻塞其他查询 Task 的人
 func (t *Task) FinishBad() {
@@ -78,6 +80,7 @@ func (t *Task) FinishGood() {
 - 反模式：一把全局大锁（Global Lock）保护一个巨大的 Map。
 
 - 优化：把 Map 切分成 N 个小 Map（分片），每个分片有一把锁。根据 Key 的 Hash 值决定去抢哪把锁。
+
 ```go
 // ❌ 粒度过大：所有 key 都争抢一把锁
 type BigCache struct {
